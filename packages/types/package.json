@@ -1,0 +1,16 @@
+{
+  "name": "@mikala/types",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./user": "./user.ts",
+    "./mitra": "./mitra.ts",
+    "./klien": "./klien.ts",
+    "./order": "./order.ts",
+    "./billing": "./billing.ts",
+    "./common": "./common.ts"
+  }
+}

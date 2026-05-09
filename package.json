@@ -1,0 +1,30 @@
+{
+  "name": "mikala-web",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types",
+    "internal": "turbo run dev --filter=internal",
+    "mitra": "turbo run dev --filter=mitra",
+    "klien": "turbo run dev --filter=klien",
+    "mgm": "turbo run dev --filter=mgm",
+    "mga": "turbo run dev --filter=mga"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "prettier": "^3.7.4",
+    "turbo": "^2.9.12",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@10.9.7",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

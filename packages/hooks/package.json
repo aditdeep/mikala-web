@@ -1,0 +1,15 @@
+{
+  "name": "@mikala/hooks",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "dependencies": {
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@mikala/lib": "*",
+    "@mikala/store": "*",
+    "@mikala/types": "*"
+  }
+}
