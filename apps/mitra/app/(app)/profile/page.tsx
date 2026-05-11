@@ -128,7 +128,7 @@ export default function ProfilePage() {
       <button
         onClick={handleLogout}
         style={{
-          width:'100%', padding:'15px', borderRadius:'16px', border:'none', cursor:'pointer',
+          width:'100%', padding:'15px', borderRadius:'16px', cursor:'pointer',
           background:'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.1))',
           border:'1px solid rgba(239,68,68,0.2)',
           display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
