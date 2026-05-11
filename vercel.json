@@ -1,7 +1,4 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/mitra && npm run build",
-  "outputDirectory": "apps/mitra/.next",
-  "installCommand": "npm install",
   "framework": "nextjs"
 }
