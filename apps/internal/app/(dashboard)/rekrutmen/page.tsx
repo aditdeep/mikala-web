@@ -1,102 +1,88 @@
 'use client';
-
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { DataTable } from '@/components/DataTable';
-import { LoadingSpinner, Badge } from '@mikala/ui';
-import { Plus, Search } from 'lucide-react';
+import { Users, Search, Plus, ChevronRight } from 'lucide-react';
 
-export default function RekrutmenPage() {
-  const router = useRouter();
-  const [mitra, setMitra] = useState<any[]>([]);
+export default function Page() {
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    loadMitra();
-  }, [currentPage, search]);
+    apiClient.get('/internal/rekrutmen/mitra')
+      .then((res: any) => {
+        const d = res.data?.data;
+        setData(Array.isArray(d) ? d : []);
+        setLoading(false);
+      })
+      .catch(() => { setData([]); setLoading(false); });
+  }, []);
 
-  const loadMitra = async () => {
-    try {
-      const res = await apiClient.get('/rekrutmen/mitra', {
-        params: { page: currentPage, search }
-      });
-      setMitra(res.data.data);
-      setTotalPages(res.data.meta?.last_page || 1);
-      setLoading(false);
-    } catch (err) {
-      console.error('Failed to load mitra:', err);
-      setLoading(false);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants: any = {
-      pending: 'warning',
-      approved: 'success',
-      rejected: 'error',
-      active: 'success',
-    };
-    return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
-  };
-
-  const columns = [
-    { key: 'id', label: 'ID' },
-    { key: 'name', label: 'Name', render: (item: any) => item.user?.name || '-' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'nik', label: 'NIK' },
-    { 
-      key: 'status', 
-      label: 'Status', 
-      render: (item: any) => getStatusBadge(item.status) 
-    },
-    { 
-      key: 'training_status', 
-      label: 'Training', 
-      render: (item: any) => getStatusBadge(item.training_status) 
-    },
-  ];
-
-  if (loading) return <LoadingSpinner message="Loading mitra..." />;
+  const filtered = data.filter((item: any) =>
+    JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Rekrutmen Mitra</h1>
-        <button
-          onClick={() => router.push('/rekrutmen/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Plus size={20} />
-          Add Mitra
+    <div className="space-y-5">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'12px' }}>
+        <div>
+          <h1 style={{ fontSize:'22px', fontWeight:700, color:'var(--text)' }}>Rekrutmen</h1>
+          <p style={{ color:'var(--text3)', fontSize:'13px', marginTop:'2px' }}>{data.length} total data</p>
+        </div>
+        <button style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer', boxShadow:'0 4px 12px rgba(124,58,237,0.3)' }}>
+          <Plus size={15} />Tambah
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-        <input
-          type="text"
-          placeholder="Search by name, phone, or NIK..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+      <div style={{ background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'16px', display:'flex', alignItems:'center', gap:'10px', padding:'11px 16px' }}>
+        <Search size={15} style={{ color:'var(--text3)', flexShrink:0 }} />
+        <input placeholder="Cari data..." value={search} onChange={e => setSearch(e.target.value)} style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:'13px', width:'100%' }} />
       </div>
 
-      <DataTable
-        data={mitra}
-        columns={columns}
-        pagination={{
-          currentPage,
-          totalPages,
-          onPageChange: setCurrentPage,
-        }}
-        onRowClick={(item) => router.push(`/rekrutmen/${item.id}`)}
-      />
+      <div style={{ background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden', boxShadow:'var(--shadow)' }}>
+        {loading ? (
+          <div style={{ padding:'20px', display:'flex', flexDirection:'column', gap:'10px' }}>
+            {[1,2,3,4].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'12px', height:'56px' }} />)}
+          </div>
+        ) : filtered.length > 0 ? (
+          <div style={{ overflowX:'auto' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom:'1px solid var(--border)' }}>
+                  {Object.keys(filtered[0] || {}).slice(0,5).map(key => (
+                    <th key={key} style={{ padding:'14px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.5px', whiteSpace:'nowrap' }}>{key}</th>
+                  ))}
+                  <th style={{ padding:'14px 16px', textAlign:'right', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.slice(0,20).map((item: any, i: number) => (
+                  <tr key={item.id || i} style={{ borderBottom:'1px solid var(--border)', transition:'background 0.15s' }}>
+                    {Object.values(item).slice(0,5).map((val: any, vi: number) => (
+                      <td key={vi} style={{ padding:'13px 16px', fontSize:'13px', color:'var(--text)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                        {typeof val === 'object' ? JSON.stringify(val) : String(val ?? '-')}
+                      </td>
+                    ))}
+                    <td style={{ padding:'13px 16px', textAlign:'right' }}>
+                      <button style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', fontWeight:500, cursor:'pointer' }}>
+                        Detail <ChevronRight size={12} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div style={{ textAlign:'center', padding:'48px 20px' }}>
+            <div style={{ width:'64px', height:'64px', borderRadius:'20px', margin:'0 auto 14px', background:'rgba(124,58,237,0.08)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Users size={28} style={{ color:'var(--purple-light)', opacity:0.5 }} />
+            </div>
+            <p style={{ fontWeight:600, color:'var(--text)', marginBottom:'6px' }}>Belum ada data</p>
+            <p style={{ color:'var(--text3)', fontSize:'13px' }}>Data Rekrutmen akan muncul di sini</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -9,15 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@mikala/hooks": "*",
+    "@mikala/lib": "*",
+    "@mikala/store": "*",
+    "@mikala/types": "*",
+    "@mikala/ui": "*",
+    "lucide-react": "^0.400.0",
     "next": "14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@mikala/ui": "*",
-    "@mikala/lib": "*",
-    "@mikala/hooks": "*",
-    "@mikala/store": "*",
-    "@mikala/types": "*",
-    "lucide-react": "^0.400.0",
     "recharts": "^2.12.7"
   },
   "devDependencies": {
@@ -25,9 +25,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
-    "tailwindcss": "^4",
+    "postcss": "^8.4.40",
+    "tailwindcss": "^3.4.4",
     "typescript": "^5"
   }
 }

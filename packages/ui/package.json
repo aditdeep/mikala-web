@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "exports": {
-    "./components/*": "./src/components/*.tsx",
-    "./styles/*": "./src/styles/*"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./*": "./src/*"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",

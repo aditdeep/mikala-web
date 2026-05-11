@@ -1,57 +1,65 @@
 'use client';
-
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  Home, 
-  Users, 
-  GraduationCap, 
-  Headphones, 
-  DollarSign, 
-  TrendingUp, 
-  Settings 
-} from 'lucide-react';
+import { Home, Users, GraduationCap, Headphones, DollarSign, TrendingUp, Settings, ChevronRight, X } from 'lucide-react';
 
-export function Sidebar() {
+const menuItems = [
+  { icon: Home, label: 'Dashboard', href: '/' },
+  { icon: Users, label: 'Rekrutmen', href: '/rekrutmen' },
+  { icon: GraduationCap, label: 'Training', href: '/training' },
+  { icon: Headphones, label: 'Customer Care', href: '/customer-care' },
+  { icon: DollarSign, label: 'Finance', href: '/finance' },
+  { icon: TrendingUp, label: 'Marketing', href: '/marketing' },
+  { icon: Settings, label: 'Settings', href: '/settings' },
+];
+
+export function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const menuItems = [
-    { icon: Home, label: 'Dashboard', href: '/' },
-    { icon: Users, label: 'Rekrutmen', href: '/rekrutmen' },
-    { icon: GraduationCap, label: 'Training', href: '/training' },
-    { icon: Headphones, label: 'Customer Care', href: '/customer-care' },
-    { icon: DollarSign, label: 'Finance', href: '/finance' },
-    { icon: TrendingUp, label: 'Marketing', href: '/marketing' },
-    { icon: Settings, label: 'Settings', href: '/settings' },
-  ];
+  const navigate = (href: string) => {
+    router.push(href);
+    onClose?.();
+  };
 
   return (
-    <aside className="w-64 bg-gray-900 text-white min-h-screen">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-blue-400">Mikala Internal</h1>
+    <aside style={{ width:'240px', height:'100vh', background:'var(--sidebar-bg)', display:'flex', flexDirection:'column', borderRight:'1px solid rgba(139,92,246,0.1)', overflowY:'auto' }}>
+      <div style={{ padding:'24px 20px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+          <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 4px 12px rgba(124,58,237,0.4)' }}>
+            <span style={{ color:'white', fontWeight:800, fontSize:'16px' }}>M</span>
+          </div>
+          <div>
+            <p style={{ color:'white', fontWeight:700, fontSize:'14px', lineHeight:1 }}>Mikala</p>
+            <p style={{ color:'rgba(167,139,250,0.6)', fontSize:'11px', marginTop:'2px' }}>Internal</p>
+          </div>
+        </div>
+        {onClose && (
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(167,139,250,0.5)', padding:'4px' }} className="lg:hidden">
+            <X size={18} />
+          </button>
+        )}
       </div>
-      
-      <nav className="mt-6">
+
+      <nav style={{ flex:1, padding:'8px 12px', display:'flex', flexDirection:'column', gap:'2px' }}>
+        <p style={{ color:'rgba(167,139,250,0.4)', fontSize:'10px', fontWeight:600, letterSpacing:'1px', padding:'8px 8px 4px', textTransform:'uppercase' }}>Menu Utama</p>
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
           return (
-            <button
-              key={item.href}
-              onClick={() => router.push(item.href)}
-              className={`w-full flex items-center gap-3 px-6 py-3 text-sm transition-colors ${
-                isActive 
-                  ? 'bg-gray-800 border-l-4 border-blue-500 text-white' 
-                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-              }`}
-            >
-              <Icon size={20} />
-              <span>{item.label}</span>
+            <button key={item.href} onClick={() => navigate(item.href)} style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'12px', border:'none', cursor:'pointer', textAlign:'left', transition:'all 0.15s', background: isActive ? 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.2))' : 'transparent', color: isActive ? 'white' : 'rgba(167,139,250,0.6)', boxShadow: isActive ? '0 2px 8px rgba(124,58,237,0.2)' : 'none' }}>
+              <div style={{ width:'30px', height:'30px', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent' }}>
+                <Icon size={16} />
+              </div>
+              <span style={{ fontSize:'13px', fontWeight: isActive ? 600 : 400, flex:1 }}>{item.label}</span>
+              {isActive && <ChevronRight size={14} style={{ opacity:0.6 }} />}
             </button>
           );
         })}
       </nav>
+
+      <div style={{ padding:'16px 20px', borderTop:'1px solid rgba(139,92,246,0.1)' }}>
+        <p style={{ color:'rgba(167,139,250,0.3)', fontSize:'11px', textAlign:'center' }}>v1.0.0 · © 2026 Mikala</p>
+      </div>
     </aside>
   );
 }

@@ -1,76 +1,143 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@mikala/lib';
-import { Card, CardContent, Button } from '@mikala/ui';
-import { User, Phone, Mail, LogOut } from 'lucide-react';
+import { User, Phone, Mail, LogOut, ChevronRight, Shield, Bell, HelpCircle } from 'lucide-react';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    const userData = authService.getUser();
-    setUser(userData);
-  }, []);
+  useEffect(() => { setUser(authService.getUser()); }, []);
 
   const handleLogout = async () => {
     await authService.logout();
     router.push('/auth/login');
   };
 
+  const menuItems = [
+    { icon: User, label: 'Edit Profil', desc: 'Ubah data diri Anda', action: () => {} },
+    { icon: Bell, label: 'Notifikasi', desc: 'Pengaturan pemberitahuan', action: () => {} },
+    { icon: Shield, label: 'Keamanan', desc: 'Password & keamanan akun', action: () => {} },
+    { icon: HelpCircle, label: 'Bantuan', desc: 'Pusat bantuan & FAQ', action: () => {} },
+  ];
+
+  const initials = user?.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'M';
+
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Profile</h1>
+    <div className="p-4 pt-6 space-y-4">
+      <div className="pt-4">
+        <h1 className="text-2xl font-bold" style={{ color:'var(--text-primary)' }}>Profil</h1>
+      </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-              {user?.name?.[0] || 'M'}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">{user?.name || 'Mitra'}</h2>
-              <p className="text-gray-600">{user?.role || 'Mitra'}</p>
-            </div>
-          </div>
+      {/* Avatar Card */}
+      <div style={{
+        background:'linear-gradient(135deg, #7c3aed 0%, #4f46e5 60%, #ec4899 100%)',
+        borderRadius:'24px', padding:'28px', textAlign:'center',
+        boxShadow:'0 8px 32px rgba(124,58,237,0.4)', position:'relative', overflow:'hidden',
+      }}>
+        <div style={{ position:'absolute', top:'-30px', right:'-30px', width:'120px', height:'120px', borderRadius:'50%', background:'rgba(255,255,255,0.08)' }}/>
+        <div style={{ position:'absolute', bottom:'-20px', left:'-20px', width:'100px', height:'100px', borderRadius:'50%', background:'rgba(236,72,153,0.15)' }}/>
+        <div style={{
+          width:'80px', height:'80px', borderRadius:'24px', margin:'0 auto 16px',
+          background:'rgba(255,255,255,0.25)', backdropFilter:'blur(10px)',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize:'28px', fontWeight:700, color:'white',
+          border:'2px solid rgba(255,255,255,0.4)',
+        }}>
+          {initials}
+        </div>
+        <h2 className="text-white text-xl font-bold">{user?.name || 'Mitra'}</h2>
+        <p className="text-purple-200 text-sm mt-1">{user?.email || ''}</p>
+        <div style={{
+          display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'12px',
+          background:'rgba(255,255,255,0.15)', borderRadius:'10px', padding:'6px 14px',
+        }}>
+          <Shield size={13} color="white" />
+          <span className="text-white text-xs font-medium capitalize">{user?.role || 'Mitra'}</span>
+        </div>
+      </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 py-3 border-b">
-              <User className="text-gray-400" size={20} />
-              <div>
-                <div className="text-sm text-gray-600">Name</div>
-                <div className="font-medium">{user?.name || '-'}</div>
+      {/* Info Card */}
+      <div style={{
+        background:'var(--glass)', backdropFilter:'blur(20px)',
+        border:'1px solid var(--glass-border)', borderRadius:'24px', overflow:'hidden',
+      }}>
+        {[
+          { icon: Mail, label: 'Email', value: user?.email || '-' },
+          { icon: Phone, label: 'Telepon', value: user?.profile?.phone || '-' },
+          { icon: User, label: 'Nama Lengkap', value: user?.name || '-' },
+        ].map((item, i, arr) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.label} style={{
+              padding:'16px', display:'flex', alignItems:'center', gap:'14px',
+              borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+            }}>
+              <div style={{
+                width:'38px', height:'38px', borderRadius:'12px', flexShrink:0,
+                background:'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(79,70,229,0.15))',
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>
+                <Icon size={17} style={{ color:'var(--purple-light)' }} />
+              </div>
+              <div style={{ flex:1 }}>
+                <p className="text-xs" style={{ color:'var(--text-muted)' }}>{item.label}</p>
+                <p className="font-medium text-sm mt-0.5" style={{ color:'var(--text-primary)' }}>{item.value}</p>
               </div>
             </div>
+          );
+        })}
+      </div>
 
-            <div className="flex items-center gap-3 py-3 border-b">
-              <Mail className="text-gray-400" size={20} />
-              <div>
-                <div className="text-sm text-gray-600">Email</div>
-                <div className="font-medium">{user?.email || '-'}</div>
+      {/* Menu */}
+      <div style={{
+        background:'var(--glass)', backdropFilter:'blur(20px)',
+        border:'1px solid var(--glass-border)', borderRadius:'24px', overflow:'hidden',
+      }}>
+        {menuItems.map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.label}
+              onClick={item.action}
+              style={{
+                width:'100%', padding:'15px 16px', display:'flex', alignItems:'center', gap:'14px',
+                borderBottom: i < menuItems.length - 1 ? '1px solid var(--border)' : 'none',
+                background:'transparent', cursor:'pointer', textAlign:'left',
+              }}
+            >
+              <div style={{
+                width:'38px', height:'38px', borderRadius:'12px', flexShrink:0,
+                background:'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(79,70,229,0.1))',
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>
+                <Icon size={17} style={{ color:'var(--purple-light)' }} />
               </div>
-            </div>
-
-            <div className="flex items-center gap-3 py-3 border-b">
-              <Phone className="text-gray-400" size={20} />
-              <div>
-                <div className="text-sm text-gray-600">Phone</div>
-                <div className="font-medium">{user?.profile?.phone || '-'}</div>
+              <div style={{ flex:1 }}>
+                <p className="font-semibold text-sm" style={{ color:'var(--text-primary)' }}>{item.label}</p>
+                <p className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{item.desc}</p>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              <ChevronRight size={16} style={{ color:'var(--text-muted)' }} />
+            </button>
+          );
+        })}
+      </div>
 
-      <Button
+      {/* Logout */}
+      <button
         onClick={handleLogout}
-        className="w-full bg-red-600 hover:bg-red-700"
+        style={{
+          width:'100%', padding:'15px', borderRadius:'16px', border:'none', cursor:'pointer',
+          background:'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.1))',
+          border:'1px solid rgba(239,68,68,0.2)',
+          display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
+          color:'#ef4444', fontWeight:600, fontSize:'15px',
+        }}
       >
-        <LogOut size={20} className="mr-2" />
-        Logout
-      </Button>
+        <LogOut size={18} />
+        Keluar
+      </button>
     </div>
   );
 }

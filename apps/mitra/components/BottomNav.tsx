@@ -1,36 +1,50 @@
 'use client';
-
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Briefcase, Wallet, User } from 'lucide-react';
+
+const navItems = [
+  { icon: Home, label: 'Home', href: '/' },
+  { icon: Briefcase, label: 'Jobs', href: '/jobs' },
+  { icon: Wallet, label: 'Payroll', href: '/payroll' },
+  { icon: User, label: 'Profile', href: '/profile' },
+];
 
 export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const navItems = [
-    { icon: Home, label: 'Home', href: '/' },
-    { icon: Briefcase, label: 'Jobs', href: '/jobs' },
-    { icon: Wallet, label: 'Payroll', href: '/payroll' },
-    { icon: User, label: 'Profile', href: '/profile' },
-  ];
-
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom">
-      <div className="flex justify-around items-center h-16">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50"
+      style={{
+        background: 'var(--glass)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderTop: '1px solid var(--glass-border)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
+      <div className="flex justify-around items-center h-16 max-w-lg mx-auto px-4">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
-
           return (
             <button
               key={item.href}
               onClick={() => router.push(item.href)}
-              className={`flex flex-col items-center justify-center flex-1 h-full ${
-                isActive ? 'text-blue-600' : 'text-gray-600'
-              }`}
+              className="flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all duration-200"
+              style={{ color: isActive ? 'var(--purple-light)' : 'var(--text-muted)' }}
             >
-              <Icon size={24} />
-              <span className="text-xs mt-1">{item.label}</span>
+              <div
+                className="p-2 rounded-xl transition-all duration-200"
+                style={{
+                  background: isActive ? 'rgba(139,92,246,0.15)' : 'transparent',
+                  transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                }}
+              >
+                <Icon size={20} />
+              </div>
+              <span className="text-xs font-medium">{item.label}</span>
             </button>
           );
         })}
