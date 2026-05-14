@@ -9,37 +9,64 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => { if (!authService.isAuthenticated()) router.push('/login'); }, [router]);
+  useEffect(() => {
+    if (!authService.isAuthenticated()) router.push('/login');
+  }, [router]);
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)', position:'relative' }}>
+    <div style={{
+      display: 'flex',
+      height: '100vh',
+      overflow: 'hidden',
+      background: 'var(--bg)',
+      position: 'relative',
+      maxWidth: '100vw',
+    }}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:40, display:'block' }}
-          className="lg:hidden"
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 40,
+          }}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - desktop: static, mobile: overlay */}
       <div style={{
-        position: 'fixed',
-        left: sidebarOpen ? 0 : '-240px',
-        top: 0, bottom: 0,
-        zIndex: 50,
-        transition: 'left 0.3s ease',
+        flexShrink: 0,
         width: '240px',
+        position: 'relative',
+        zIndex: 50,
+        // Mobile: slide in/out sebagai overlay
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+        position: 'fixed' as any,
+        top: 0, bottom: 0, left: 0,
+        transition: 'transform 0.3s ease',
       }}
-      className="lg:static lg:left-0 lg:translate-x-0"
+      className="lg:relative lg:translate-x-0 lg:transform-none"
       >
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
-      {/* Main */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
+      {/* Main content - tidak terpengaruh overlay */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        minWidth: 0,
+        maxWidth: '100%',
+      }}>
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main style={{ flex:1, overflowY:'auto', padding:'16px' }} className="lg:p-6">
+        <main style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: '16px',
+        }}>
           {children}
         </main>
       </div>

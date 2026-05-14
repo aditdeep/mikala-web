@@ -34,3 +34,17 @@
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
 }
+
+/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Sidebar responsive */
+@media (min-width: 1024px) {
+  .lg\:relative { position: relative !important; }
+  .lg\:translate-x-0 { transform: translateX(0) !important; }
+  .lg\:transform-none { transition: none !important; }
+  .lg\:hidden { display: none !important; }
+}
