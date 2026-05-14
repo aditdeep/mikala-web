@@ -79,17 +79,18 @@ export default function RekrutmenPage() {
 
   const counts = {
     semua: data.length,
-    pending: data.filter((d: any) => d.status === 'pending').length,
-    aktif: data.filter((d: any) => d.status === 'aktif').length,
-    nonaktif: data.filter((d: any) => d.status === 'nonaktif').length,
+    training: data.filter((d: any) => d.status === 'training').length,
+    available: data.filter((d: any) => d.status === 'available').length,
+    on_job: data.filter((d: any) => d.status === 'on_job').length,
   };
 
   const statusBadge = (s: string) => {
     const map: any = {
-      pending: { color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)', label:'Pending', icon: Clock },
-      aktif: { color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', label:'Aktif', icon: CheckCircle },
-      nonaktif: { color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)', label:'Nonaktif', icon: XCircle },
-      keluar: { color:'#6b7280', bg:'rgba(107,114,128,0.15)', border:'rgba(107,114,128,0.3)', label:'Keluar', icon: XCircle },
+      training: { color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)', label:'Training', icon: Clock },
+      available: { color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', label:'Tersedia', icon: CheckCircle },
+      on_job: { color:'#3b82f6', bg:'rgba(59,130,246,0.15)', border:'rgba(59,130,246,0.3)', label:'On Job', icon: CheckCircle },
+      inactive: { color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)', label:'Nonaktif', icon: XCircle },
+      re_training: { color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)', label:'Re-Training', icon: Clock },
     };
     return map[s] || map.pending;
   };
@@ -108,14 +109,14 @@ export default function RekrutmenPage() {
 
       {/* Tabs */}
       <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-        {(['semua','pending','aktif','nonaktif'] as const).map(tab => (
+        {(['semua','training','available','on_job'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             padding:'6px 14px', borderRadius:'10px', fontSize:'12px', fontWeight:600, cursor:'pointer',
             background: activeTab === tab ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : 'var(--glass)',
             color: activeTab === tab ? 'white' : 'var(--text2)',
             border: activeTab === tab ? 'none' : '1px solid var(--border)',
           }}>
-            {tab === 'semua' ? 'Semua' : tab.charAt(0).toUpperCase() + tab.slice(1)} ({counts[tab]})
+            {tab === 'semua' ? 'Semua' : tab === 'training' ? 'Training' : tab === 'available' ? 'Tersedia' : 'On Job'} ({counts[tab]})
           </button>
         ))}
       </div>
@@ -406,9 +407,9 @@ export default function RekrutmenPage() {
             ))}
             <div style={{ marginTop:'16px', display:'flex', gap:'8px' }}>
               {[
-                { s:'pending', label:'Pending', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)' },
-                { s:'aktif', label:'Aktifkan', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
-                { s:'nonaktif', label:'Nonaktif', color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)' },
+                { s:'training', label:'Training', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)' },
+                { s:'available', label:'Tersedia', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
+                { s:'inactive', label:'Nonaktif', color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)' },
               ].map(({ s, label, color, bg, border }) => (
                 <button key={s} onClick={async () => {
                   try {
