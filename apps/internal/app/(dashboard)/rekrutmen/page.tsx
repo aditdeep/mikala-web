@@ -99,7 +99,7 @@ export default function RekrutmenPage() {
       <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
         {(['semua','pending','approved','rejected'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
-            padding:'6px 14px', borderRadius:'10px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'none',
+            padding:'6px 14px', borderRadius:'10px', fontSize:'12px', fontWeight:600, cursor:'pointer',
             background: activeTab === tab ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : 'var(--glass)',
             color: activeTab === tab ? 'white' : 'var(--text2)',
             border: activeTab !== tab ? '1px solid var(--border)' : 'none',
