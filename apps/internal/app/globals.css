@@ -55,3 +55,15 @@ html, body {
     display: block !important;
   }
 }
+
+/* Stats grid responsive */
+.stats-mobile { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; }
+.stats-desktop { display: none !important; }
+
+@media (min-width: 1024px) {
+  .stats-mobile { display: none !important; }
+  .stats-desktop { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 16px !important; }
+  .tables-wrapper { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+  .lg-sidebar-desktop { display: block !important; }
+  .sidebar-wrapper { width: 240px !important; }
+}
