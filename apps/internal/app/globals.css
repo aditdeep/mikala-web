@@ -48,3 +48,10 @@ html, body {
   .lg\:transform-none { transition: none !important; }
   .lg\:hidden { display: none !important; }
 }
+
+/* Desktop sidebar always visible */
+@media (min-width: 1024px) {
+  .lg-sidebar-desktop {
+    display: block !important;
+  }
+}

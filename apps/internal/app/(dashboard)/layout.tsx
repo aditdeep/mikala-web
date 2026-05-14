@@ -13,59 +13,70 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!authService.isAuthenticated()) router.push('/login');
   }, [router]);
 
+  // Tutup sidebar kalau resize ke desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div style={{
       display: 'flex',
       height: '100vh',
+      width: '100vw',
       overflow: 'hidden',
       background: 'var(--bg)',
-      position: 'relative',
-      maxWidth: '100vw',
     }}>
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{
-            position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            zIndex: 40,
-          }}
-        />
-      )}
 
-      {/* Sidebar - desktop: static, mobile: overlay */}
+      {/* Desktop sidebar - static */}
       <div style={{
-        flexShrink: 0,
+        display: 'none',
         width: '240px',
-        position: 'relative',
-        zIndex: 50,
-        // Mobile: slide in/out sebagai overlay
-        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-        position: 'fixed' as any,
-        top: 0, bottom: 0, left: 0,
-        transition: 'transform 0.3s ease',
-      }}
-      className="lg:relative lg:translate-x-0 lg:transform-none"
-      >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
+        flexShrink: 0,
+        height: '100vh',
+      }} className="lg-sidebar-desktop">
+        <Sidebar />
       </div>
 
-      {/* Main content - tidak terpengaruh overlay */}
+      {/* Mobile sidebar - overlay */}
+      {sidebarOpen && (
+        <>
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(0,0,0,0.5)',
+              zIndex: 40,
+            }}
+          />
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, bottom: 0,
+            width: '240px',
+            zIndex: 50,
+          }}>
+            <Sidebar onClose={() => setSidebarOpen(false)} />
+          </div>
+        </>
+      )}
+
+      {/* Main */}
       <div style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         minWidth: 0,
-        maxWidth: '100%',
       }}>
-        <Header onMenuClick={() => setSidebarOpen(true)} />
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <main style={{
           flex: 1,
           overflowY: 'auto',
           overflowX: 'hidden',
-          padding: '16px',
+          padding: '20px',
         }}>
           {children}
         </main>
