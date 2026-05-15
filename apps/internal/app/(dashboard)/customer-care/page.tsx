@@ -55,10 +55,12 @@ export default function CustomerCarePage() {
   };
 
   const statusMap: any = {
-    active: { label:'Aktif', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', icon: CheckCircle },
     pending: { label:'Pending', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)', icon: Clock },
-    completed: { label:'Selesai', color:'#3b82f6', bg:'rgba(59,130,246,0.15)', border:'rgba(59,130,246,0.3)', icon: CheckCircle },
+    confirmed: { label:'Dikonfirmasi', color:'#3b82f6', bg:'rgba(59,130,246,0.15)', border:'rgba(59,130,246,0.3)', icon: CheckCircle },
+    in_progress: { label:'Berjalan', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', icon: CheckCircle },
+    completed: { label:'Selesai', color:'#6b7280', bg:'rgba(107,114,128,0.15)', border:'rgba(107,114,128,0.3)', icon: CheckCircle },
     cancelled: { label:'Dibatalkan', color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)', icon: AlertCircle },
+    on_hold: { label:'Ditahan', color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)', icon: Clock },
   };
 
   const inputStyle = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
