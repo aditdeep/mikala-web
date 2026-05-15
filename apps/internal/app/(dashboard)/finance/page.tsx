@@ -134,7 +134,7 @@ export default function FinancePage() {
                   return (
                     <tr key={item.id || i} style={{ borderBottom:'1px solid var(--border)' }}>
                       <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>#{item.id}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.total_amount || 0).toLocaleString('id')}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.total || 0).toLocaleString('id')}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.due_date ? new Date(item.due_date).toLocaleDateString('id-ID') : '-'}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <span style={{ background:s.bg, color:s.color, border:`1px solid ${s.border}`, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>

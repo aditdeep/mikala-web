@@ -17,8 +17,8 @@ export default function TagihanPage() {
       .catch(() => { setTagihan([]); setLoading(false); });
   }, []);
 
-  const totalUnpaid = tagihan.filter(t => t.status !== 'paid').reduce((a, b) => a + (b.total_amount || 0), 0);
-  const totalPaid = tagihan.filter(t => t.status === 'paid').reduce((a, b) => a + (b.total_amount || 0), 0);
+  const totalUnpaid = tagihan.filter(t => t.status !== 'paid').reduce((a, b) => a + (Number(b.total) || 0), 0);
+  const totalPaid = tagihan.filter(t => t.status === 'paid').reduce((a, b) => a + (Number(b.total) || 0), 0);
 
   const statusConfig: any = {
     paid: { label:'Lunas', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', icon: CheckCircle },
@@ -73,7 +73,7 @@ export default function TagihanPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 font-bold text-base" style={{ color:'var(--green)' }}>
-                      <DollarSign size={17} />Rp {invoice.total_amount?.toLocaleString('id-ID') || 0}
+                      <DollarSign size={17} />Rp {invoice.total?.toLocaleString('id-ID') || 0}
                     </div>
                     {invoice.status !== 'paid' && (
                       <button onClick={() => alert('Payment integration coming soon')} style={{ padding:'8px 18px', background:'linear-gradient(135deg, #10b981, #059669)', borderRadius:'10px', border:'none', color:'white', fontSize:'12px', fontWeight:600, cursor:'pointer', boxShadow:'0 3px 10px rgba(16,185,129,0.4)' }}>Bayar</button>
