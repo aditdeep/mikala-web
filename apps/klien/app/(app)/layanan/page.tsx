@@ -21,8 +21,8 @@ export default function LayananPage() {
   }, []);
 
   const filtered = Array.isArray(layanan) ? layanan.filter(l =>
-    l.service_type?.toLowerCase().includes(search.toLowerCase()) ||
-    l.patient_name?.toLowerCase().includes(search.toLowerCase())
+    l.tipe_layanan?.toLowerCase().includes(search.toLowerCase()) ||
+    l.catatan?.toLowerCase().includes(search.toLowerCase())
   ) : [];
 
   return (
@@ -56,14 +56,14 @@ export default function LayananPage() {
                   {service.status === 'active' ? 'Aktif' : service.status}
                 </span>
               </div>
-              <h3 className="font-bold text-base mb-1" style={{ color:'var(--text-primary)' }}>{service.service_type}</h3>
+              <h3 className="font-bold text-base mb-1" style={{ color:'var(--text-primary)' }}>{service.tipe_layanan}</h3>
               <div className="flex items-center gap-4 text-xs" style={{ color:'var(--text-muted)' }}>
-                <div className="flex items-center gap-1.5"><User size={12} /><span>{service.patient_name}</span></div>
-                <div className="flex items-center gap-1.5"><Calendar size={12} /><span>{new Date(service.start_date).toLocaleDateString('id-ID')}</span></div>
+                <div className="flex items-center gap-1.5"><User size={12} /><span>{service.pasien?.nama_lengkap}</span></div>
+                <div className="flex items-center gap-1.5"><Calendar size={12} /><span>{new Date(service.tanggal_mulai).toLocaleDateString('id-ID')}</span></div>
               </div>
-              {service.mitra_name && (
+              {service.mitra?.user?.name && (
                 <div style={{ marginTop:'10px', paddingTop:'10px', borderTop:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                  <span className="text-xs" style={{ color:'var(--text-muted)' }}>Mitra: <strong style={{ color:'var(--text-primary)' }}>{service.mitra_name}</strong></span>
+                  <span className="text-xs" style={{ color:'var(--text-muted)' }}>Mitra: <strong style={{ color:'var(--text-primary)' }}>{service.mitra?.user?.name}</strong></span>
                   <ChevronRight size={14} style={{ color:'var(--text-muted)' }} />
                 </div>
               )}
