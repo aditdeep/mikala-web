@@ -53,7 +53,7 @@ export default function FinancePage() {
 
   const statusMap: any = {
     paid: { label:'Lunas', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
-    pending: { label:'Pending', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)' },
+    unpaid: { label:'Belum Bayar', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)' },
     overdue: { label:'Jatuh Tempo', color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)' },
     cancelled: { label:'Dibatalkan', color:'#6b7280', bg:'rgba(107,114,128,0.15)', border:'rgba(107,114,128,0.3)' },
   };
