@@ -21,8 +21,8 @@ export default function PasienPage() {
   }, []);
 
   const filtered = pasien.filter(p =>
-    p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.diagnosis?.toLowerCase().includes(search.toLowerCase())
+    p.nama_lengkap?.toLowerCase().includes(search.toLowerCase()) ||
+    p.riwayat_penyakit?.toLowerCase().includes(search.toLowerCase())
   );
 
   const initials = (name: string) => name?.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase() || 'P';
@@ -51,17 +51,17 @@ export default function PasienPage() {
           {filtered.map((p) => (
             <div key={p.id} onClick={() => router.push(`/pasien/${p.id}`)} style={{ background:'var(--glass)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', padding:'16px', cursor:'pointer', boxShadow:'var(--shadow-card)', display:'flex', alignItems:'center', gap:'14px' }}>
               <div style={{ width:'50px', height:'50px', borderRadius:'16px', background:'linear-gradient(135deg, #10b981, #059669)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 4px 12px rgba(16,185,129,0.35)', color:'white', fontWeight:700, fontSize:'16px' }}>
-                {initials(p.name)}
+                {initials(p.nama_lengkap)}
               </div>
               <div style={{ flex:1 }}>
-                <h3 className="font-bold text-base" style={{ color:'var(--text-primary)' }}>{p.name}</h3>
+                <h3 className="font-bold text-base" style={{ color:'var(--text-primary)' }}>{p.nama_lengkap}</h3>
                 <div className="flex flex-wrap items-center gap-3 mt-1 text-xs" style={{ color:'var(--text-muted)' }}>
-                  {p.age && <span>{p.age} tahun</span>}
-                  {p.diagnosis && <span style={{ background:'rgba(16,185,129,0.1)', color:'var(--green)', borderRadius:'6px', padding:'2px 8px' }}>{p.diagnosis}</span>}
+                  {p.tanggal_lahir && <span>{new Date().getFullYear() - new Date(p.tanggal_lahir).getFullYear()} tahun</span>}
+                  {p.riwayat_penyakit && <span style={{ background:'rgba(16,185,129,0.1)', color:'var(--green)', borderRadius:'6px', padding:'2px 8px' }}>{p.riwayat_penyakit}</span>}
                 </div>
                 <div className="flex items-center gap-3 mt-1.5 text-xs" style={{ color:'var(--text-muted)' }}>
-                  {p.phone && <div className="flex items-center gap-1"><Phone size={11} /><span>{p.phone}</span></div>}
-                  {p.address && <div className="flex items-center gap-1"><MapPin size={11} /><span className="truncate max-w-32">{p.address}</span></div>}
+                  {p.kontak_darurat_phone && <div className="flex items-center gap-1"><Phone size={11} /><span>{p.kontak_darurat_phone}</span></div>}
+                  {p.alamat && <div className="flex items-center gap-1"><MapPin size={11} /><span className="truncate max-w-32">{p.alamat}</span></div>}
                 </div>
               </div>
               <ChevronRight size={16} style={{ color:'var(--text-muted)', flexShrink:0 }} />
