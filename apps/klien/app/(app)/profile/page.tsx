@@ -1,79 +1,121 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '@mikala/lib';
-import { User, Phone, Mail, MapPin, LogOut, ChevronRight, Bell, Shield, HelpCircle } from 'lucide-react';
+import { apiClient, authService } from '@mikala/lib';
+import { User, Phone, Mail, MapPin, LogOut, Edit2, Home, CreditCard } from 'lucide-react';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  useEffect(() => { setUser(authService.getUser()); }, []);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = async () => { await authService.logout(); router.push('/auth/login'); };
+  useEffect(() => {
+    const u = authService.getUser();
+    setUser(u);
+    apiClient.get('/klien/profile')
+      .then((r: any) => { setProfile(r.data?.data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleLogout = async () => {
+    await authService.logout();
+    router.push('/auth/login');
+  };
+
   const initials = user?.name?.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase() || 'K';
+  const klien = profile?.klien || profile;
 
   return (
-    <div className="p-4 pt-6 space-y-4">
-      <div className="pt-4">
-        <h1 className="text-2xl font-bold" style={{ color:'var(--text-primary)' }}>Profil</h1>
+    <div style={{ padding:'16px', paddingBottom:'80px' }} className="space-y-4">
+      <div style={{ paddingTop:'8px' }}>
+        <h1 style={{ fontSize:'22px', fontWeight:700, color:'var(--text)' }}>Profil</h1>
       </div>
 
-      <div style={{ background:'linear-gradient(135deg, #10b981 0%, #059669 60%, #0d9488 100%)', borderRadius:'24px', padding:'28px', textAlign:'center', boxShadow:'0 8px 32px rgba(16,185,129,0.4)', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:'-30px', right:'-30px', width:'120px', height:'120px', borderRadius:'50%', background:'rgba(255,255,255,0.08)' }}/>
-        <div style={{ width:'80px', height:'80px', borderRadius:'24px', margin:'0 auto 16px', background:'rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', fontWeight:700, color:'white', border:'2px solid rgba(255,255,255,0.4)' }}>{initials}</div>
-        <h2 className="text-white text-xl font-bold">{user?.name || 'Klien'}</h2>
-        <p className="text-green-100 text-sm mt-1">{user?.email || ''}</p>
-        <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'12px', background:'rgba(255,255,255,0.15)', borderRadius:'10px', padding:'6px 14px' }}>
-          <User size={13} color="white" />
-          <span className="text-white text-xs font-medium">{user?.profile?.type || 'Individual'}</span>
+      {/* Avatar Card */}
+      <div style={{ background:'linear-gradient(135deg, #10b981, #059669, #0d9488)', borderRadius:'20px', padding:'24px', textAlign:'center', boxShadow:'0 8px 24px rgba(16,185,129,0.4)', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:'-20px', right:'-20px', width:'100px', height:'100px', borderRadius:'50%', background:'rgba(255,255,255,0.08)' }}/>
+        <div style={{ width:'72px', height:'72px', borderRadius:'20px', margin:'0 auto 12px', background:'rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', fontWeight:700, color:'white', border:'2px solid rgba(255,255,255,0.4)' }}>{initials}</div>
+        <h2 style={{ color:'white', fontWeight:700, fontSize:'18px' }}>{user?.name || 'Klien'}</h2>
+        <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'12px', marginTop:'4px' }}>{user?.email}</p>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'10px', background:'rgba(255,255,255,0.15)', borderRadius:'10px', padding:'5px 12px' }}>
+          <User size={12} color="white" />
+          <span style={{ color:'white', fontSize:'11px', fontWeight:500, textTransform:'capitalize' }}>{klien?.tipe || 'individu'}</span>
         </div>
       </div>
 
-      <div style={{ background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'24px', overflow:'hidden' }}>
+      {/* Info Cards */}
+      <div style={{ background:'var(--glass)', backdropFilter:'blur(16px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' }}>
+        <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)' }}>
+          <p style={{ fontWeight:700, fontSize:'14px', color:'var(--text)' }}>Informasi Pribadi</p>
+        </div>
         {[
-          { icon: Mail, label:'Email', value: user?.email || '-' },
-          { icon: Phone, label:'Telepon', value: user?.profile?.phone || '-' },
-          { icon: MapPin, label:'Alamat', value: user?.profile?.address || '-' },
-        ].map((item, i, arr) => {
+          { icon: User, label:'Nama Lengkap', value: klien?.nama_lengkap || user?.name },
+          { icon: Mail, label:'Email', value: user?.email },
+          { icon: Phone, label:'Nomor HP', value: user?.phone },
+          { icon: Phone, label:'HP Lainnya', value: klien?.phone_secondary || '-' },
+          { icon: MapPin, label:'Alamat', value: klien?.alamat },
+          { icon: Home, label:'Kota', value: klien?.kota },
+          { icon: MapPin, label:'Provinsi', value: klien?.provinsi },
+        ].map(item => {
           const Icon = item.icon;
           return (
-            <div key={item.label} style={{ padding:'16px', display:'flex', alignItems:'center', gap:'14px', borderBottom: i < arr.length-1 ? '1px solid var(--border)' : 'none' }}>
-              <div style={{ width:'38px', height:'38px', borderRadius:'12px', flexShrink:0, background:'rgba(16,185,129,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <Icon size={17} style={{ color:'var(--green)' }} />
+            <div key={item.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderBottom:'1px solid var(--border)' }}>
+              <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'rgba(16,185,129,0.1)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <Icon size={15} style={{ color:'#10b981' }} />
               </div>
               <div style={{ flex:1 }}>
-                <p className="text-xs" style={{ color:'var(--text-muted)' }}>{item.label}</p>
-                <p className="font-medium text-sm mt-0.5" style={{ color:'var(--text-primary)' }}>{item.value}</p>
+                <p style={{ color:'var(--text3)', fontSize:'11px' }}>{item.label}</p>
+                <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:500 }}>{item.value || '-'}</p>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div style={{ background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'24px', overflow:'hidden' }}>
+      {/* Billing Info */}
+      <div style={{ background:'var(--glass)', backdropFilter:'blur(16px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' }}>
+        <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)' }}>
+          <p style={{ fontWeight:700, fontSize:'14px', color:'var(--text)' }}>Info Pembayaran</p>
+        </div>
         {[
-          { icon: Bell, label:'Notifikasi', desc:'Pengaturan pemberitahuan' },
-          { icon: Shield, label:'Keamanan', desc:'Password & keamanan akun' },
-          { icon: HelpCircle, label:'Bantuan', desc:'Pusat bantuan & FAQ' },
-        ].map((item, i) => {
+          { icon: CreditCard, label:'Metode Billing', value: klien?.billing_method || 'cash' },
+          { icon: CreditCard, label:'Bank', value: klien?.bank_name || '-' },
+          { icon: CreditCard, label:'No. Rekening', value: klien?.bank_account || '-' },
+          { icon: User, label:'Nama Rekening', value: klien?.bank_account_name || '-' },
+        ].map(item => {
           const Icon = item.icon;
           return (
-            <button key={item.label} style={{ width:'100%', padding:'15px 16px', display:'flex', alignItems:'center', gap:'14px', borderBottom: i < 2 ? '1px solid var(--border)' : 'none', background:'transparent', cursor:'pointer', textAlign:'left' }}>
-              <div style={{ width:'38px', height:'38px', borderRadius:'12px', flexShrink:0, background:'rgba(16,185,129,0.1)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <Icon size={17} style={{ color:'var(--green)' }} />
+            <div key={item.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderBottom:'1px solid var(--border)' }}>
+              <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'rgba(124,58,237,0.1)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <Icon size={15} style={{ color:'#7c3aed' }} />
               </div>
-              <div style={{ flex:1 }}>
-                <p className="font-semibold text-sm" style={{ color:'var(--text-primary)' }}>{item.label}</p>
-                <p className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{item.desc}</p>
+              <div>
+                <p style={{ color:'var(--text3)', fontSize:'11px' }}>{item.label}</p>
+                <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:500, textTransform:'capitalize' }}>{item.value || '-'}</p>
               </div>
-              <ChevronRight size={16} style={{ color:'var(--text-muted)' }} />
-            </button>
+            </div>
           );
         })}
       </div>
 
-      <button onClick={handleLogout} style={{ width:'100%', padding:'15px', borderRadius:'16px', border:'1px solid rgba(239,68,68,0.2)', cursor:'pointer', background:'rgba(239,68,68,0.08)', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', color:'#ef4444', fontWeight:600, fontSize:'15px' }}>
-        <LogOut size={18} />Keluar
+      {/* Stats */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'10px' }}>
+        {[
+          { label:'Total Pasien', value: klien?.total_pasien || 0 },
+          { label:'Total Order', value: klien?.total_orders || 0 },
+          { label:'Total Tagihan', value: `Rp ${(Number(klien?.total_tagihan)||0).toLocaleString('id')}` },
+        ].map(s => (
+          <div key={s.label} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', padding:'14px', textAlign:'center' }}>
+            <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text)' }}>{s.value}</p>
+            <p style={{ color:'var(--text3)', fontSize:'10px', marginTop:'2px' }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Logout */}
+      <button onClick={handleLogout} style={{ width:'100%', padding:'14px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'16px', color:'#ef4444', fontWeight:600, fontSize:'14px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+        <LogOut size={16} />Keluar
       </button>
     </div>
   );
