@@ -12,7 +12,7 @@ export default function MarketingPage() {
   const [detail, setDetail] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ nama:'', email:'', phone:'', source:'', layanan_interest:'', message:'' });
+  const [form, setForm] = useState({ nama:'', email:'', phone:'', source:'website_mgm', layanan_interest:'', message:'' });
   const [formKerjasama, setFormKerjasama] = useState({ partner_name:'', contact_person:'', phone:'', email:'', type:'', notes:'' });
 
   useEffect(() => { fetchAll(); }, []);
@@ -206,7 +206,7 @@ export default function MarketingPage() {
                   { key:'nama', label:'Nama *', type:'text', placeholder:'Nama prospek' },
                   { key:'email', label:'Email', type:'email', placeholder:'email@contoh.com' },
                   { key:'phone', label:'Telepon *', type:'text', placeholder:'08xxxxxxxxxx' },
-                  { key:'source', label:'Sumber', type:'text', placeholder:'Instagram, Referral, dll' },
+                  { key:'__source_dropdown__', label:'', type:'', placeholder:'' },
                   { key:'message', label:'Pesan/Catatan', type:'text', placeholder:'Catatan tambahan' },
                 ].map(f => (
                   <div key={f.key}>
