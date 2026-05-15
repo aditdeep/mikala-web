@@ -13,10 +13,12 @@ export default function FinancePage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ klien_id:'', subtotal:'', pajak:'0', diskon:'0', tanggal_jatuh_tempo:'', catatan:'' });
+  const [klienList, setKlienList] = useState<any[]>([]);
 
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = () => {
+    apiClient.get('/internal/cc/klien').then((r: any) => setKlienList(Array.isArray(r.data?.data) ? r.data.data : [])).catch(() => {});
     setLoading(true);
     Promise.all([
       apiClient.get('/internal/finance/tagihan').then((r: any) => setTagihan(Array.isArray(r.data?.data) ? r.data.data : [])),
@@ -195,8 +197,17 @@ export default function FinancePage() {
               <button onClick={() => setShowForm(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateTagihan} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              {/* Klien Dropdown */}
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Klien</label>
+                <select value={form.klien_id} onChange={e => setForm(p => ({ ...p, klien_id: e.target.value }))} style={inputStyle}>
+                  <option value="">-- Pilih Klien (opsional) --</option>
+                  {klienList.map((k: any) => (
+                    <option key={k.id} value={String(k.id)}>{k.nama_lengkap} - {k.user?.email}</option>
+                  ))}
+                </select>
+              </div>
               {[
-                { key:'klien_id', label:'ID Klien', type:'number', placeholder:'ID klien (opsional)' },
                 { key:'subtotal', label:'Subtotal (Rp) *', type:'number', placeholder:'500000' },
                 { key:'pajak', label:'Pajak (Rp)', type:'number', placeholder:'0' },
                 { key:'diskon', label:'Diskon (Rp)', type:'number', placeholder:'0' },
