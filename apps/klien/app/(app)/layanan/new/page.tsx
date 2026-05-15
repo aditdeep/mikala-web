@@ -27,6 +27,7 @@ export default function TambahLayananPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.pasien_id) { setError('Pilih pasien terlebih dahulu'); return; }
     setSaving(true);
     setError('');
     try {
@@ -53,6 +54,12 @@ export default function TambahLayananPage() {
 
       {error && <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'12px', padding:'12px', color:'#ef4444', fontSize:'13px', marginBottom:'16px' }}>{error}</div>}
 
+      {pasienList.length === 0 && (
+        <div style={{ background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'12px', padding:'12px', color:'#f59e0b', fontSize:'13px', marginBottom:'16px' }}>
+          Belum ada pasien terdaftar. Tambah pasien dulu di menu Pasien.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
         <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'20px', padding:'20px', display:'flex', flexDirection:'column', gap:'14px' }}>
           <div>
@@ -62,11 +69,11 @@ export default function TambahLayananPage() {
             </select>
           </div>
           <div>
-            <label style={labelStyle}>Untuk Pasien</label>
-            <select value={form.pasien_id} onChange={e => setForm(p => ({...p, pasien_id: e.target.value}))} style={inputStyle}>
-              <option value="">-- Pilih Pasien (opsional) --</option>
+            <label style={labelStyle}>Untuk Pasien *</label>
+            <select required value={form.pasien_id} onChange={e => setForm(p => ({...p, pasien_id: e.target.value}))} style={inputStyle}>
+              <option value="">-- Pilih Pasien --</option>
               {pasienList.map((p) => (
-                <option key={p.id} value={p.id}>{p.nama_lengkap || p.name}</option>
+                <option key={p.id} value={p.id}>{p.nama_lengkap}</option>
               ))}
             </select>
           </div>
@@ -79,7 +86,7 @@ export default function TambahLayananPage() {
             <textarea value={form.catatan} onChange={e => setForm(p => ({...p, catatan: e.target.value}))} style={{...inputStyle, minHeight:'80px', resize:'vertical'}} placeholder="Kebutuhan khusus, jadwal, dll" />
           </div>
         </div>
-        <button type="submit" disabled={saving} style={{ width:'100%', padding:'14px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'16px', color:'white', fontWeight:700, fontSize:'15px', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+        <button type="submit" disabled={saving || pasienList.length === 0} style={{ width:'100%', padding:'14px', background: pasienList.length === 0 ? 'var(--glass)' : 'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'16px', color: pasienList.length === 0 ? 'var(--text3)' : 'white', fontWeight:700, fontSize:'15px', cursor: saving || pasienList.length === 0 ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
           {saving ? 'Mengirim...' : 'Ajukan Layanan'}
         </button>
       </form>
