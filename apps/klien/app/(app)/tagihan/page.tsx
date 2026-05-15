@@ -11,7 +11,7 @@ export default function TagihanPage() {
     apiClient.get('/klien/tagihan')
       .then((res: any) => {
         const data = res.data?.data;
-        setTagihan(Array.isArray(data) ? data : []);
+        const items = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []; setTagihan(items);
         setLoading(false);
       })
       .catch(() => { setTagihan([]); setLoading(false); });
