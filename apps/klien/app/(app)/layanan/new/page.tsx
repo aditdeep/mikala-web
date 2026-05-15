@@ -21,7 +21,7 @@ export default function TambahLayananPage() {
 
   useEffect(() => {
     apiClient.get('/klien/pasien')
-      .then((r) => setPasienList(Array.isArray(r.data?.data) ? r.data.data : []))
+      .then((r) => { const d = r.data?.data; setPasienList(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []); })
       .catch(() => {});
   }, []);
 
