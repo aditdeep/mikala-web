@@ -12,7 +12,7 @@ export default function MarketingPage() {
   const [detail, setDetail] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name:'', email:'', phone:'', source:'', notes:'' });
+  const [form, setForm] = useState({ nama:'', email:'', phone:'', source:'', layanan_interest:'', message:'' });
   const [formKerjasama, setFormKerjasama] = useState({ partner_name:'', contact_person:'', phone:'', email:'', type:'', notes:'' });
 
   useEffect(() => { fetchAll(); }, []);
@@ -203,15 +203,15 @@ export default function MarketingPage() {
             {activeTab === 'leads' ? (
               <form onSubmit={handleSubmitLead} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                 {[
-                  { key:'name', label:'Nama *', type:'text', placeholder:'Nama prospek' },
+                  { key:'nama', label:'Nama *', type:'text', placeholder:'Nama prospek' },
                   { key:'email', label:'Email', type:'email', placeholder:'email@contoh.com' },
                   { key:'phone', label:'Telepon *', type:'text', placeholder:'08xxxxxxxxxx' },
                   { key:'source', label:'Sumber', type:'text', placeholder:'Instagram, Referral, dll' },
-                  { key:'notes', label:'Catatan', type:'text', placeholder:'Catatan tambahan' },
+                  { key:'message', label:'Pesan/Catatan', type:'text', placeholder:'Catatan tambahan' },
                 ].map(f => (
                   <div key={f.key}>
                     <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>{f.label}</label>
-                    <input required={['name','phone'].includes(f.key)} type={f.type} value={(form as any)[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
+                    <input required={['nama','phone'].includes(f.key)} type={f.type} value={(form as any)[f.key]} onChange={e => setForm((p: any) => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
                   </div>
                 ))}
                 <div style={{ display:'flex', gap:'10px', marginTop:'4px' }}>

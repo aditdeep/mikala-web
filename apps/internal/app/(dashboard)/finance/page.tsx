@@ -12,7 +12,7 @@ export default function FinancePage() {
   const [detail, setDetail] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ klien_id:'', order_id:'', total_amount:'', due_date:'', description:'' });
+  const [form, setForm] = useState({ klien_id:'', subtotal:'', pajak:'0', diskon:'0', tanggal_jatuh_tempo:'', catatan:'' });
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -196,15 +196,16 @@ export default function FinancePage() {
             </div>
             <form onSubmit={handleCreateTagihan} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
               {[
-                { key:'klien_id', label:'ID Klien *', type:'number', placeholder:'ID klien' },
-                { key:'order_id', label:'ID Order', type:'number', placeholder:'ID order (opsional)' },
-                { key:'total_amount', label:'Total Amount (Rp) *', type:'number', placeholder:'500000' },
-                { key:'due_date', label:'Jatuh Tempo *', type:'date', placeholder:'' },
-                { key:'description', label:'Deskripsi', type:'text', placeholder:'Keterangan tagihan' },
+                { key:'klien_id', label:'ID Klien', type:'number', placeholder:'ID klien (opsional)' },
+                { key:'subtotal', label:'Subtotal (Rp) *', type:'number', placeholder:'500000' },
+                { key:'pajak', label:'Pajak (Rp)', type:'number', placeholder:'0' },
+                { key:'diskon', label:'Diskon (Rp)', type:'number', placeholder:'0' },
+                { key:'tanggal_jatuh_tempo', label:'Jatuh Tempo *', type:'date', placeholder:'' },
+                { key:'catatan', label:'Catatan', type:'text', placeholder:'Keterangan tagihan' },
               ].map(f => (
                 <div key={f.key}>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>{f.label}</label>
-                  <input required={!['order_id','description'].includes(f.key)} type={f.type} value={(form as any)[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
+                  <input required={['subtotal','tanggal_jatuh_tempo'].includes(f.key)} type={f.type} value={(form as any)[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
                 </div>
               ))}
               <div style={{ display:'flex', gap:'10px', marginTop:'4px' }}>

@@ -11,7 +11,7 @@ export default function CustomerCarePage() {
   const [activeTab, setActiveTab] = useState('layanan');
   const [detail, setDetail] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ nama: '', email: '', phone: '', alamat: '', tipe: 'individu' });
+  const [formData, setFormData] = useState({ nama: '', email: '', phone: '', alamat: '', tipe_klien: 'personal', password: 'password123' });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchAll(); }, []);
@@ -32,9 +32,9 @@ export default function CustomerCarePage() {
         name: formData.nama,
         email: formData.email,
         phone: formData.phone,
-        password: 'password123',
+        password: formData.password,
         alamat: formData.alamat,
-        tipe: formData.tipe,
+        tipe_klien: formData.tipe_klien,
       });
       setShowForm(false);
       setFormData({ nama: '', email: '', phone: '', alamat: '', tipe: 'individu' });
@@ -215,10 +215,9 @@ export default function CustomerCarePage() {
               ))}
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tipe Klien</label>
-                <select value={formData.tipe} onChange={e => setFormData(p => ({ ...p, tipe: e.target.value }))} style={inputStyle}>
-                  <option value="individu">Individu</option>
-                  <option value="keluarga">Keluarga</option>
-                  <option value="institusi">Institusi</option>
+                <select value={formData.tipe_klien} onChange={e => setFormData(p => ({ ...p, tipe_klien: e.target.value }))} style={inputStyle}>
+                  <option value="personal">Personal</option>
+                  <option value="corporate">Corporate</option>
                 </select>
               </div>
               <div style={{ display:'flex', gap:'10px', marginTop:'4px' }}>
