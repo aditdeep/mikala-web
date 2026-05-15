@@ -28,12 +28,12 @@ export default function CVPage() {
   }, [params.id]);
 
   const getPelatihan = (p: string) => {
-    const m = p?.match(/PELATIHAN:\s*(.*?)(?=PENGALAMAN KERJA:|DATA TAMBAHAN:|$)/si);
+    const m = p?.match(/PELATIHAN:[\s\S]*?([\s\S]*?)(?=PENGALAMAN KERJA:|DATA TAMBAHAN:|$)/i);
     return m ? m[1].trim() : p || '';
   };
 
   const getPengalamanKerja = (p: string) => {
-    const m = p?.match(/PENGALAMAN KERJA:\s*(.*?)(?=DATA TAMBAHAN:|$)/si);
+    const m = p?.match(/PENGALAMAN KERJA:[\s\S]*?([\s\S]*?)(?=DATA TAMBAHAN:|$)/i);
     return m ? m[1].trim() : '';
   };
 
