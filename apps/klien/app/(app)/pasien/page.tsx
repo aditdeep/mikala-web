@@ -13,8 +13,8 @@ export default function PasienPage() {
   useEffect(() => {
     apiClient.get('/klien/pasien')
       .then((res: any) => {
-        const data = res.data?.data;
-        setPasien(Array.isArray(data) ? data : []);
+        const d = res.data?.data;
+        setPasien(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
         setLoading(false);
       })
       .catch(() => { setPasien([]); setLoading(false); });

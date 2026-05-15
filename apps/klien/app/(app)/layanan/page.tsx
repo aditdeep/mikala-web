@@ -13,8 +13,8 @@ export default function LayananPage() {
   useEffect(() => {
     apiClient.get('/klien/layanan')
       .then((res: any) => {
-        const data = res.data?.data;
-        setLayanan(Array.isArray(data) ? data : []);
+        const d = res.data?.data;
+        setLayanan(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
         setLoading(false);
       })
       .catch(() => { setLayanan([]); setLoading(false); });
