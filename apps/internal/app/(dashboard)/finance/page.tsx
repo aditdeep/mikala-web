@@ -30,7 +30,7 @@ export default function FinancePage() {
     try {
       await apiClient.post('/internal/finance/tagihan', form);
       setShowForm(false);
-      setForm({ klien_id:'', order_id:'', total_amount:'', due_date:'', description:'' });
+      setForm({ klien_id:'', subtotal:'', pajak:'0', diskon:'0', tanggal_jatuh_tempo:'', catatan:'' });
       fetchAll();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal membuat tagihan');
