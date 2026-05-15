@@ -31,7 +31,7 @@ export default function MarketingPage() {
     try {
       await apiClient.post('/internal/marketing/leads', form);
       setShowForm(false);
-      setForm({ name:'', email:'', phone:'', source:'', notes:'' });
+      setForm({ nama:'', email:'', phone:'', source:'', layanan_interest:'', message:'' });
       fetchAll();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal menyimpan lead');
