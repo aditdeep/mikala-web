@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText } from 'lucide-react';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','MA, MAN, atau Sekolah Keagamaan Lainnya','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
 const TIPE_PEKERJAAN = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)','Ke Jepang Lainnya'];
@@ -23,15 +24,18 @@ const emptyForm = {
 };
 
 export default function RekrutmenPage() {
+  const router = useRouter();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState<any>(null);
+  const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('semua');
   const [errorMsg, setErrorMsg] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<any>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -50,31 +54,71 @@ export default function RekrutmenPage() {
       const payload = {
         name: form.name,
         email: form.email,
-        password: form.password,
+        password: form.password || 'password123',
         phone: form.phone,
         nik: form.nik,
         alamat: `${form.alamat}, ${form.kelurahan}, ${form.kecamatan}, ${form.kota}, ${form.provinsi}`,
+        kota: form.kota,
+        provinsi: form.provinsi,
         tanggal_lahir: form.tanggal_lahir,
         jenis_kelamin: form.jenis_kelamin,
         pendidikan: form.pendidikan,
         pengalaman: `PELATIHAN: ${form.pengalaman_pelatihan}\n\nPENGALAMAN KERJA: ${form.pengalaman}\n\nDATA TAMBAHAN: Usia: ${form.usia}, Tempat Lahir: ${form.tempat_lahir}, TB: ${form.tinggi}cm, BB: ${form.berat}kg, Vaksin: ${form.vaksin}, Agama: ${form.agama}, Status Nikah: ${form.status_nikah}, Takut Hewan: ${form.takut_hewan}, Memasak: ${form.bisa_memasak}/5, Tipe Pekerjaan: ${form.tipe_pekerjaan}, Suku: ${form.suku}`,
       };
-      await apiClient.post('/internal/rekrutmen/mitra', payload);
+
+      if (editItem) {
+        await apiClient.patch(`/internal/rekrutmen/mitra/${editItem.id}`, payload);
+      } else {
+        await apiClient.post('/internal/rekrutmen/mitra', payload);
+      }
       setShowModal(false);
+      setEditItem(null);
       setForm({ ...emptyForm });
       fetchData();
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Gagal menyimpan data';
-      setErrorMsg(msg);
+      setErrorMsg(err.response?.data?.message || 'Gagal menyimpan data');
     } finally { setSaving(false); }
+  };
+
+  const handleEdit = (item: any) => {
+    setEditItem(item);
+    // Pre-fill form dari data yang ada
+    const user = item.user || {};
+    setForm({
+      ...emptyForm,
+      name: item.nama_lengkap || user.name || '',
+      email: user.email || '',
+      password: '',
+      phone: user.phone || '',
+      nik: item.nik || '',
+      pendidikan: item.pendidikan_terakhir || '',
+      kota: item.kota || '',
+      provinsi: item.provinsi || '',
+      alamat: item.alamat || '',
+      tanggal_lahir: item.tanggal_lahir?.split('T')[0] || '',
+      jenis_kelamin: item.jenis_kelamin || 'L',
+      pengalaman: item.pengalaman || '',
+      pengalaman_pelatihan: '',
+    });
+    setShowModal(true);
+    setErrorMsg('');
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await apiClient.delete(`/internal/rekrutmen/mitra/${id}`);
+      setShowDeleteConfirm(null);
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal menghapus data');
+    }
   };
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const filtered = data.filter((d: any) => {
-    const matchTab = activeTab === 'semua' || d.status === activeTab || d.training_status === activeTab;
-    const matchSearch = JSON.stringify(d).toLowerCase().includes(search.toLowerCase());
-    return matchTab && matchSearch;
+    const matchTab = activeTab === 'semua' || d.status === activeTab;
+    return matchTab && JSON.stringify(d).toLowerCase().includes(search.toLowerCase());
   });
 
   const counts = {
@@ -92,7 +136,7 @@ export default function RekrutmenPage() {
       inactive: { color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)', label:'Nonaktif', icon: XCircle },
       re_training: { color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)', label:'Re-Training', icon: Clock },
     };
-    return map[s] || map.pending;
+    return map[s] || map.training;
   };
 
   return (
@@ -102,7 +146,7 @@ export default function RekrutmenPage() {
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Rekrutmen Mitra</h1>
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>{data.length} total pelamar terdaftar</p>
         </div>
-        <button onClick={() => { setShowModal(true); setErrorMsg(''); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer', boxShadow:'0 4px 12px rgba(124,58,237,0.35)' }}>
+        <button onClick={() => { setShowModal(true); setEditItem(null); setForm({...emptyForm}); setErrorMsg(''); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer', boxShadow:'0 4px 12px rgba(124,58,237,0.35)' }}>
           <Plus size={15} />Tambah Pelamar
         </button>
       </div>
@@ -135,10 +179,10 @@ export default function RekrutmenPage() {
           </div>
         ) : filtered.length > 0 ? (
           <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'600px' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
               <thead>
                 <tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Nama','Email','Telepon','Pendidikan','Status','Aksi'].map(h => (
+                  {['Nama','Email','Pendidikan','Kota','Status','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', whiteSpace:'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -153,23 +197,34 @@ export default function RekrutmenPage() {
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                           <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--purple-light)', fontSize:'13px', fontWeight:700, flexShrink:0 }}>
-                            {user.name?.[0]?.toUpperCase() || 'M'}
+                            {(item.nama_lengkap || user.name)?.[0]?.toUpperCase() || 'M'}
                           </div>
-                          <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{user.name || '-'}</p>
+                          <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{item.nama_lengkap || user.name || '-'}</p>
                         </div>
                       </td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{user.email || '-'}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{user.phone || '-'}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'140px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.pendidikan || '-'}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'150px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.pendidikan_terakhir || '-'}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kota || '-'}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:badge.bg, color:badge.color, border:`1px solid ${badge.border}`, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
                           <Icon size={11} />{badge.label}
                         </span>
                       </td>
                       <td style={{ padding:'12px 16px' }}>
-                        <button onClick={() => setShowDetail(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer' }}>
-                          <Eye size={12} />Detail
-                        </button>
+                        <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
+                          <button onClick={() => setShowDetail(item)} title="Detail" style={{ padding:'5px 8px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                            <Eye size={13} />
+                          </button>
+                          <button onClick={() => handleEdit(item)} title="Edit" style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                            <Pencil size={13} />
+                          </button>
+                          <button onClick={() => router.push(`/rekrutmen/cv/${item.id}`)} title="CV" style={{ padding:'5px 8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                            <FileText size={13} />CV
+                          </button>
+                          <button onClick={() => setShowDeleteConfirm(item)} title="Hapus" style={{ padding:'5px 8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -183,26 +238,46 @@ export default function RekrutmenPage() {
               <Users size={28} style={{ color:'var(--purple-light)', opacity:0.5 }} />
             </div>
             <p style={{ fontWeight:600, color:'var(--text)' }}>Belum ada data pelamar</p>
-            <p style={{ color:'var(--text3)', fontSize:'13px', marginTop:'4px' }}>Klik "Tambah Pelamar" untuk menambahkan</p>
           </div>
         )}
       </div>
 
-      {/* Modal Form */}
+      {/* Delete Confirm Modal */}
+      {showDeleteConfirm && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'20px', padding:'24px', maxWidth:'360px', width:'100%', textAlign:'center' }}>
+            <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:'rgba(239,68,68,0.15)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+              <Trash2 size={24} style={{ color:'#ef4444' }} />
+            </div>
+            <h3 style={{ fontSize:'16px', fontWeight:700, color:'var(--text)', marginBottom:'8px' }}>Hapus Data Mitra?</h3>
+            <p style={{ fontSize:'13px', color:'var(--text3)', marginBottom:'20px' }}>
+              Data <strong>{showDeleteConfirm.nama_lengkap || showDeleteConfirm.user?.name}</strong> akan dinonaktifkan. Aksi ini tidak bisa dibatalkan.
+            </p>
+            <div style={{ display:'flex', gap:'10px' }}>
+              <button onClick={() => setShowDeleteConfirm(null)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+              <button onClick={() => handleDelete(showDeleteConfirm.id)} style={{ flex:1, padding:'10px', background:'linear-gradient(135deg, #ef4444, #dc2626)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>Hapus</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Form Modal (Add/Edit) */}
       {showModal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, overflowY:'auto', padding:'20px' }} onClick={e => { if(e.target === e.currentTarget) setShowModal(false); }}>
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'700px', padding:'24px', margin:'auto' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
               <div>
-                <h2 style={{ fontSize:'18px', fontWeight:700, color:'var(--text)' }}>Form Pendaftaran Mitra</h2>
+                <h2 style={{ fontSize:'18px', fontWeight:700, color:'var(--text)' }}>{editItem ? 'Edit Data Mitra' : 'Form Pendaftaran Mitra'}</h2>
                 <p style={{ color:'var(--text3)', fontSize:'13px' }}>Isi data pelamar dengan lengkap dan benar</p>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={18} /></button>
+              <button onClick={() => { setShowModal(false); setEditItem(null); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}>
+                <X size={18} />
+              </button>
             </div>
 
             {errorMsg && (
               <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'12px', padding:'12px 16px', marginBottom:'16px', color:'#ef4444', fontSize:'13px' }}>
-                ⚠️ {errorMsg}
+                {errorMsg}
               </div>
             )}
 
@@ -212,15 +287,17 @@ export default function RekrutmenPage() {
                 <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>🔐 Data Akun</p>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                   <div style={{ gridColumn:'1/-1' }}>
-                    <label style={labelStyle}>Email (untuk login) *</label>
-                    <input required type="email" value={form.email} onChange={e => set('email', e.target.value)} style={inputStyle} placeholder="email@contoh.com" />
+                    <label style={labelStyle}>Email {!editItem && '*'}</label>
+                    <input required={!editItem} type="email" value={form.email} onChange={e => set('email', e.target.value)} style={inputStyle} placeholder="email@contoh.com" disabled={!!editItem} />
                   </div>
+                  {!editItem && (
+                    <div>
+                      <label style={labelStyle}>Password *</label>
+                      <input required type="password" value={form.password} onChange={e => set('password', e.target.value)} style={inputStyle} placeholder="Min. 8 karakter" minLength={8} />
+                    </div>
+                  )}
                   <div>
-                    <label style={labelStyle}>Password *</label>
-                    <input required type="password" value={form.password} onChange={e => set('password', e.target.value)} style={inputStyle} placeholder="Min. 8 karakter" minLength={8} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Nomor HP/Ponsel *</label>
+                    <label style={labelStyle}>Nomor HP *</label>
                     <input required value={form.phone} onChange={e => set('phone', e.target.value)} style={inputStyle} placeholder="08xxxxxxxxxx" />
                   </div>
                 </div>
@@ -232,24 +309,12 @@ export default function RekrutmenPage() {
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                   <div style={{ gridColumn:'1/-1' }}>
                     <label style={labelStyle}>Nama Lengkap (sesuai KTP) *</label>
-                    <input required value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} placeholder="Nama lengkap sesuai KTP" />
+                    <input required value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} placeholder="Nama lengkap" />
                   </div>
-                  <div>
-                    <label style={labelStyle}>NIK / Nomor KTP *</label>
-                    <input required value={form.nik} onChange={e => set('nik', e.target.value)} style={inputStyle} placeholder="16 digit NIK" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Usia *</label>
-                    <input required type="number" value={form.usia} onChange={e => set('usia', e.target.value)} style={inputStyle} placeholder="Usia saat ini" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Tempat Lahir *</label>
-                    <input required value={form.tempat_lahir} onChange={e => set('tempat_lahir', e.target.value)} style={inputStyle} placeholder="Kota tempat lahir" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Tanggal Lahir *</label>
-                    <input required type="date" value={form.tanggal_lahir} onChange={e => set('tanggal_lahir', e.target.value)} style={inputStyle} />
-                  </div>
+                  <div><label style={labelStyle}>NIK *</label><input required value={form.nik} onChange={e => set('nik', e.target.value)} style={inputStyle} placeholder="16 digit NIK" /></div>
+                  <div><label style={labelStyle}>Usia *</label><input required type="number" value={form.usia} onChange={e => set('usia', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Tempat Lahir *</label><input required value={form.tempat_lahir} onChange={e => set('tempat_lahir', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Tanggal Lahir *</label><input required type="date" value={form.tanggal_lahir} onChange={e => set('tanggal_lahir', e.target.value)} style={inputStyle} /></div>
                   <div>
                     <label style={labelStyle}>Jenis Kelamin *</label>
                     <select value={form.jenis_kelamin} onChange={e => set('jenis_kelamin', e.target.value)} style={inputStyle}>
@@ -260,34 +325,15 @@ export default function RekrutmenPage() {
                   <div>
                     <label style={labelStyle}>Status Pernikahan</label>
                     <select value={form.status_nikah} onChange={e => set('status_nikah', e.target.value)} style={inputStyle}>
-                      <option>Menikah</option>
-                      <option>Belum Menikah</option>
+                      <option>Menikah</option><option>Belum Menikah</option>
                     </select>
                   </div>
-                  <div style={{ gridColumn:'1/-1' }}>
-                    <label style={labelStyle}>Alamat sesuai KTP *</label>
-                    <input required value={form.alamat} onChange={e => set('alamat', e.target.value)} style={inputStyle} placeholder="Alamat lengkap" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Kelurahan *</label>
-                    <input required value={form.kelurahan} onChange={e => set('kelurahan', e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Kecamatan *</label>
-                    <input required value={form.kecamatan} onChange={e => set('kecamatan', e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Kota *</label>
-                    <input required value={form.kota} onChange={e => set('kota', e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Provinsi *</label>
-                    <input required value={form.provinsi} onChange={e => set('provinsi', e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Suku</label>
-                    <input value={form.suku} onChange={e => set('suku', e.target.value)} style={inputStyle} placeholder="Opsional" />
-                  </div>
+                  <div style={{ gridColumn:'1/-1' }}><label style={labelStyle}>Alamat sesuai KTP *</label><input required value={form.alamat} onChange={e => set('alamat', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Kelurahan</label><input value={form.kelurahan} onChange={e => set('kelurahan', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Kecamatan</label><input value={form.kecamatan} onChange={e => set('kecamatan', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Kota *</label><input required value={form.kota} onChange={e => set('kota', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Provinsi *</label><input required value={form.provinsi} onChange={e => set('provinsi', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Suku</label><input value={form.suku} onChange={e => set('suku', e.target.value)} style={inputStyle} placeholder="Opsional" /></div>
                   <div>
                     <label style={labelStyle}>Agama *</label>
                     <select value={form.agama} onChange={e => set('agama', e.target.value)} style={inputStyle}>
@@ -301,20 +347,11 @@ export default function RekrutmenPage() {
               <div style={sectionStyle}>
                 <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>💪 Data Fisik & Preferensi</p>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                  <div><label style={labelStyle}>Tinggi Badan (CM) *</label><input required type="number" value={form.tinggi} onChange={e => set('tinggi', e.target.value)} style={inputStyle} placeholder="165" /></div>
+                  <div><label style={labelStyle}>Berat Badan (KG) *</label><input required type="number" value={form.berat} onChange={e => set('berat', e.target.value)} style={inputStyle} placeholder="55" /></div>
+                  <div><label style={labelStyle}>Vaksin *</label><input required value={form.vaksin} onChange={e => set('vaksin', e.target.value)} style={inputStyle} placeholder="Covid, Hepatitis" /></div>
                   <div>
-                    <label style={labelStyle}>Tinggi Badan (CM) *</label>
-                    <input required type="number" value={form.tinggi} onChange={e => set('tinggi', e.target.value)} style={inputStyle} placeholder="165" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Berat Badan (KG) *</label>
-                    <input required type="number" value={form.berat} onChange={e => set('berat', e.target.value)} style={inputStyle} placeholder="55" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Vaksin *</label>
-                    <input required value={form.vaksin} onChange={e => set('vaksin', e.target.value)} style={inputStyle} placeholder="Covid, Hepatitis, dll" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Takut Hewan Peliharaan *</label>
+                    <label style={labelStyle}>Takut Hewan *</label>
                     <select value={form.takut_hewan} onChange={e => set('takut_hewan', e.target.value)} style={inputStyle}>
                       {HEWAN.map(h => <option key={h}>{h}</option>)}
                     </select>
@@ -322,7 +359,7 @@ export default function RekrutmenPage() {
                   <div>
                     <label style={labelStyle}>Kemampuan Memasak (1-5) *</label>
                     <select value={form.bisa_memasak} onChange={e => set('bisa_memasak', e.target.value)} style={inputStyle}>
-                      {[1,2,3,4,5].map(n => <option key={n} value={String(n)}>{n} - {n===1?'Tidak bisa':n===2?'Sedikit bisa':n===3?'Cukup':n===4?'Mahir':'Sangat mahir'}</option>)}
+                      {[1,2,3,4,5].map(n => <option key={n} value={String(n)}>{n} - {n===1?'Tidak bisa':n===2?'Sedikit':n===3?'Cukup':n===4?'Mahir':'Sangat mahir'}</option>)}
                     </select>
                   </div>
                 </div>
@@ -364,9 +401,9 @@ export default function RekrutmenPage() {
               </div>
 
               <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end' }}>
-                <button type="button" onClick={() => setShowModal(false)} style={{ padding:'10px 20px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="button" onClick={() => { setShowModal(false); setEditItem(null); }} style={{ padding:'10px 20px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={saving} style={{ padding:'10px 24px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
-                  {saving ? 'Menyimpan...' : 'Simpan Data'}
+                  {saving ? 'Menyimpan...' : editItem ? 'Update Data' : 'Simpan Data'}
                 </button>
               </div>
             </form>
@@ -374,28 +411,34 @@ export default function RekrutmenPage() {
         </div>
       )}
 
-      {/* Modal Detail */}
+      {/* Detail Modal */}
       {showDetail && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'520px', padding:'24px', maxHeight:'85vh', overflowY:'auto' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Detail Pelamar</h2>
-              <button onClick={() => setShowDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={18} /></button>
+              <div style={{ display:'flex', gap:'6px' }}>
+                <button onClick={() => { setShowDetail(null); router.push(`/rekrutmen/cv/${showDetail.id}`); }} style={{ display:'flex', alignItems:'center', gap:'4px', padding:'7px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                  <FileText size={14} />CV
+                </button>
+                <button onClick={() => setShowDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={18} /></button>
+              </div>
             </div>
             <div style={{ textAlign:'center', marginBottom:'20px' }}>
               <div style={{ width:'60px', height:'60px', borderRadius:'18px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 10px', fontSize:'22px', fontWeight:700, color:'white' }}>
-                {showDetail.user?.name?.[0]?.toUpperCase() || 'M'}
+                {(showDetail.nama_lengkap || showDetail.user?.name)?.[0]?.toUpperCase() || 'M'}
               </div>
-              <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text)' }}>{showDetail.user?.name || showDetail.name}</p>
-              <p style={{ color:'var(--text3)', fontSize:'13px' }}>{showDetail.user?.email || showDetail.email}</p>
+              <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text)' }}>{showDetail.nama_lengkap || showDetail.user?.name}</p>
+              <p style={{ color:'var(--text3)', fontSize:'13px' }}>{showDetail.user?.email}</p>
             </div>
             {[
               { label:'Telepon', val: showDetail.user?.phone },
               { label:'NIK', val: showDetail.nik },
               { label:'Tgl Lahir', val: showDetail.tanggal_lahir },
-              { label:'Jenis Kelamin', val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : showDetail.jenis_kelamin === 'P' ? 'Perempuan' : showDetail.jenis_kelamin },
+              { label:'Jenis Kelamin', val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
               { label:'Alamat', val: showDetail.alamat },
-              { label:'Pendidikan', val: showDetail.pendidikan },
+              { label:'Kota', val: showDetail.kota },
+              { label:'Pendidikan', val: showDetail.pendidikan_terakhir },
               { label:'Status', val: showDetail.status },
               { label:'Training', val: showDetail.training_status },
               { label:'Pengalaman', val: showDetail.pengalaman },
