@@ -37,7 +37,7 @@ export default function CustomerCarePage() {
         tipe_klien: formData.tipe_klien,
       });
       setShowForm(false);
-      setFormData({ nama: '', email: '', phone: '', alamat: '', tipe: 'individu' });
+      setFormData({ nama: '', email: '', phone: '', alamat: '', tipe_klien: 'personal', password: 'password123' });
       fetchAll();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal mendaftar klien');
