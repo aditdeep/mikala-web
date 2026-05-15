@@ -10,7 +10,7 @@ export default function TambahLayananPage() {
   const [error, setError] = useState('');
   const [pasienList, setPasienList] = useState([]);
   const [form, setForm] = useState({
-    service_type: 'Perawat Homecare',
+    service_type: 'homecare_harian',
     pasien_id: '',
     tanggal_mulai: '',
     catatan: '',
@@ -38,7 +38,16 @@ export default function TambahLayananPage() {
     } finally { setSaving(false); }
   };
 
-  const tipeLayanan = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)'];
+  const tipeLayanan = [
+    { value:'homecare_harian', label:'Homecare Harian' },
+    { value:'homecare_live_in', label:'Homecare Live In' },
+    { value:'medical_checkup', label:'Medical Checkup' },
+    { value:'konsultasi', label:'Konsultasi' },
+    { value:'fisioterapi', label:'Fisioterapi' },
+    { value:'perawatan_luka', label:'Perawatan Luka' },
+    { value:'vaksinasi', label:'Vaksinasi' },
+    { value:'lainnya', label:'Lainnya' },
+  ];
 
   return (
     <div style={{ padding:'16px', paddingBottom:'80px' }}>
@@ -65,7 +74,7 @@ export default function TambahLayananPage() {
           <div>
             <label style={labelStyle}>Tipe Layanan *</label>
             <select required value={form.service_type} onChange={e => setForm(p => ({...p, service_type: e.target.value}))} style={inputStyle}>
-              {tipeLayanan.map(t => <option key={t}>{t}</option>)}
+              {tipeLayanan.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div>
