@@ -11,7 +11,7 @@ export default function CustomerCarePage() {
   const [activeTab, setActiveTab] = useState('layanan');
   const [detail, setDetail] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ nama: '', email: '', phone: '', alamat: '', tipe_klien: 'personal', password: 'password123' });
+  const [formData, setFormData] = useState({ nama: '', email: '', phone: '', alamat: '', kota: '', provinsi: '', tipe: 'individu', password: 'password123' });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchAll(); }, []);
@@ -34,10 +34,12 @@ export default function CustomerCarePage() {
         phone: formData.phone,
         password: formData.password,
         alamat: formData.alamat,
-        tipe_klien: formData.tipe_klien,
+        kota: formData.kota,
+        provinsi: formData.provinsi,
+        tipe: formData.tipe,
       });
       setShowForm(false);
-      setFormData({ nama: '', email: '', phone: '', alamat: '', tipe_klien: 'personal', password: 'password123' });
+      setFormData({ nama: '', email: '', phone: '', alamat: '', kota: '', provinsi: '', tipe: 'individu', password: 'password123' });
       fetchAll();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal mendaftar klien');
@@ -206,18 +208,24 @@ export default function CustomerCarePage() {
                 { key:'nama', label:'Nama Lengkap *', type:'text', placeholder:'Nama klien' },
                 { key:'email', label:'Email *', type:'email', placeholder:'email@contoh.com' },
                 { key:'phone', label:'Nomor HP *', type:'text', placeholder:'08xxxxxxxxxx' },
-                { key:'alamat', label:'Alamat', type:'text', placeholder:'Alamat lengkap' },
+                { key:'password', label:'Password *', type:'password', placeholder:'Min. 8 karakter' },
+                { key:'alamat', label:'Alamat *', type:'text', placeholder:'Alamat lengkap' },
+                { key:'kota', label:'Kota *', type:'text', placeholder:'Jakarta' },
+                { key:'provinsi', label:'Provinsi *', type:'text', placeholder:'DKI Jakarta' },
               ].map(f => (
                 <div key={f.key}>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>{f.label}</label>
-                  <input required={f.key !== 'alamat'} type={f.type} value={(formData as any)[f.key]} onChange={e => setFormData(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
+                  <input required={['nama','email','phone','password','alamat','kota','provinsi'].includes(f.key)} type={f.type} value={(formData as any)[f.key]} onChange={e => setFormData(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
                 </div>
               ))}
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tipe Klien</label>
-                <select value={formData.tipe_klien} onChange={e => setFormData(p => ({ ...p, tipe_klien: e.target.value }))} style={inputStyle}>
-                  <option value="personal">Personal</option>
-                  <option value="corporate">Corporate</option>
+                <select value={formData.tipe} onChange={e => setFormData(p => ({ ...p, tipe: e.target.value }))} style={inputStyle}>
+                  <option value="individu">Individu</option>
+                  <option value="keluarga">Keluarga</option>
+                  <option value="rumah_sakit">Rumah Sakit</option>
+                  <option value="panti_jompo">Panti Jompo</option>
+                  <option value="klinik">Klinik</option>
                 </select>
               </div>
               <div style={{ display:'flex', gap:'10px', marginTop:'4px' }}>
