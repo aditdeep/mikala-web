@@ -143,7 +143,7 @@ export default function FinancePage() {
 
   const totalTagihan = tagihan.reduce((a, b) => a + (Number(b.total) || 0), 0);
   const totalPaid    = tagihan.filter(t => t.status === 'paid').reduce((a, b) => a + (Number(b.total) || 0), 0);
-  const totalPayroll = payroll.reduce((a, b) => a + (Number(b.amount) || 0), 0);
+  const totalPayroll = payroll.reduce((a, b) => a + (Number(b.total) || 0), 0);
 
   const inp = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
   const cardStyle = { background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' };
@@ -277,8 +277,8 @@ export default function FinancePage() {
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>#{item.id}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name||'-'}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.amount||0).toLocaleString('id')}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.periode||item.payment_date||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.total||0).toLocaleString('id')}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.periode_mulai ? new Date(item.periode_mulai).toLocaleDateString('id-ID',{month:'long',year:'numeric'}) : '-'}</td>
                         <td style={{ padding:'12px 16px' }}>
                           <span style={{ background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>
                         </td>
