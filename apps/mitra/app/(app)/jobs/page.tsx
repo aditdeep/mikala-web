@@ -125,8 +125,8 @@ export default function JobsPage() {
 
       {/* Detail + Update Status Modal */}
       {selectedJob && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
-          <div style={{ background:'var(--card)', borderRadius:'24px 24px 0 0', padding:'24px', width:'100%', maxWidth:'480px', maxHeight:'85vh', overflowY:'auto' }}>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:1000, display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
+          <div style={{ background:'var(--bg2)', borderRadius:'24px 24px 0 0', padding:'24px', width:'100%', maxWidth:'480px', maxHeight:'85vh', overflowY:'auto', position:'relative', zIndex:1001 }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'16px' }}>
               <h3 style={{ fontWeight:700, fontSize:'17px', color:'var(--text-primary)' }}>Detail Pekerjaan</h3>
               <button onClick={() => setSelectedJob(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'6px', cursor:'pointer', color:'var(--text-muted)', display:'flex' }}>✕</button>
@@ -140,8 +140,8 @@ export default function JobsPage() {
 
             {[
               { label:'Klien', value: selectedJob.klien?.nama_lengkap||selectedJob.klien?.user?.name||'-' },
-              { label:'Pasien', value: selectedJob.pasien?.nama_lengkap||'-' },
-              { label:'Lokasi', value: selectedJob.lokasi||selectedJob.alamat_layanan||'-' },
+              ...(selectedJob.pasien ? [{ label:'Pasien', value: selectedJob.pasien?.nama_lengkap||'-' }] : []),
+              { label:'Lokasi', value: selectedJob.lokasi||selectedJob.alamat_layanan||selectedJob.catatan_lokasi||'-' },
               { label:'Tanggal Mulai', value: selectedJob.tanggal_mulai ? new Date(selectedJob.tanggal_mulai).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-' },
               { label:'Tanggal Selesai', value: selectedJob.tanggal_selesai ? new Date(selectedJob.tanggal_selesai).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-' },
               { label:'Total', value: 'Rp '+Number(selectedJob.total||selectedJob.total_amount||0).toLocaleString('id-ID') },
