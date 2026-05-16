@@ -5,54 +5,56 @@ import { authService } from '@mikala/lib';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 
+const ROLE_HOME: Record<string, string> = {
+  manajemen:      '/',
+  rekrutmen:      '/rekrutmen',
+  training_center:'/training',
+  customer_care:  '/customer-care',
+  finance:        '/finance',
+  marketing:      '/marketing',
+};
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    if (!authService.isAuthenticated()) router.push('/login');
+    if (!authService.isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+    setChecked(true);
   }, [router]);
 
+  if (!checked) return null;
+
   return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      width: '100%',
-      overflow: 'hidden',
-      background: 'var(--bg)',
-      position: 'relative',
-    }}>
-      {/* Sidebar */}
-      <div style={{
-        width: sidebarOpen ? '240px' : '0px',
-        flexShrink: 0,
-        overflow: 'hidden',
-        transition: 'width 0.3s ease',
-        height: '100vh',
-      }}
-      className="sidebar-wrapper"
-      >
-        <div style={{ width: '240px', height: '100%' }}>
-          <Sidebar onClose={() => setSidebarOpen(false)} />
-        </div>
+    <div style={{ display:'flex', height:'100vh', width:'100%', overflow:'hidden', background:'var(--bg)', position:'relative' }}>
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:40 }}
+          className="lg:hidden"
+        />
+      )}
+
+      {/* Sidebar desktop */}
+      <div className="hidden lg:block" style={{ flexShrink:0, height:'100vh' }}>
+        <Sidebar />
+      </div>
+
+      {/* Sidebar mobile - slide in */}
+      <div style={{ position:'fixed', top:0, left: sidebarOpen ? '0' : '-260px', zIndex:50, height:'100vh', transition:'left 0.3s ease' }} className="lg:hidden">
+        <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
       {/* Main */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        minWidth: 0,
-        transition: 'all 0.3s ease',
-      }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <main style={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          padding: '16px',
-        }}>
+        <main style={{ flex:1, overflowY:'auto', overflowX:'hidden', padding:'16px' }}>
           {children}
         </main>
       </div>
