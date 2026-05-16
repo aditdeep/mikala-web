@@ -50,6 +50,11 @@ export default function CustomerCarePage() {
   const [report, setReport] = useState<any>(null);
   const [loadingReport, setLoadingReport] = useState(false);
 
+  // Pasien expand
+  const [expandedKlien, setExpandedKlien] = useState<number|null>(null);
+  const [pasienDetail, setPasienDetail] = useState<Record<number,any[]>>({});
+  const [loadingPasien, setLoadingPasien] = useState<number|null>(null);
+
   useEffect(() => { fetchAll(); }, []);
   useEffect(() => {
     if (activeTab === 'pasien') fetchPasien();
@@ -310,38 +315,78 @@ export default function CustomerCarePage() {
 
       {/* TAB PASIEN */}
       {activeTab === 'pasien' && (
-        <div style={cardStyle}>
-          <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)' }}>
-            <p style={{ fontWeight:700, color:'var(--text)', fontSize:'14px' }}>Daftar Pasien per Klien</p>
-          </div>
+        <div className="space-y-3">
           {pasienList.length === 0 ? (
-            <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data pasien</div>
-          ) : (
-            <div style={{ overflowX:'auto' }}>
-              <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'400px' }}>
-                <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Nama Klien','Total Pasien','Tipe','Aksi'].map(h => (
-                    <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {pasienList.map((item: any, i: number) => (
-                    <tr key={i} style={{ borderBottom:'1px solid var(--border)' }}>
-                      <td style={{ padding:'12px 16px', fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{item.nama_lengkap||item.user?.name||'-'}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'13px', color:'var(--text2)' }}>{item.total_pasien||0}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{item.tipe||'-'}</td>
-                      <td style={{ padding:'12px 16px' }}>
-                        <button onClick={() => { setFormPasien(p => ({...p, klien_id: item.id})); setShowFormPasien(true); }}
-                          style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', cursor:'pointer' }}>
-                          <Plus size={12}/>Tambah Pasien
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+            <div style={{...cardStyle, textAlign:'center', padding:'40px', color:'var(--text3)'}}>Belum ada data klien</div>
+          ) : pasienList.map((item: any) => {
+            const isExpanded = expandedKlien === item.id;
+            const pasiens = pasienDetail[item.id] || [];
+            return (
+              <div key={item.id} style={cardStyle}>
+                {/* Header klien */}
+                <div style={{ padding:'14px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}
+                  onClick={async () => {
+                    if (isExpanded) { setExpandedKlien(null); return; }
+                    setExpandedKlien(item.id);
+                    if (!pasienDetail[item.id]) {
+                      setLoadingPasien(item.id);
+                      try {
+                        const r: any = await apiClient.get('/internal/cc/klien/' + item.id);
+                        const p = r.data?.data?.pasiens || r.data?.data?.pasien || [];
+                        setPasienDetail(prev => ({...prev, [item.id]: p}));
+                      } catch {}
+                      setLoadingPasien(null);
+                    }
+                  }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                    <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:'rgba(236,72,153,0.15)', display:'flex', alignItems:'center', justifyContent:'center', color:'#ec4899', fontWeight:700, fontSize:'14px' }}>
+                      {(item.nama_lengkap||item.user?.name||'K')[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight:700, fontSize:'14px', color:'var(--text)' }}>{item.nama_lengkap||item.user?.name||'-'}</p>
+                      <p style={{ color:'var(--text3)', fontSize:'11px', textTransform:'capitalize' }}>{item.tipe||'individu'} · {item.total_pasien||0} pasien</p>
+                    </div>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                    <button onClick={e => { e.stopPropagation(); setFormPasien(p => ({...p, klien_id: item.id})); setShowFormPasien(true); }}
+                      style={{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 10px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
+                      <Plus size={11}/>Tambah
+                    </button>
+                    <span style={{ color:'var(--text3)', fontSize:'18px', lineHeight:1 }}>{isExpanded ? '▲' : '▼'}</span>
+                  </div>
+                </div>
+
+                {/* Daftar pasien */}
+                {isExpanded && (
+                  <div style={{ borderTop:'1px solid var(--border)' }}>
+                    {loadingPasien === item.id ? (
+                      <div style={{ padding:'16px', textAlign:'center', color:'var(--text3)', fontSize:'13px' }}>Memuat pasien...</div>
+                    ) : pasiens.length === 0 ? (
+                      <div style={{ padding:'16px', textAlign:'center', color:'var(--text3)', fontSize:'13px' }}>Belum ada pasien terdaftar</div>
+                    ) : pasiens.map((p: any, i: number) => (
+                      <div key={p.id||i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 16px', borderBottom: i < pasiens.length-1 ? '1px solid var(--border)' : 'none', background:'rgba(236,72,153,0.03)' }}>
+                        <div style={{ width:'30px', height:'30px', borderRadius:'8px', background:'rgba(236,72,153,0.1)', display:'flex', alignItems:'center', justifyContent:'center', color:'#ec4899', fontSize:'12px', fontWeight:700, flexShrink:0 }}>
+                          {(p.nama_lengkap||'P')[0].toUpperCase()}
+                        </div>
+                        <div style={{ flex:1 }}>
+                          <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{p.nama_lengkap||'-'}</p>
+                          <p style={{ color:'var(--text3)', fontSize:'11px' }}>
+                            {p.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'}
+                            {p.tanggal_lahir ? ' · ' + (new Date().getFullYear() - new Date(p.tanggal_lahir).getFullYear()) + ' tahun' : ''}
+                            {p.golongan_darah ? ' · Gol. ' + p.golongan_darah : ''}
+                          </p>
+                        </div>
+                        <div style={{ textAlign:'right' }}>
+                          {p.riwayat_penyakit && <p style={{ color:'var(--text3)', fontSize:'11px', maxWidth:'120px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.riwayat_penyakit}</p>}
+                          {p.alergi && <p style={{ color:'#f59e0b', fontSize:'10px' }}>⚠️ {p.alergi}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
