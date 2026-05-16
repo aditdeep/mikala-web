@@ -42,7 +42,7 @@ export default function DetailPasienPage() {
     setSaving(true);
     setError('');
     try {
-      await apiClient.patch(\`/klien/pasien/\${params.id}\`, form);
+      await apiClient.patch(`/klien/pasien/${params.id}`, form);
       await fetchPasien();
       setEditing(false);
     } catch (err: any) {
