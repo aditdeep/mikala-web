@@ -810,24 +810,65 @@ export default function CustomerCarePage() {
       {/* Modal Detail */}
       {detail && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
-          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'440px', padding:'24px', maxHeight:'80vh', overflowY:'auto' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'480px', padding:'24px', maxHeight:'85vh', overflowY:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'16px' }}>
-              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Detail</h2>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>
+                {activeTab === 'orders' || activeTab === 'layanan' ? 'Detail Order' : 'Detail'}
+              </h2>
               <button onClick={() => setDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
             </div>
-            {Object.entries(detail).filter(([k]) => !['id','created_at','updated_at','deleted_at'].includes(k)).map(([k,v]: any) => (
-              <div key={k} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
-                <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'120px', textTransform:'capitalize' }}>{k.replace(/_/g,' ')}</span>
-                <span style={{ color:'var(--text)', fontSize:'13px', wordBreak:'break-word' as const }}>{typeof v==='object'?JSON.stringify(v):String(v??'-')}</span>
+
+            {(activeTab === 'orders' || activeTab === 'layanan') ? (
+              <div>
+                {/* Order header */}
+                <div style={{ background:'linear-gradient(135deg, #ec4899, #8b5cf6)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
+                  <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px' }}>Order Number</p>
+                  <p style={{ color:'white', fontWeight:700, fontSize:'16px' }}>{detail.order_number||'#'+detail.id}</p>
+                  <div style={{ display:'flex', gap:'8px', marginTop:'8px' }}>
+                    {(() => { const cfg = statusMap[detail.status]||statusMap.pending; return (
+                      <span style={{ background:'rgba(255,255,255,0.2)', color:'white', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{cfg.label}</span>
+                    ); })()}
+                  </div>
+                </div>
+
+                {[
+                  { label:'Klien', value: detail.klien?.nama_lengkap || detail.klien?.user?.name || '-' },
+                  { label:'Mitra', value: detail.mitra?.user?.name || detail.mitra?.nama_lengkap || 'Belum assign' },
+                  { label:'Pasien', value: detail.pasien?.nama_lengkap || '-' },
+                  { label:'Tipe Layanan', value: (detail.tipe_layanan||'-').replace(/_/g,' ') },
+                  { label:'Lokasi', value: detail.lokasi || detail.alamat_layanan || '-' },
+                  { label:'Tanggal Mulai', value: detail.tanggal_mulai ? new Date(detail.tanggal_mulai).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '-' },
+                  { label:'Tanggal Selesai', value: detail.tanggal_selesai ? new Date(detail.tanggal_selesai).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : 'Ongoing' },
+                  { label:'Durasi', value: detail.durasi_hari ? detail.durasi_hari+' hari' : '-' },
+                  { label:'Harga/Hari', value: detail.harga_per_hari ? 'Rp '+Number(detail.harga_per_hari).toLocaleString('id') : '-' },
+                  { label:'Total', value: 'Rp '+Number(detail.total||detail.total_amount||0).toLocaleString('id') },
+                  { label:'Catatan', value: detail.catatan || '-' },
+                ].map(item => (
+                  <div key={item.label} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
+                    <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'120px', flexShrink:0 }}>{item.label}</span>
+                    <span style={{ color:'var(--text)', fontSize:'13px', fontWeight:500, textTransform:'capitalize' }}>{item.value}</span>
+                  </div>
+                ))}
+
+                <div style={{ marginTop:'16px' }}>
+                  <p style={{ color:'var(--text3)', fontSize:'12px', marginBottom:'8px' }}>Update Status:</p>
+                  <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                    {Object.entries(statusMap).map(([s,cfg]: any) => (
+                      <button key={s} onClick={() => updateLayananStatus(detail.id, s)}
+                        style={{ padding:'7px 12px', borderRadius:'10px', border:'1px solid '+cfg.border, background: detail.status===s?cfg.bg:'transparent', color:cfg.color, fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
+                        {cfg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            ))}
-            {activeTab === 'layanan' && (
-              <div style={{ marginTop:'16px', display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                {Object.entries(statusMap).map(([s,cfg]: any) => (
-                  <button key={s} onClick={() => updateLayananStatus(detail.id, s)}
-                    style={{ padding:'7px 12px', borderRadius:'10px', border:'1px solid '+cfg.border, background: detail.status===s?cfg.bg:'transparent', color:cfg.color, fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
-                    {cfg.label}
-                  </button>
+            ) : (
+              <div>
+                {Object.entries(detail).filter(([k]) => !['id','created_at','updated_at','deleted_at','user','klien','mitra','pasien'].includes(k)).map(([k,v]: any) => (
+                  <div key={k} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
+                    <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'120px', textTransform:'capitalize', flexShrink:0 }}>{k.replace(/_/g,' ')}</span>
+                    <span style={{ color:'var(--text)', fontSize:'13px' }}>{typeof v==='object'?'-':String(v??'-')}</span>
+                  </div>
                 ))}
               </div>
             )}
