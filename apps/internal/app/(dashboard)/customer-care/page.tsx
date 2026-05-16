@@ -332,7 +332,7 @@ export default function CustomerCarePage() {
                       setLoadingPasien(item.id);
                       try {
                         const r: any = await apiClient.get('/internal/cc/klien/' + item.id);
-                        const p = r.data?.data?.pasiens || r.data?.data?.pasien || [];
+                        const p = r.data?.data?.pasien || r.data?.data?.pasiens || [];
                         setPasienDetail(prev => ({...prev, [item.id]: p}));
                       } catch {}
                       setLoadingPasien(null);
