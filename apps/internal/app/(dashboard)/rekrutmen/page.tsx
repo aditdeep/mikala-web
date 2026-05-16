@@ -472,7 +472,6 @@ export default function RekrutmenPage() {
           </div>
         </div>
       )}
-    </div>
 
       {/* Modal Kredensial */}
       {showKredensial && (
@@ -513,5 +512,6 @@ export default function RekrutmenPage() {
           </div>
         </div>
       )}
+    </div>
   );
 }
