@@ -48,7 +48,7 @@ export default function TrainingPage() {
   const fetchData = () => {
     setLoading(true);
     apiClient.get('/internal/training/mitra')
-      .then((r: any) => { setData(Array.isArray(r.data?.data) ? r.data.data : []); setLoading(false); })
+      .then((r: any) => { console.log('TRAINING API:', JSON.stringify(r.data)); setData(Array.isArray(r.data?.data) ? r.data.data : []); setLoading(false); })
       .catch(() => { setData([]); setLoading(false); });
   };
 
