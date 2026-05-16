@@ -36,6 +36,11 @@ export default function FinancePage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ klien_id:'', subtotal:'', pajak:'0', diskon:'0', tanggal_jatuh_tempo:'', catatan:'' });
 
+  // Generate payroll
+  const [showGeneratePayroll, setShowGeneratePayroll] = useState(false);
+  const [generatingPayroll, setGeneratingPayroll] = useState(false);
+  const [periodePayroll, setPeriodePayroll] = useState('');
+
   // Form jurnal
   const [showFormJurnal, setShowFormJurnal] = useState(false);
   const [savingJurnal, setSavingJurnal] = useState(false);
@@ -103,6 +108,19 @@ export default function FinancePage() {
     finally { setSaving(false); }
   };
 
+  const handleGeneratePayroll = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGeneratingPayroll(true);
+    try {
+      const res: any = await apiClient.post('/internal/finance/payroll/generate', { periode: periodePayroll });
+      const count = res.data?.data?.length || 0;
+      alert('Berhasil generate ' + count + ' payroll untuk periode ' + periodePayroll);
+      setShowGeneratePayroll(false);
+      fetchAll();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal generate payroll'); }
+    finally { setGeneratingPayroll(false); }
+  };
+
   const handleCreateJurnal = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingJurnal(true);
@@ -140,6 +158,11 @@ export default function FinancePage() {
         {activeTab === 'tagihan' && (
           <button onClick={() => setShowForm(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #f59e0b, #d97706)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
             <Plus size={15}/>Buat Tagihan
+          </button>
+        )}
+        {activeTab === 'payroll' && (
+          <button onClick={() => setShowGeneratePayroll(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <Plus size={15}/>Generate Payroll
           </button>
         )}
         {activeTab === 'jurnal' && (
@@ -398,6 +421,35 @@ export default function FinancePage() {
                 <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={saving} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #f59e0b, #d97706)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {saving ? 'Menyimpan...' : 'Buat Tagihan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Generate Payroll */}
+      {showGeneratePayroll && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'400px', padding:'24px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Generate Payroll</h2>
+              <button onClick={() => setShowGeneratePayroll(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <div style={{ background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
+              <p style={{ color:'var(--text2)', fontSize:'13px', lineHeight:'1.6' }}>
+                Generate payroll otomatis untuk semua mitra yang memiliki order aktif (<b>in_progress</b>) di periode yang dipilih. Payroll dihitung berdasarkan hari kerja × tarif per hari × 80%.
+              </p>
+            </div>
+            <form onSubmit={handleGeneratePayroll} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Periode (Bulan-Tahun) *</label>
+                <input required type="month" value={periodePayroll} onChange={e => setPeriodePayroll(e.target.value)} style={inp} />
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => setShowGeneratePayroll(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={generatingPayroll} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {generatingPayroll ? 'Generating...' : 'Generate Payroll'}
                 </button>
               </div>
             </form>
