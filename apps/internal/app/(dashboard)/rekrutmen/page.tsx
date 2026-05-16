@@ -36,6 +36,7 @@ export default function RekrutmenPage() {
   const [activeTab, setActiveTab] = useState('semua');
   const [errorMsg, setErrorMsg] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<any>(null);
+  const [showKredensial, setShowKredensial] = useState<any>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -73,6 +74,9 @@ export default function RekrutmenPage() {
       }
       setShowModal(false);
       setEditItem(null);
+      if (!editItem) {
+        setShowKredensial({ email: form.email, password: form.password || 'password123', name: form.name });
+      }
       setForm({ ...emptyForm });
       fetchData();
     } catch (err: any) {
@@ -469,5 +473,45 @@ export default function RekrutmenPage() {
         </div>
       )}
     </div>
+
+      {/* Modal Kredensial */}
+      {showKredensial && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--card)', borderRadius:'20px', padding:'28px', width:'100%', maxWidth:'400px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+            <div style={{ textAlign:'center', marginBottom:'20px' }}>
+              <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:'linear-gradient(135deg, #10b981, #059669)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}>
+                <span style={{ fontSize:'24px' }}>✓</span>
+              </div>
+              <h3 style={{ fontWeight:700, fontSize:'18px', color:'var(--text)' }}>Mitra Berhasil Didaftarkan!</h3>
+              <p style={{ color:'var(--text3)', fontSize:'13px', marginTop:'4px' }}>Simpan kredensial login berikut</p>
+            </div>
+
+            <div style={{ background:'rgba(16,185,129,0.08)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'14px', padding:'16px', marginBottom:'16px' }}>
+              <p style={{ color:'var(--text3)', fontSize:'11px', marginBottom:'12px', fontWeight:600, textTransform:'uppercase' }}>Kredensial Login Mitra</p>
+              <div style={{ marginBottom:'10px' }}>
+                <p style={{ color:'var(--text3)', fontSize:'11px' }}>Nama</p>
+                <p style={{ color:'var(--text)', fontSize:'14px', fontWeight:600 }}>{showKredensial.name}</p>
+              </div>
+              <div style={{ marginBottom:'10px' }}>
+                <p style={{ color:'var(--text3)', fontSize:'11px' }}>Email</p>
+                <p style={{ color:'var(--text)', fontSize:'14px', fontWeight:600 }}>{showKredensial.email}</p>
+              </div>
+              <div>
+                <p style={{ color:'var(--text3)', fontSize:'11px' }}>Password</p>
+                <p style={{ color:'#10b981', fontSize:'18px', fontWeight:700, letterSpacing:'2px' }}>{showKredensial.password}</p>
+              </div>
+            </div>
+
+            <div style={{ background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'10px', padding:'10px 12px', marginBottom:'16px' }}>
+              <p style={{ color:'#f59e0b', fontSize:'12px' }}>⚠️ Catat dan bagikan kredensial ini ke mitra. Password tidak bisa dilihat lagi setelah ditutup.</p>
+            </div>
+
+            <button onClick={() => setShowKredensial(null)}
+              style={{ width:'100%', padding:'12px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer' }}>
+              Sudah Dicatat, Tutup
+            </button>
+          </div>
+        </div>
+      )}
   );
 }
