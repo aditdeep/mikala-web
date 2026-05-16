@@ -42,7 +42,7 @@ export default function DetailPasienPage() {
     setSaving(true);
     setError('');
     try {
-      await apiClient.patch(`/klien/pasien/${params.id}`, form);
+      await apiClient.patch('/klien/pasien/' + params.id, form);
       await fetchPasien();
       setEditing(false);
     } catch (err: any) {
@@ -90,7 +90,7 @@ export default function DetailPasienPage() {
         </div>
         <h2 style={{ color:'white', fontWeight:700, fontSize:'18px' }}>{pasien.nama_lengkap}</h2>
         <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'13px', marginTop:'4px' }}>
-          {pasien.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} {usia ? \`• \${usia} tahun\` : ''}
+          {pasien.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} {usia ? `• \${usia} tahun` : ''}
         </p>
         {pasien.golongan_darah && (
           <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'10px', background:'rgba(255,255,255,0.2)', borderRadius:'10px', padding:'4px 12px' }}>
