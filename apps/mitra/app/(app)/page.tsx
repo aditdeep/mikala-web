@@ -149,7 +149,7 @@ export default function HomePage() {
                 <CheckCircle size={18} style={{ color:'var(--purple-light)' }} />
               </div>
               <div style={{ flex:1 }}>
-                <div className="font-semibold text-sm" style={{ color:'var(--text-primary)' }}>{job.service_type}</div>
+                <div className="font-semibold text-sm" style={{ color:'var(--text-primary)' }}>{(job.tipe_layanan||"-").replace(/_/g," ")}</div>
                 <div className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{job.patient_name}</div>
               </div>
               <span style={{
