@@ -497,25 +497,97 @@ export default function FinancePage() {
 
       {/* Modal Detail */}
       {detail && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
-          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'440px', padding:'24px', maxHeight:'80vh', overflowY:'auto' }}>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'460px', padding:'24px', maxHeight:'85vh', overflowY:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'16px' }}>
-              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Detail #{detail.id}</h2>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>
+                {activeTab==='tagihan' ? 'Detail Tagihan' : activeTab==='payroll' ? 'Detail Payroll' : 'Detail'}
+              </h2>
               <button onClick={() => setDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
             </div>
-            {Object.entries(detail).filter(([k]) => !['created_at','updated_at','deleted_at'].includes(k)).map(([k,v]: any) => (
-              <div key={k} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
-                <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'110px', textTransform:'capitalize' }}>{k.replace(/_/g,' ')}</span>
-                <span style={{ color:'var(--text)', fontSize:'13px', wordBreak:'break-word' as const }}>{typeof v==='object'?JSON.stringify(v):String(v??'-')}</span>
+
+            {activeTab === 'tagihan' ? (
+              <div>
+                {[
+                  { label:'Invoice', value: '#'+detail.id },
+                  { label:'Klien', value: detail.klien?.nama_lengkap||detail.klien?.user?.name||'-' },
+                  { label:'Subtotal', value: 'Rp '+Number(detail.subtotal||0).toLocaleString('id') },
+                  { label:'Pajak', value: 'Rp '+Number(detail.pajak||0).toLocaleString('id') },
+                  { label:'Diskon', value: 'Rp '+Number(detail.diskon||0).toLocaleString('id') },
+                  { label:'Total', value: 'Rp '+Number(detail.total||0).toLocaleString('id') },
+                  { label:'Jatuh Tempo', value: detail.tanggal_jatuh_tempo ? new Date(detail.tanggal_jatuh_tempo).toLocaleDateString('id-ID') : '-' },
+                  { label:'Status', value: statusTagihan[detail.status]?.label||detail.status },
+                  { label:'Catatan', value: detail.catatan||'-' },
+                ].map(item => (
+                  <div key={item.label} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
+                    <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'110px', flexShrink:0 }}>{item.label}</span>
+                    <span style={{ color:'var(--text)', fontSize:'13px', fontWeight:500 }}>{item.value}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop:'16px' }}>
+                  <p style={{ color:'var(--text3)', fontSize:'12px', marginBottom:'8px' }}>Update Status:</p>
+                  <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                    {Object.entries(statusTagihan).map(([s,cfg]: any) => (
+                      <button key={s} onClick={() => updateTagihanStatus(detail.id, s)}
+                        style={{ flex:1, minWidth:'70px', padding:'7px 4px', borderRadius:'10px', border:'1px solid '+cfg.border, background: detail.status===s?cfg.bg:'transparent', color:cfg.color, fontSize:'10px', fontWeight:600, cursor:'pointer' }}>
+                        {cfg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            ))}
-            {activeTab === 'tagihan' && (
-              <div style={{ marginTop:'16px', display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                {Object.entries(statusTagihan).map(([s,cfg]: any) => (
-                  <button key={s} onClick={() => updateTagihanStatus(detail.id, s)}
-                    style={{ flex:1, minWidth:'80px', padding:'7px 6px', borderRadius:'10px', border:'1px solid '+cfg.border, background: detail.status===s?cfg.bg:'transparent', color:cfg.color, fontSize:'10px', fontWeight:600, cursor:'pointer' }}>
-                    {cfg.label}
-                  </button>
+            ) : activeTab === 'payroll' ? (
+              <div>
+                <div style={{ background:'linear-gradient(135deg, #7c3aed, #4f46e5)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
+                  <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px' }}>Payroll Number</p>
+                  <p style={{ color:'white', fontWeight:700, fontSize:'16px' }}>{detail.payroll_number||'#'+detail.id}</p>
+                  <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'20px', fontWeight:700, marginTop:'4px' }}>Rp {Number(detail.total||0).toLocaleString('id')}</p>
+                </div>
+                {[
+                  { label:'Mitra', value: detail.mitra?.user?.name||detail.mitra?.nama_lengkap||'Mitra #'+detail.mitra_id },
+                  { label:'Periode', value: detail.periode_mulai ? new Date(detail.periode_mulai).toLocaleDateString('id-ID',{month:'long',year:'numeric'}) : '-' },
+                  { label:'Hari Kerja', value: (detail.jumlah_hari_kerja||0)+' hari' },
+                  { label:'Tarif/Hari', value: 'Rp '+Number(detail.tarif_per_hari||0).toLocaleString('id') },
+                  { label:'Gaji Pokok', value: 'Rp '+Number(detail.gaji_pokok||0).toLocaleString('id') },
+                  { label:'Bonus', value: 'Rp '+Number(detail.bonus||0).toLocaleString('id') },
+                  { label:'Potongan', value: 'Rp '+Number(detail.potongan||0).toLocaleString('id') },
+                  { label:'Status', value: detail.status },
+                  { label:'Catatan', value: detail.catatan||'-' },
+                ].map(item => (
+                  <div key={item.label} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
+                    <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'110px', flexShrink:0 }}>{item.label}</span>
+                    <span style={{ color:'var(--text)', fontSize:'13px', fontWeight:500, textTransform: item.label==='Status'?'capitalize':'none' }}>{item.value}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop:'16px' }}>
+                  <p style={{ color:'var(--text3)', fontSize:'12px', marginBottom:'8px' }}>Update Status Pembayaran:</p>
+                  <div style={{ display:'flex', gap:'8px' }}>
+                    {[
+                      { s:'pending',   label:'Pending',       color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)' },
+                      { s:'paid',      label:'Sudah Dibayar', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
+                      { s:'cancelled', label:'Batal',         color:'#ef4444', bg:'rgba(239,68,68,0.15)',  border:'rgba(239,68,68,0.3)' },
+                    ].map(btn => (
+                      <button key={btn.s} onClick={async () => {
+                        try {
+                          await apiClient.patch('/internal/finance/payroll/'+detail.id+'/status', { status: btn.s });
+                          setDetail((p: any) => ({...p, status: btn.s}));
+                          fetchAll();
+                        } catch(e: any) { alert(e.response?.data?.message||'Gagal update status'); }
+                      }}
+                        style={{ flex:1, padding:'10px', borderRadius:'12px', border:'1px solid '+btn.border, background: detail.status===btn.s?btn.bg:'transparent', color:btn.color, fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {Object.entries(detail).filter(([k]) => !['created_at','updated_at','deleted_at'].includes(k)).map(([k,v]: any) => (
+                  <div key={k} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
+                    <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'110px', textTransform:'capitalize' }}>{k.replace(/_/g,' ')}</span>
+                    <span style={{ color:'var(--text)', fontSize:'13px' }}>{typeof v==='object'?'-':String(v??'-')}</span>
+                  </div>
                 ))}
               </div>
             )}
