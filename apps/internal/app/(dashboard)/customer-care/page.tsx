@@ -82,7 +82,7 @@ export default function CustomerCarePage() {
   };
 
   const fetchFeedback = () => {
-    apiClient.get('/internal/cc/report').then((r: any) => {
+    apiClient.get('/internal/cc/feedback').then((r: any) => {
       setFeedbackList(Array.isArray(r.data?.data) ? r.data.data : []);
     }).catch(() => {});
   };
