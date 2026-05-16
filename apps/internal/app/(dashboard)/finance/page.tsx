@@ -49,9 +49,8 @@ export default function FinancePage() {
 
   const fetchAll = () => {
     setLoading(true);
-    apiClient.get('/internal/cc/klien').then((r: any) => {
-      const d = r.data?.data;
-      setKlienList(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
+    apiClient.get('/internal/klien-list').then((r: any) => {
+      setKlienList(Array.isArray(r.data?.data) ? r.data.data : []);
     }).catch(() => {});
     Promise.all([
       apiClient.get('/internal/finance/tagihan').then((r: any) => {
