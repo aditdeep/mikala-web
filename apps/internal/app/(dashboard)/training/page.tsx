@@ -24,7 +24,7 @@ export default function TrainingPage() {
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
-  const [feedbackForm, setFeedbackForm] = useState({ mitra_id:'', rating:'5', catatan:'', rekomendasi:'lanjut' });
+  const [feedbackForm, setFeedbackForm] = useState({ mitra_id:'', score:'80', feedback:'', rekomendasi:'lanjut' });
   const [savingFeedback, setSavingFeedback] = useState(false);
 
   // Pricing state
@@ -95,9 +95,9 @@ export default function TrainingPage() {
   const handleSaveFeedback = async () => {
     setSavingFeedback(true);
     try {
-      await apiClient.post('/internal/training/mitra/' + feedbackForm.mitra_id + '/feedback', feedbackForm);
+      await apiClient.post('/internal/training/mitra/' + feedbackForm.mitra_id + '/feedback', { score: Number(feedbackForm.score), feedback: feedbackForm.feedback, rekomendasi: feedbackForm.rekomendasi });
       setShowFeedbackForm(false);
-      setFeedbackForm({ mitra_id:'', rating:'5', catatan:'', rekomendasi:'lanjut' });
+      setFeedbackForm({ mitra_id:'', score:'80', feedback:'', rekomendasi:'lanjut' });
       fetchFeedback();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menyimpan feedback'); }
     finally { setSavingFeedback(false); }
@@ -461,8 +461,8 @@ export default function TrainingPage() {
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'6px' }}>Rating (1-5)</label>
                 <div style={{ display:'flex', gap:'8px' }}>
                   {[1,2,3,4,5].map(n => (
-                    <button key={n} onClick={() => setFeedbackForm(p => ({...p, rating: String(n)}))}
-                      style={{ width:'40px', height:'40px', borderRadius:'10px', border:'1px solid var(--border)', background: Number(feedbackForm.rating)>=n?'rgba(245,158,11,0.2)':'var(--glass)', cursor:'pointer', color: Number(feedbackForm.rating)>=n?'#f59e0b':'var(--text3)', fontWeight:700 }}>
+                    <button type="button" key={n} onClick={() => setFeedbackForm(p => ({...p, score: String(n*20)}))}
+                      style={{ width:'40px', height:'40px', borderRadius:'10px', border:'1px solid var(--border)', background: Number(feedbackForm.score)>=(n*20)?'rgba(245,158,11,0.2)':'var(--glass)', cursor:'pointer', color: Number(feedbackForm.score)>=(n*20)?'#f59e0b':'var(--text3)', fontWeight:700 }}>
                       {n}
                     </button>
                   ))}
@@ -477,7 +477,7 @@ export default function TrainingPage() {
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'6px' }}>Catatan</label>
-                <textarea value={feedbackForm.catatan} onChange={e => setFeedbackForm(p => ({...p, catatan: e.target.value}))} style={{...inp, minHeight:'80px', resize:'vertical'}} placeholder="Catatan evaluasi pelatihan..." />
+                <textarea value={feedbackForm.feedback} onChange={e => setFeedbackForm(p => ({...p, feedback: e.target.value}))} style={{...inp, minHeight:'80px', resize:'vertical'}} placeholder="Catatan evaluasi pelatihan..." />
               </div>
             </div>
             <div style={{ display:'flex', gap:'10px', marginTop:'16px' }}>
