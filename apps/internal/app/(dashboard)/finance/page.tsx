@@ -237,7 +237,7 @@ export default function FinancePage() {
                     return (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>#{item.id}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.klien?.nama_lengkap||item.klien?.user?.name||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.klien?.nama_lengkap||item.klien?.user?.name||item.order?.klien?.nama_lengkap||item.order?.klien?.user?.name||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.total||0).toLocaleString('id')}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.tanggal_jatuh_tempo||item.due_date ? new Date(item.tanggal_jatuh_tempo||item.due_date).toLocaleDateString('id-ID') : '-'}</td>
                         <td style={{ padding:'12px 16px' }}>
@@ -510,7 +510,7 @@ export default function FinancePage() {
               <div>
                 {[
                   { label:'Invoice', value: '#'+detail.id },
-                  { label:'Klien', value: detail.klien?.nama_lengkap||detail.klien?.user?.name||'-' },
+                  { label:'Klien', value: detail.klien?.nama_lengkap||detail.klien?.user?.name||detail.order?.klien?.nama_lengkap||detail.order?.klien?.user?.name||'-' },
                   { label:'Subtotal', value: 'Rp '+Number(detail.subtotal||0).toLocaleString('id') },
                   { label:'Pajak', value: 'Rp '+Number(detail.pajak||0).toLocaleString('id') },
                   { label:'Diskon', value: 'Rp '+Number(detail.diskon||0).toLocaleString('id') },
@@ -527,10 +527,16 @@ export default function FinancePage() {
                 <div style={{ marginTop:'16px' }}>
                   <p style={{ color:'var(--text3)', fontSize:'12px', marginBottom:'8px' }}>Update Status:</p>
                   <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                    {Object.entries(statusTagihan).map(([s,cfg]: any) => (
-                      <button key={s} onClick={() => updateTagihanStatus(detail.id, s)}
-                        style={{ flex:1, minWidth:'70px', padding:'7px 4px', borderRadius:'10px', border:'1px solid '+cfg.border, background: detail.status===s?cfg.bg:'transparent', color:cfg.color, fontSize:'10px', fontWeight:600, cursor:'pointer' }}>
-                        {cfg.label}
+                    {[
+                      { s:'paid',      label:'Lunas',       color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
+                      { s:'unpaid',    label:'Belum Bayar', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)' },
+                      { s:'partial',   label:'Sebagian',    color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)' },
+                      { s:'overdue',   label:'Jatuh Tempo', color:'#ef4444', bg:'rgba(239,68,68,0.15)',  border:'rgba(239,68,68,0.3)' },
+                      { s:'cancelled', label:'Dibatalkan',  color:'#6b7280', bg:'rgba(107,114,128,0.15)',border:'rgba(107,114,128,0.3)' },
+                    ].map(btn => (
+                      <button key={btn.s} onClick={() => updateTagihanStatus(detail.id, btn.s)}
+                        style={{ flex:1, minWidth:'70px', padding:'7px 4px', borderRadius:'10px', border:'1px solid '+btn.border, background: detail.status===btn.s?btn.bg:'transparent', color:btn.color, fontSize:'10px', fontWeight:600, cursor:'pointer' }}>
+                        {btn.label}
                       </button>
                     ))}
                   </div>
