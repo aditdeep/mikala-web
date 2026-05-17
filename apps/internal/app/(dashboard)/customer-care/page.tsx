@@ -96,7 +96,7 @@ export default function CustomerCarePage() {
       const d = r.data?.data;
       setOrders(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
     }).catch(() => {});
-    apiClient.get('/internal/mitra-list').then((r: any) => {
+    apiClient.get('/internal/mitra-list?status=available').then((r: any) => {
       setMitraList(Array.isArray(r.data?.data) ? r.data.data : []);
     }).catch(() => {});
   };
