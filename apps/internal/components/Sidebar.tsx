@@ -61,7 +61,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
             <span style={{ color:'white', fontWeight:800, fontSize:'16px' }}>M</span>
           </div>
           <div>
-            <p style={{ color:'var(--text)', fontWeight:700, fontSize:'14px', lineHeight:1 }}>Mikala</p>
+            <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Mikala" style={{ height:'32px', objectFit:'contain' }} />
             <p style={{ color:'var(--text3)', fontSize:'11px', marginTop:'2px' }}>Internal</p>
           </div>
         </div>
