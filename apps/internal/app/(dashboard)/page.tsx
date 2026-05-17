@@ -70,10 +70,10 @@ export default function DashboardPage() {
               <div key={app.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid var(--border)' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'10px', minWidth:0 }}>
                   <div style={{ width:'30px', height:'30px', borderRadius:'8px', background:'rgba(124,58,237,0.15)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--purple-light)', fontSize:'12px', fontWeight:700, flexShrink:0 }}>
-                    {app.name?.[0]?.toUpperCase() || 'A'}
+                    {(app.nama_lengkap||app.user?.name||'M')[0].toUpperCase()}
                   </div>
                   <div style={{ minWidth:0 }}>
-                    <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{app.name}</p>
+                    <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{app.nama_lengkap||app.user?.name||'-'}</p>
                     <p style={{ color:'var(--text3)', fontSize:'11px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{app.email}</p>
                   </div>
                 </div>
