@@ -254,12 +254,12 @@ export default function TrainingPage() {
                         <td style={{ padding:'12px 16px', fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{item.mitra?.user?.name||item.nama_mitra||'-'}</td>
                         <td style={{ padding:'12px 16px' }}>
                           <div style={{ display:'flex', gap:'2px' }}>
-                            {[1,2,3,4,5].map(s => <Star key={s} size={13} style={{ color: s<=(item.rating||0)?'#f59e0b':'var(--border)', fill: s<=(item.rating||0)?'#f59e0b':'none' }} />)}
+                            {[1,2,3,4,5].map(s => <Star key={s} size={13} style={{ color: s<=Math.round((item.score||0)/20)?'#f59e0b':'var(--border)', fill: s<=Math.round((item.score||0)/20)?'#f59e0b':'none' }} />)}
                           </div>
                         </td>
                         <td style={{ padding:'12px 16px' }}>
-                          <span style={{ padding:'3px 10px', borderRadius:'8px', fontSize:'11px', fontWeight:600, background: item.rekomendasi==='lanjut'?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)', color: item.rekomendasi==='lanjut'?'#10b981':'#ef4444' }}>
-                            {item.rekomendasi==='lanjut'?'Lanjut':'Stop'}
+                          <span style={{ padding:'3px 10px', borderRadius:'8px', fontSize:'11px', fontWeight:600, background: item.rekomendasi==='stop'?'rgba(239,68,68,0.15)':'rgba(16,185,129,0.15)', color: item.rekomendasi==='stop'?'#ef4444':'#10b981' }}>
+                            {item.rekomendasi==='lanjut'?'Lanjut ke Lapangan':item.rekomendasi==='stop'?'Stop':'Lanjut ke Lapangan'}
                           </span>
                         </td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.catatan||'-'}</td>
