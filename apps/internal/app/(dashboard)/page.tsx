@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const statCards = [
     { title:'Total Mitra', value: stats?.total_mitra || 0, icon: Users, gradient:'linear-gradient(135deg, #7c3aed, #4f46e5)', glow:'rgba(124,58,237,0.3)', trend:{ value:'+12%', isPositive:true } },
     { title:'Order Aktif', value: stats?.orders_active || 0, icon: Briefcase, gradient:'linear-gradient(135deg, #10b981, #059669)', glow:'rgba(16,185,129,0.3)', trend:{ value:'+8%', isPositive:true } },
+    { title:'Mitra On Job', value: stats?.mitra_on_job || 0, icon: Briefcase, gradient:'linear-gradient(135deg, #f59e0b, #d97706)', glow:'rgba(245,158,11,0.3)', trend:{ value:'+5%', isPositive:true } },
     { title:'Revenue', value: `Rp ${((stats?.total_revenue || 0)/1000000).toFixed(1)}Jt`, icon: DollarSign, gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)', glow:'rgba(236,72,153,0.3)', trend:{ value:'+23%', isPositive:true } },
     { title:'Pending', value: stats?.pending_items?.new_applications || 0, icon: Clock, gradient:'linear-gradient(135deg, #f59e0b, #d97706)', glow:'rgba(245,158,11,0.3)' },
   ];
@@ -98,8 +99,8 @@ export default function DashboardPage() {
                     <Briefcase size={14} style={{ color:'#10b981' }} />
                   </div>
                   <div style={{ minWidth:0 }}>
-                    <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>Order #{order.id}</p>
-                    <p style={{ color:'var(--text3)', fontSize:'11px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{order.service_type}</p>
+                    <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{order.klien?.nama_lengkap||order.klien?.user?.name||'Order #'+order.id}</p>
+                    <p style={{ color:'var(--text3)', fontSize:'11px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{(order.tipe_layanan||order.service_type||'-').replace(/_/g,' ')}</p>
                   </div>
                 </div>
                 <span style={{ background:'rgba(16,185,129,0.15)', color:'#10b981', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'6px', padding:'2px 8px', fontSize:'10px', fontWeight:600, flexShrink:0, marginLeft:'8px' }}>Aktif</span>
