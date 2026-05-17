@@ -24,7 +24,7 @@ function addDropCap(html: string): string {
   return html.replace(
     /(<p[^>]*>)\s*([a-zA-Z])/,
     (_match: string, tag: string, letter: string) =>
-      `${tag}<span style="float:left;font-size:3.8em;line-height:0.85;font-weight:900;color:#2d7a5e;margin:4px 10px 0 0;font-family:Georgia,serif;">${letter.toUpperCase()}</span>`
+      `${tag}<span style="float:left;font-size:3.8em;line-height:0.85;font-weight:900;color:#2d7a5e;margin:4px 10px 0 0;">${letter.toUpperCase()}</span>`
   );
 }
 

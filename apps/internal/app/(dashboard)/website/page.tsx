@@ -24,6 +24,10 @@ export default function WebsitePage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
+  const [artikelPage, setArtikelPage] = useState(1);
+  const [artikelTotal, setArtikelTotal] = useState(0);
+  const [artikelLastPage, setArtikelLastPage] = useState(1);
+  const PER_PAGE = 10;
 
   // Forms
   const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', kategori:'Artikel', status:'published' });
@@ -31,15 +35,21 @@ export default function WebsitePage() {
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
 
-  useEffect(() => { fetchData(); }, [activeTab]);
+  useEffect(() => { fetchData(); }, [activeTab, artikelPage]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       if (activeTab === 'artikel') {
-        const r: any = await apiClient.get('/internal/cms/artikel');
+        const r: any = await apiClient.get(`/internal/cms/artikel?page=${artikelPage}&per_page=${PER_PAGE}`);
         const d = r.data?.data;
-        setArtikel(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []);
+        if (d?.data) {
+          setArtikel(d.data);
+          setArtikelTotal(d.total || 0);
+          setArtikelLastPage(d.last_page || 1);
+        } else {
+          setArtikel(Array.isArray(d) ? d : []);
+        }
       } else if (activeTab === 'layanan') {
         const r: any = await apiClient.get('/internal/cms/layanan');
         setLayanan(Array.isArray(r.data?.data) ? r.data.data : []);
