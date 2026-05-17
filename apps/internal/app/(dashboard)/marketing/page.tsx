@@ -28,8 +28,8 @@ export default function MarketingPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [formLead, setFormLead] = useState({ nama:'', email:'', phone:'', source:'website_mgm', layanan_interest:'homecare', catatan:'' });
-  const [formKerjasama, setFormKerjasama] = useState({ nama_partner:'', contact_person:'', phone:'', email:'', tipe:'referral', catatan:'' });
+  const [formLead, setFormLead] = useState({ nama:'', email:'', phone:'', source:'website_mgm', tipe_layanan:'homecare_harian', pesan:'' });
+  const [formKerjasama, setFormKerjasama] = useState({ partner_name:'', partner_type:'referral', contact_person:'', phone:'', email:'', notes:'' });
 
   useEffect(() => { fetchAll(); }, []);
   useEffect(() => { if (activeTab === 'report') fetchReport(); }, [activeTab]);
@@ -65,7 +65,7 @@ export default function MarketingPage() {
     try {
       await apiClient.post('/internal/marketing/leads', formLead);
       setShowForm(false);
-      setFormLead({ nama:'', email:'', phone:'', source:'website_mgm', layanan_interest:'homecare', catatan:'' });
+      setFormLead({ nama:'', email:'', phone:'', source:'website_mgm', tipe_layanan:'homecare_harian', pesan:'' });
       fetchAll();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menyimpan lead'); }
     finally { setSaving(false); }
@@ -77,7 +77,7 @@ export default function MarketingPage() {
     try {
       await apiClient.post('/internal/marketing/kerjasama', formKerjasama);
       setShowForm(false);
-      setFormKerjasama({ nama_partner:'', contact_person:'', phone:'', email:'', tipe:'referral', catatan:'' });
+      setFormKerjasama({ partner_name:'', partner_type:'referral', contact_person:'', phone:'', email:'', notes:'' });
       fetchAll();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menyimpan kerjasama'); }
     finally { setSaving(false); }
@@ -175,7 +175,7 @@ export default function MarketingPage() {
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.email||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.phone||item.telepon||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{(item.source||item.sumber||'-').replace(/_/g,' ')}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{(item.layanan_interest||'-').replace(/_/g,' ')}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{(item.tipe_layanan||item.layanan_interest||'-').replace(/_/g,' ')}</td>
                         <td style={{ padding:'12px 16px' }}>
                           <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
                             <Icon size={11}/>{s.label}
@@ -326,7 +326,7 @@ export default function MarketingPage() {
                 </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Layanan Diminati</label>
-                  <select value={formLead.layanan_interest} onChange={e => setFormLead(p => ({...p, layanan_interest: e.target.value}))} style={inp}>
+                  <select value={formLead.tipe_layanan} onChange={e => setFormLead(p => ({...p, tipe_layanan: e.target.value}))} style={inp}>
                     {['homecare_harian','homecare_live_in','medical_checkup','konsultasi','fisioterapi','lainnya'].map(s => (
                       <option key={s} value={s}>{s.replace(/_/g,' ')}</option>
                     ))}
@@ -334,7 +334,7 @@ export default function MarketingPage() {
                 </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Catatan</label>
-                  <textarea value={formLead.catatan} onChange={e => setFormLead(p => ({...p, catatan: e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Catatan tambahan..." />
+                  <textarea value={formLead.pesan} onChange={e => setFormLead(p => ({...p, pesan: e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Catatan tambahan..." />
                 </div>
                 <div style={{ display:'flex', gap:'10px' }}>
                   <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
@@ -346,19 +346,19 @@ export default function MarketingPage() {
             ) : (
               <form onSubmit={handleSubmitKerjasama} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                 {[
-                  { key:'nama_partner', label:'Nama Partner *', type:'text', placeholder:'Nama institusi/perusahaan' },
+                  { key:'partner_name', label:'Nama Partner *', type:'text', placeholder:'Nama institusi/perusahaan' },
                   { key:'contact_person', label:'Contact Person *', type:'text', placeholder:'Nama PIC' },
                   { key:'phone', label:'Telepon *', type:'text', placeholder:'08xxxxxxxxxx' },
                   { key:'email', label:'Email', type:'email', placeholder:'email@partner.com' },
                 ].map(f => (
                   <div key={f.key}>
                     <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>{f.label}</label>
-                    <input required={f.label.includes('*')} type={f.type} value={(formKerjasama as any)[f.key]} onChange={e => setFormKerjasama(p => ({...p, [f.key]: e.target.value}))} placeholder={f.placeholder} style={inp} />
+                    <input required={f.label.includes('*')} type={f.type} value={(formKerjasama as any)[f.key] || ''} onChange={e => setFormKerjasama(p => ({...p, [f.key]: e.target.value}))} placeholder={f.placeholder} style={inp} />
                   </div>
                 ))}
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tipe Kerjasama</label>
-                  <select value={formKerjasama.tipe} onChange={e => setFormKerjasama(p => ({...p, tipe: e.target.value}))} style={inp}>
+                  <select value={formKerjasama.partner_type} onChange={e => setFormKerjasama(p => ({...p, partner_type: e.target.value}))} style={inp}>
                     {['referral','vendor','sponsor','media_partner','lainnya'].map(s => (
                       <option key={s} value={s}>{s.replace(/_/g,' ')}</option>
                     ))}
@@ -366,7 +366,7 @@ export default function MarketingPage() {
                 </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Catatan</label>
-                  <textarea value={formKerjasama.catatan} onChange={e => setFormKerjasama(p => ({...p, catatan: e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Catatan kerjasama..." />
+                  <textarea value={formKerjasama.notes} onChange={e => setFormKerjasama(p => ({...p, notes: e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Catatan kerjasama..." />
                 </div>
                 <div style={{ display:'flex', gap:'10px' }}>
                   <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
