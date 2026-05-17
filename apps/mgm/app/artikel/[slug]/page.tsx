@@ -27,6 +27,33 @@ async function getRelated(slug: string) {
   } catch { return []; }
 }
 
+function cleanContent(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/\\n/g, '
+')           // fix escaped newlines
+    .replace(/\\r/g, '')             // remove 
+    .replace(/\/in>/gi, '</i>')       // fix malformed /in> tags
+    .replace(/<\/in>/gi, '</i>')      // fix </in>
+    .replace(/\bin\b(?!<)/g, '')     // remove stray 'in' text
+    .replace(/<p>\s*<\/p>/g, '')       // remove empty paragraphs
+    .replace(/<p>\s*&nbsp;\s*<\/p>/g, '') // remove nbsp paragraphs
+    .replace(/
+{3,}/g, '
+
+')        // max 2 newlines
+    .trim();
+}
+
+function addDropCap(html: string): string {
+  if (!html) return '';
+  // Find first paragraph and add drop cap to first letter
+  return html.replace(
+    /(<p[^>]*>)\s*([a-zA-ZA-Z])/,
+    (match, tag, letter) => `${tag}<span style="float:left;font-size:4em;line-height:0.8;font-weight:900;color:#2d7a5e;margin:4px 8px 0 0;font-family:Georgia,serif;">${letter.toUpperCase()}</span>`
+  );
+}
+
 export default async function ArtikelDetailPage({ params }: { params: { slug: string } }) {
   const [artikel, related] = await Promise.all([getArtikel(params.slug), getRelated(params.slug)]);
   if (!artikel) notFound();
@@ -65,7 +92,7 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
 
         {/* Content */}
         <div className="article-content" style={{ fontSize:'clamp(15px,2vw,17px)', lineHeight:1.9, color:'#374151' }}
-          dangerouslySetInnerHTML={{ __html: artikel.konten || `<p>${artikel.excerpt || ''}</p>` }} />
+          dangerouslySetInnerHTML={{ __html: addDropCap(cleanContent(artikel.konten || `<p>${artikel.excerpt || ''}</p>`)) }} />
 
         {/* Share */}
         <div style={{ marginTop:'48px', paddingTop:'24px', borderTop:`2px solid ${GREEN}20` }}>
