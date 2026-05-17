@@ -76,9 +76,7 @@ export default async function HomePage() {
               { href:'/galeri', label:'Galeri' },
               { href:'/kontak', label:'Karir' },
             ].map(n => (
-              <Link key={n.href} href={n.href} style={{ color:'#374151', fontSize:'14px', fontWeight:500, textDecoration:'none', transition:'color 0.2s' }}
-                onMouseOver={(e) => (e.currentTarget.style.color = GREEN)}
-                onMouseOut={(e) => (e.currentTarget.style.color = '#374151')}>
+              <Link key={n.href} href={n.href} style={{ color:'#374151', fontSize:'14px', fontWeight:500, textDecoration:'none', transition:'color 0.2s' }}>
                 {n.label}
               </Link>
             ))}
@@ -166,8 +164,7 @@ export default async function HomePage() {
               { nama:'Medikal Evakuasi', deskripsi:'Menyediakan ambulan dengan peralatan medis lengkap untuk kebutuhan evakuasi.', gambar:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Medikal-evakuasi.jpg' },
             ]).map((l: any, i: number) => (
               <div key={i} style={{ background:'white', borderRadius:'20px', overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.08)', transition:'transform 0.3s, box-shadow 0.3s', border:'1px solid rgba(45,122,94,0.08)' }}
-                onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.transform='translateY(-6px)'; (e.currentTarget as HTMLElement).style.boxShadow='0 12px 40px rgba(45,122,94,0.2)'; }}
-                onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.transform='translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow='0 4px 20px rgba(0,0,0,0.08)'; }}>
+>
                 <div style={{ height:'200px', overflow:'hidden', position:'relative' }}>
                   {l.gambar ? (
                     <img src={l.gambar} alt={l.nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
@@ -292,8 +289,7 @@ export default async function HomePage() {
               {artikel.slice(0,3).map((a: any, i: number) => (
                 <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
                   <div style={{ background:'white', borderRadius:'20px', overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', transition:'transform 0.3s', height:'100%' }}
-                    onMouseOver={(e) => (e.currentTarget as HTMLElement).style.transform='translateY(-4px)'}
-                    onMouseOut={(e) => (e.currentTarget as HTMLElement).style.transform='translateY(0)'}>
+    >
                     <div style={{ height:'200px', overflow:'hidden' }}>
                       {a.thumbnail ? (
                         <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
