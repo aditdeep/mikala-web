@@ -54,8 +54,8 @@ export default function TrainingPage() {
 
   const fetchFeedback = () => {
     setLoadingFeedback(true);
-    apiClient.get('/internal/training/report')
-      .then((r: any) => { setFeedbackList(Array.isArray(r.data?.data) ? r.data.data : []); setLoadingFeedback(false); })
+    apiClient.get('/internal/training/feedback')
+      .then((r: any) => { const d = r.data?.data; setFeedbackList(Array.isArray(d) ? d : []); setLoadingFeedback(false); })
       .catch(() => { setFeedbackList([]); setLoadingFeedback(false); });
   };
 
@@ -69,7 +69,7 @@ export default function TrainingPage() {
   const fetchReport = () => {
     setLoadingReport(true);
     Promise.all([
-      apiClient.get('/internal/training/report'),
+      apiClient.get('/internal/training/feedback'),
       apiClient.get('/internal/training/report/available'),
       apiClient.get('/internal/training/report/on-job'),
       apiClient.get('/internal/training/report/re-training'),
