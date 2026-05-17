@@ -262,7 +262,7 @@ export default function TrainingPage() {
                             {item.rekomendasi==='lanjut'?'Lanjut ke Lapangan':item.rekomendasi==='stop'?'Stop':'Lanjut ke Lapangan'}
                           </span>
                         </td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.catatan||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.feedback||item.catatan||'-'}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -499,7 +499,7 @@ export default function CustomerCarePage() {
                       <td style={{ padding:'12px 16px', fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{item.klien?.nama_lengkap||'-'}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', gap:'2px' }}>
-                          {[1,2,3,4,5].map(s => <span key={s} style={{ color: s<=(item.rating||0)?'#f59e0b':'var(--border)', fontSize:'14px' }}>★</span>)}
+                          {[1,2,3,4,5].map(s => <span key={s} style={{ color: s<=(item.rating_average||item.rating_kualitas||item.rating||0)?'#f59e0b':'var(--border)', fontSize:'14px' }}>★</span>)}
                         </div>
                       </td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{item.tipe||'-'}</td>
