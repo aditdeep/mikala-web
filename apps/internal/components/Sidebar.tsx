@@ -2,7 +2,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authService } from '@mikala/lib';
-import { Home, Users, GraduationCap, Headphones, DollarSign, TrendingUp, Settings, ChevronRight, X, LogOut } from 'lucide-react';
+import { Home, Users, GraduationCap, Headphones, DollarSign, TrendingUp, Settings, ChevronRight, X, LogOut, Globe } from 'lucide-react';
 
 const ALL_MENU = [
   { icon: Home,        label: 'Dashboard',     href: '/',              roles: ['manajemen','rekrutmen','training_center','customer_care','finance','marketing'] },
@@ -12,6 +12,7 @@ const ALL_MENU = [
   { icon: DollarSign,  label: 'Finance',       href: '/finance',       roles: ['manajemen','finance'] },
   { icon: TrendingUp,  label: 'Marketing',     href: '/marketing',     roles: ['manajemen','marketing'] },
   { icon: Settings,    label: 'Settings',      href: '/settings',      roles: ['manajemen'] },
+  { icon: Globe,       label: 'Website MGM',   href: '/website',       roles: ['manajemen','marketing'] },
 ];
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {
