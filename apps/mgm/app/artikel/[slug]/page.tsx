@@ -10,7 +10,7 @@ const WA = "https://wa.me/6281296998827";
 
 async function getArtikel(slug: string) {
   try {
-    const res = await fetch(`${API}/cms/artikel/${slug}`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API}/cms/artikel/${slug}`, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     return data.data || null;
@@ -19,7 +19,7 @@ async function getArtikel(slug: string) {
 
 async function getRelated(slug: string) {
   try {
-    const res = await fetch(`${API}/cms/artikel?per_page=4`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API}/cms/artikel?per_page=4`, { cache: 'no-store' });
     const data = await res.json();
     const d = data.data;
     const all = Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : [];
