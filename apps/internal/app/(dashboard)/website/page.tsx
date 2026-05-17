@@ -234,6 +234,32 @@ export default function WebsitePage() {
         </div>
       )}
 
+      {/* Pagination Artikel */}
+      {activeTab === 'artikel' && artikelLastPage > 1 && (
+        <div style={{ padding:'16px 20px', borderTop:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'8px', background:'var(--glass)', borderRadius:'0 0 20px 20px' }}>
+          <span style={{ fontSize:'12px', color:'var(--text3)' }}>Total {artikelTotal} artikel · Halaman {artikelPage}/{artikelLastPage}</span>
+          <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
+            <button disabled={artikelPage<=1} onClick={() => setArtikelPage(p=>p-1)}
+              style={{ padding:'6px 12px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text2)', fontSize:'12px', cursor:artikelPage<=1?'not-allowed':'pointer', opacity:artikelPage<=1?0.5:1 }}>
+              ← Prev
+            </button>
+            {Array.from({length:artikelLastPage},(_,i)=>i+1).map(p => (
+              <button key={p} onClick={() => setArtikelPage(p)}
+                style={{ width:'32px', height:'32px', borderRadius:'8px', border:'none', fontSize:'12px', fontWeight:600, cursor:'pointer',
+                  background: p===artikelPage?'linear-gradient(135deg, #2d7a5e, #d63a7a)':'var(--glass)',
+                  color: p===artikelPage?'white':'var(--text2)',
+                  borderWidth:'1px', borderStyle:'solid', borderColor:'var(--border)' }}>
+                {p}
+              </button>
+            ))}
+            <button disabled={artikelPage>=artikelLastPage} onClick={() => setArtikelPage(p=>p+1)}
+              style={{ padding:'6px 12px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text2)', fontSize:'12px', cursor:artikelPage>=artikelLastPage?'not-allowed':'pointer', opacity:artikelPage>=artikelLastPage?0.5:1 }}>
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* TAB LAYANAN */}
       {activeTab === 'layanan' && (
         <div style={cardStyle}>
