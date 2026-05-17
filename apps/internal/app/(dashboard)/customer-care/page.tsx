@@ -35,6 +35,12 @@ export default function CustomerCarePage() {
   const [savingKlien, setSavingKlien] = useState(false);
   const [kredensial, setKredensial] = useState<any>(null);
 
+  // Assign mitra state
+  const [showAssign, setShowAssign] = useState(false);
+  const [assignOrderId, setAssignOrderId] = useState<number|null>(null);
+  const [assignMitraId, setAssignMitraId] = useState('');
+  const [savingAssign, setSavingAssign] = useState(false);
+
   // Orders state
   const [orders, setOrders] = useState<any[]>([]);
   const [showFormOrder, setShowFormOrder] = useState(false);
@@ -123,6 +129,21 @@ export default function CustomerCarePage() {
       });
       setLoadingReport(false);
     }).catch(() => setLoadingReport(false));
+  };
+
+  const handleAssignMitra = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assignOrderId) return;
+    setSavingAssign(true);
+    try {
+      await apiClient.patch('/internal/cc/layanan/'+assignOrderId+'/assign', { mitra_id: assignMitraId });
+      setShowAssign(false);
+      setAssignOrderId(null);
+      setAssignMitraId('');
+      fetchOrders();
+      fetchAll();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal assign mitra'); }
+    finally { setSavingAssign(false); }
   };
 
   const handleCreateOrder = async (e: React.FormEvent) => {
@@ -291,9 +312,16 @@ export default function CustomerCarePage() {
                           </span>
                         </td>
                         <td style={{ padding:'12px 16px' }}>
+                          <div style={{ display:'flex', gap:'6px' }}>
                           <button onClick={() => setDetail(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', cursor:'pointer' }}>
                             <Eye size={12}/>Detail
                           </button>
+                          {!item.mitra_id && (
+                            <button onClick={() => { setAssignOrderId(item.id); setShowAssign(true); fetchOrders(); }} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer' }}>
+                              Assign
+                            </button>
+                          )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -338,9 +366,16 @@ export default function CustomerCarePage() {
                           </span>
                         </td>
                         <td style={{ padding:'12px 16px' }}>
+                          <div style={{ display:'flex', gap:'6px' }}>
                           <button onClick={() => setDetail(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', cursor:'pointer' }}>
                             <Eye size={12}/>Detail
                           </button>
+                          {!item.mitra_id && (
+                            <button onClick={() => { setAssignOrderId(item.id); setShowAssign(true); fetchOrders(); }} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer' }}>
+                              Assign
+                            </button>
+                          )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -502,8 +537,8 @@ export default function CustomerCarePage() {
                           {[1,2,3,4,5].map(s => <span key={s} style={{ color: s<=(item.rating_average||item.rating_kualitas||item.rating||0)?'#f59e0b':'var(--border)', fontSize:'14px' }}>★</span>)}
                         </div>
                       </td>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{item.tipe||'-'}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.catatan||'-'}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{item.tipe||item.tipe_feedback||'layanan'}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.komentar||item.catatan||'-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -581,6 +616,35 @@ export default function CustomerCarePage() {
             <button onClick={() => setKredensial(null)} style={{ width:'100%', padding:'12px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer' }}>
               Sudah Dicatat, Tutup
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Assign Mitra */}
+      {showAssign && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'400px', padding:'24px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Assign Mitra ke Order #{assignOrderId}</h2>
+              <button onClick={() => setShowAssign(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <form onSubmit={handleAssignMitra} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Pilih Mitra *</label>
+                <select required value={assignMitraId} onChange={e => setAssignMitraId(e.target.value)} style={inp}>
+                  <option value="">-- Pilih Mitra --</option>
+                  {mitraList.map((m: any) => (
+                    <option key={m.id} value={m.id}>{m.user?.name} ({m.status})</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => setShowAssign(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={savingAssign} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #3b82f6, #2563eb)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {savingAssign ? 'Menyimpan...' : 'Assign Mitra'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
