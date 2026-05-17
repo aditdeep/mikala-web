@@ -57,11 +57,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       {/* Logo */}
       <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 4px 12px rgba(124,58,237,0.4)' }}>
-            <span style={{ color:'white', fontWeight:800, fontSize:'16px' }}>M</span>
-          </div>
           <div>
-            <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Mikala" style={{ height:'32px', objectFit:'contain' }} />
+            <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Mikala" style={{ height:'36px', objectFit:'contain' }} />
             <p style={{ color:'var(--text3)', fontSize:'11px', marginTop:'2px' }}>Internal</p>
           </div>
         </div>
