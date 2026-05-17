@@ -1,4 +1,5 @@
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
+import { ThemeProvider } from '../components/ThemeProvider';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
@@ -11,13 +12,12 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'Mikala Klien',
-  description: 'Layanan homecare terbaik untuk keluarga Anda',
+  description: 'Platform Mikala Klien - Mikala Global Medika',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Mikala Klien',
-    startupImage: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_klien_txpz8r.png',
   },
   icons: {
     icon: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_klien_txpz8r.png',
@@ -37,7 +37,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title" content="Mikala Klien" />
         <link rel="apple-touch-icon" href="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_klien_txpz8r.png" />
       </head>
-      <body>{children}<PWAInstallPrompt appName="Mikala Klien" color="#ec4899" icon="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_klien_txpz8r.png" /></body>
+      <body>
+        <ThemeProvider>
+          {children}
+          <PWAInstallPrompt appName="Mikala Klien" color="#ec4899" icon="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_klien_txpz8r.png" />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

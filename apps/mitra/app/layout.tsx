@@ -1,4 +1,5 @@
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
+import { ThemeProvider } from '../components/ThemeProvider';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
@@ -11,13 +12,12 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'Mikala Mitra',
-  description: 'Platform mitra perawat Mikala Global Medika',
+  description: 'Platform Mikala Mitra - Mikala Global Medika',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Mikala Mitra',
-    startupImage: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_mitra_shjtze.png',
   },
   icons: {
     icon: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_mitra_shjtze.png',
@@ -37,7 +37,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title" content="Mikala Mitra" />
         <link rel="apple-touch-icon" href="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_mitra_shjtze.png" />
       </head>
-      <body>{children}<PWAInstallPrompt appName="Mikala Mitra" color="#7c3aed" icon="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_mitra_shjtze.png" /></body>
+      <body>
+        <ThemeProvider>
+          {children}
+          <PWAInstallPrompt appName="Mikala Mitra" color="#7c3aed" icon="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_mitra_shjtze.png" />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
