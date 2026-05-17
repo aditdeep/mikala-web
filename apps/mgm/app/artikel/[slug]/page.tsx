@@ -17,65 +17,93 @@ async function getArtikel(slug: string) {
   } catch { return null; }
 }
 
-async function getRelated() {
+async function getRelated(slug: string) {
   try {
     const res = await fetch(`${API}/cms/artikel?per_page=4`, { next: { revalidate: 3600 } });
     const data = await res.json();
     const d = data.data;
-    return Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : [];
+    const all = Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : [];
+    return all.filter((a: any) => a.slug !== slug).slice(0, 3);
   } catch { return []; }
 }
 
 export default async function ArtikelDetailPage({ params }: { params: { slug: string } }) {
-  const [artikel, related] = await Promise.all([getArtikel(params.slug), getRelated()]);
+  const [artikel, related] = await Promise.all([getArtikel(params.slug), getRelated(params.slug)]);
   if (!artikel) notFound();
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f8fffe' }}>
+    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
       <Navbar active="/artikel" />
-      <div style={{ maxWidth:'860px', margin:'0 auto', padding:'40px 20px' }}>
-        <div style={{ display:'flex', gap:'8px', alignItems:'center', marginBottom:'24px', fontSize:'13px', color:'#9ca3af' }}>
+
+      <div style={{ maxWidth:'820px', margin:'0 auto', padding:'clamp(24px,5vw,48px) 16px' }}>
+        {/* Breadcrumb */}
+        <div style={{ display:'flex', gap:'6px', alignItems:'center', marginBottom:'20px', fontSize:'12px', color:'#9ca3af', flexWrap:'wrap' }}>
           <Link href="/" style={{ color:GREEN, textDecoration:'none' }}>Beranda</Link>
           <span>/</span>
           <Link href="/artikel" style={{ color:GREEN, textDecoration:'none' }}>Artikel</Link>
           <span>/</span>
-          <span style={{ color:'#374151' }}>{artikel.judul?.slice(0,40)}...</span>
+          <span style={{ color:'#374151', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'200px' }}>{artikel.judul}</span>
         </div>
-        <div style={{ display:'flex', gap:'12px', marginBottom:'16px', alignItems:'center', flexWrap:'wrap' }}>
+
+        {/* Meta */}
+        <div style={{ display:'flex', gap:'10px', marginBottom:'14px', alignItems:'center', flexWrap:'wrap' }}>
           <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'12px', padding:'4px 12px', fontSize:'12px', fontWeight:600 }}>{artikel.kategori||'Artikel'}</span>
-          <span style={{ color:'#9ca3af', fontSize:'13px' }}>{artikel.created_at ? new Date(artikel.created_at).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : ''}</span>
+          <span style={{ color:'#9ca3af', fontSize:'12px' }}>
+            {artikel.created_at ? new Date(artikel.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}
+          </span>
         </div>
-        <h1 style={{ fontSize:'clamp(24px,4vw,40px)', fontWeight:800, color:'#1a2e25', lineHeight:1.2, margin:'0 0 24px' }}>{artikel.judul}</h1>
+
+        {/* Title */}
+        <h1 style={{ fontSize:'clamp(22px,4vw,38px)', fontWeight:800, color:'#1a2e25', lineHeight:1.2, margin:'0 0 20px' }}>{artikel.judul}</h1>
+
+        {/* Thumbnail */}
         {artikel.thumbnail && (
-          <div style={{ borderRadius:'20px', overflow:'hidden', marginBottom:'36px', boxShadow:'0 8px 30px rgba(0,0,0,0.1)' }}>
-            <img src={artikel.thumbnail} alt={artikel.judul} style={{ width:'100%', maxHeight:'460px', objectFit:'cover' }} />
+          <div style={{ borderRadius:'16px', overflow:'hidden', marginBottom:'32px', boxShadow:'0 8px 30px rgba(0,0,0,0.1)' }}>
+            <img src={artikel.thumbnail} alt={artikel.judul} style={{ width:'100%', maxHeight:'clamp(200px,50vw,440px)', objectFit:'cover' }} />
           </div>
         )}
-        <div style={{ fontSize:'17px', lineHeight:1.9, color:'#374151' }}
-          dangerouslySetInnerHTML={{ __html: artikel.konten || artikel.excerpt || '' }} />
-        <div style={{ marginTop:'48px', paddingTop:'28px', borderTop:`2px solid ${GREEN}20` }}>
-          <p style={{ fontWeight:600, color:'#1a2e25', marginBottom:'12px' }}>Bagikan:</p>
+
+        {/* Content */}
+        <div className="article-content" style={{ fontSize:'clamp(15px,2vw,17px)', lineHeight:1.9, color:'#374151' }}
+          dangerouslySetInnerHTML={{ __html: artikel.konten || `<p>${artikel.excerpt || ''}</p>` }} />
+
+        {/* Share */}
+        <div style={{ marginTop:'48px', paddingTop:'24px', borderTop:`2px solid ${GREEN}20` }}>
+          <p style={{ fontWeight:600, color:'#1a2e25', marginBottom:'12px', fontSize:'14px' }}>Bagikan artikel ini:</p>
           <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
             {[
-              { label:'💬 WhatsApp', color:'#25d366', href:`https://wa.me/?text=${encodeURIComponent(artikel.judul+' https://mikalaglobalmedika.com/artikel/'+artikel.slug)}` },
-              { label:'📘 Facebook', color:'#1877f2', href:`https://www.facebook.com/sharer/sharer.php?u=https://mikalaglobalmedika.com/artikel/${artikel.slug}` },
+              { label:'💬 WhatsApp', bg:'#25d366', href:`https://wa.me/?text=${encodeURIComponent(artikel.judul+' - https://mikalaglobalmedika.com/artikel/'+artikel.slug)}` },
+              { label:'📘 Facebook', bg:'#1877f2', href:`https://www.facebook.com/sharer/sharer.php?u=https://mikalaglobalmedika.com/artikel/${artikel.slug}` },
+              { label:'🐦 Twitter', bg:'#000', href:`https://twitter.com/intent/tweet?text=${encodeURIComponent(artikel.judul)}&url=https://mikalaglobalmedika.com/artikel/${artikel.slug}` },
             ].map(s => (
               <a key={s.label} href={s.href} target="_blank" rel="noreferrer"
-                style={{ background:s.color, color:'white', padding:'8px 16px', borderRadius:'20px', fontSize:'13px', fontWeight:600, textDecoration:'none' }}>
+                style={{ background:s.bg, color:'white', padding:'9px 18px', borderRadius:'20px', fontSize:'13px', fontWeight:600, textDecoration:'none' }}>
                 {s.label}
               </a>
             ))}
           </div>
         </div>
+
+        {/* CTA */}
+        <div style={{ marginTop:'40px', background:`linear-gradient(135deg, ${GREEN}10, ${PINK}10)`, borderRadius:'20px', padding:'28px', textAlign:'center', border:`1px solid ${GREEN}20` }}>
+          <p style={{ fontWeight:700, color:'#1a2e25', fontSize:'18px', margin:'0 0 8px' }}>Butuh Layanan Homecare?</p>
+          <p style={{ color:'#6b7280', margin:'0 0 20px', fontSize:'14px' }}>Konsultasi gratis dengan tim Mikala Global Medika</p>
+          <a href={WA} target="_blank" rel="noreferrer"
+            style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'12px 28px', borderRadius:'25px', fontSize:'14px', fontWeight:700, textDecoration:'none', display:'inline-block' }}>
+            💬 Konsultasi Sekarang
+          </a>
+        </div>
       </div>
+
+      {/* Related */}
       {related.length > 0 && (
-        <div style={{ background:'white', padding:'48px 20px' }}>
+        <div style={{ background:'white', padding:'clamp(32px,6vw,56px) 16px' }}>
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
-            <h2 style={{ fontSize:'24px', fontWeight:800, color:'#1a2e25', marginBottom:'24px' }}>Artikel Lainnya</h2>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'20px' }}>
-              {related.filter((r:any) => r.slug !== params.slug).slice(0,3).map((a:any, i:number) => (
+            <h2 style={{ fontSize:'clamp(20px,3vw,28px)', fontWeight:800, color:'#1a2e25', marginBottom:'24px' }}>Artikel Lainnya</h2>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%,260px), 1fr))', gap:'16px' }}>
+              {related.map((a: any, i: number) => (
                 <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
-                  <div style={{ background:'#f8fffe', borderRadius:'16px', overflow:'hidden', border:'1px solid rgba(45,122,94,0.1)' }}>
+                  <div style={{ background:'#f0faf5', borderRadius:'16px', overflow:'hidden', border:`1px solid ${GREEN}10` }}>
                     {a.thumbnail && <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'150px', objectFit:'cover' }} />}
                     <div style={{ padding:'14px' }}>
                       <h4 style={{ fontSize:'14px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px', lineHeight:1.4 }}>{a.judul}</h4>
@@ -88,6 +116,7 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
           </div>
         </div>
       )}
+
       <Footer />
     </div>
   );
