@@ -227,7 +227,11 @@ export default function RekrutmenPage() {
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                           <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--purple-light)', fontSize:'13px', fontWeight:700, flexShrink:0 }}>
-                            {(item.nama_lengkap || user.name)?.[0]?.toUpperCase() || 'M'}
+                            {item.foto_url ? (
+                              <img src={item.foto_url} alt="foto" style={{ width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover' }} />
+                            ) : (
+                              (item.nama_lengkap || user.name)?.[0]?.toUpperCase() || 'M'
+                            )}
                           </div>
                           <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{item.nama_lengkap || user.name || '-'}</p>
                         </div>
@@ -479,13 +483,18 @@ export default function RekrutmenPage() {
             </div>
             <div style={{ textAlign:'center', marginBottom:'20px' }}>
               <div style={{ width:'60px', height:'60px', borderRadius:'18px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 10px', fontSize:'22px', fontWeight:700, color:'white' }}>
-                {(showDetail.nama_lengkap || showDetail.user?.name)?.[0]?.toUpperCase() || 'M'}
+                {showDetail.foto_url ? (
+                  <img src={showDetail.foto_url} alt="foto" style={{ width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover' }} />
+                ) : (
+                  (showDetail.nama_lengkap || showDetail.user?.name)?.[0]?.toUpperCase() || 'M'
+                )}
               </div>
               <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text)' }}>{showDetail.nama_lengkap || showDetail.user?.name}</p>
               <p style={{ color:'var(--text3)', fontSize:'13px' }}>{showDetail.user?.email}</p>
             </div>
             {[
               { label:'Telepon', val: showDetail.user?.phone },
+              { label:'CV/Dokumen', val: showDetail.cv_file ? '[[cv]]' : '-' },
               { label:'NIK', val: showDetail.nik },
               { label:'Tgl Lahir', val: showDetail.tanggal_lahir },
               { label:'Jenis Kelamin', val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
