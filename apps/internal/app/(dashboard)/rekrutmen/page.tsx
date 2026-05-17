@@ -37,6 +37,10 @@ export default function RekrutmenPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<any>(null);
   const [showKredensial, setShowKredensial] = useState<any>(null);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const [uploadingCV, setUploadingCV] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState('');
+  const [cvUrl, setCvUrl] = useState('');
 
   useEffect(() => { fetchData(); }, []);
 
@@ -47,12 +51,34 @@ export default function RekrutmenPage() {
       .catch(() => { setData([]); setLoading(false); });
   };
 
+  const handleUpload = async (file: File, folder: string, setter: (url: string) => void, setLoading: (v: boolean) => void) => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+      const res: any = await apiClient.post('/internal/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data?.success) {
+        setter(res.data.url);
+        alert('Upload berhasil!');
+      } else {
+        alert('Upload gagal: ' + res.data?.message);
+      }
+    } catch (err: any) {
+      alert('Upload error: ' + (err.response?.data?.message || err.message));
+    } finally { setLoading(false); }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setErrorMsg('');
     try {
       const payload = {
+        foto_url: fotoUrl || undefined,
+        ktp_file: cvUrl || undefined,
         name: form.name,
         email: form.email,
         password: form.password || 'password123',
@@ -385,6 +411,29 @@ export default function RekrutmenPage() {
                     <select value={form.tipe_pekerjaan} onChange={e => set('tipe_pekerjaan', e.target.value)} style={inputStyle}>
                       {TIPE_PEKERJAAN.map(t => <option key={t}>{t}</option>)}
                     </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Dokumen */}
+              <div style={sectionStyle}>
+                <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>📎 Foto & Dokumen</p>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                  <div>
+                    <label style={labelStyle}>Foto Profil</label>
+                    {fotoUrl && <img src={fotoUrl} alt="foto" style={{ width:'80px', height:'80px', borderRadius:'10px', objectFit:'cover', marginBottom:'8px', display:'block' }} />}
+                    <input type="file" accept="image/*" onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0], 'mitra/foto', setFotoUrl, setUploadingFoto); }} style={{ display:'none' }} id="upload-foto" />
+                    <label htmlFor="upload-foto" style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', borderRadius:'10px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer', fontWeight:600 }}>
+                      {uploadingFoto ? 'Uploading...' : fotoUrl ? '✓ Ganti Foto' : '+ Upload Foto'}
+                    </label>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>CV / Dokumen</label>
+                    {cvUrl && <a href={cvUrl} target="_blank" rel="noreferrer" style={{ display:'block', color:'#10b981', fontSize:'12px', marginBottom:'8px' }}>✓ Lihat CV</a>}
+                    <input type="file" accept=".pdf,.doc,.docx,image/*" onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0], 'mitra/cv', setCvUrl, setUploadingCV); }} style={{ display:'none' }} id="upload-cv" />
+                    <label htmlFor="upload-cv" style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'10px', color:'#10b981', fontSize:'12px', cursor:'pointer', fontWeight:600 }}>
+                      {uploadingCV ? 'Uploading...' : cvUrl ? '✓ Ganti CV' : '+ Upload CV'}
+                    </label>
                   </div>
                 </div>
               </div>

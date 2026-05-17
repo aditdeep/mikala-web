@@ -14,6 +14,8 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState<any>({});
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState('');
 
   useEffect(() => {
     const u = authService.getUser();
@@ -23,6 +25,7 @@ export default function ProfilePage() {
         const data = r.data?.data;
         const m = data?.mitra || data?.profile || data;
         setMitra(m);
+        setFotoUrl(m?.foto_url || '');
         setForm({
           phone:        u?.phone || '',
           alamat:       m?.alamat || '',
@@ -41,7 +44,7 @@ export default function ProfilePage() {
     setSaving(true);
     setError('');
     try {
-      await apiClient.patch('/mitra/profile', form);
+      await apiClient.patch('/mitra/profile', { ...form, foto_url: fotoUrl });
       const r: any = await apiClient.get('/mitra/profile');
       const data = r.data?.data;
       setMitra(data?.mitra || data?.profile || data);
@@ -51,6 +54,24 @@ export default function ProfilePage() {
     } catch (err: any) {
       setError(err.response?.data?.message || 'Gagal menyimpan');
     } finally { setSaving(false); }
+  };
+
+  const handleUploadFoto = async (file: File) => {
+    setUploadingFoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'mitra/foto');
+      const res: any = await apiClient.post('/mitra/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data?.success) {
+        setFotoUrl(res.data.url);
+        await apiClient.patch('/mitra/profile', { foto_url: res.data.url });
+      }
+    } catch (err: any) {
+      alert('Upload gagal: ' + (err.response?.data?.message || err.message));
+    } finally { setUploadingFoto(false); }
   };
 
   const handleLogout = async () => {
@@ -92,8 +113,19 @@ export default function ProfilePage() {
       {/* Avatar Card */}
       <div style={{ background:'linear-gradient(135deg, #7c3aed 0%, #4f46e5 60%, #ec4899 100%)', borderRadius:'24px', padding:'28px', textAlign:'center', boxShadow:'0 8px 32px rgba(124,58,237,0.4)', position:'relative', overflow:'hidden' }}>
         <div style={{ position:'absolute', top:'-30px', right:'-30px', width:'120px', height:'120px', borderRadius:'50%', background:'rgba(255,255,255,0.08)' }}/>
-        <div style={{ width:'80px', height:'80px', borderRadius:'24px', margin:'0 auto 16px', background:'rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', fontWeight:700, color:'white', border:'2px solid rgba(255,255,255,0.4)' }}>
-          {initials}
+        <div style={{ position:'relative', width:'80px', height:'80px', margin:'0 auto 16px' }}>
+          {fotoUrl ? (
+            <img src={fotoUrl} alt="foto" style={{ width:'80px', height:'80px', borderRadius:'24px', objectFit:'cover', border:'2px solid rgba(255,255,255,0.4)' }} />
+          ) : (
+            <div style={{ width:'80px', height:'80px', borderRadius:'24px', background:'rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', fontWeight:700, color:'white', border:'2px solid rgba(255,255,255,0.4)' }}>
+              {initials}
+            </div>
+          )}
+          <input type="file" accept="image/*" id="upload-foto-profil" style={{ display:'none' }}
+            onChange={e => { if(e.target.files?.[0]) handleUploadFoto(e.target.files[0]); }} />
+          <label htmlFor="upload-foto-profil" style={{ position:'absolute', bottom:'-4px', right:'-4px', width:'24px', height:'24px', borderRadius:'8px', background:'white', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.2)' }}>
+            {uploadingFoto ? '⏳' : '📷'}
+          </label>
         </div>
         <h2 className="text-white text-xl font-bold">{user?.name || 'Mitra'}</h2>
         <p className="text-purple-200 text-sm mt-1">{user?.email || ''}</p>
