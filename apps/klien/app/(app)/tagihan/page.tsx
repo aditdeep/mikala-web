@@ -49,7 +49,8 @@ export default function TagihanPage() {
     overdue: { label:'Jatuh Tempo',  color:'#ef4444', bg:'rgba(239,68,68,0.15)',   border:'rgba(239,68,68,0.3)',   icon: AlertCircle },
     unpaid:  { label:'Belum Bayar',  color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)',  icon: Clock },
     partial: { label:'Sebagian',     color:'#3b82f6', bg:'rgba(59,130,246,0.15)',  border:'rgba(59,130,246,0.3)',  icon: Clock },
-    pending: { label:'Menunggu',     color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)',  icon: Clock },
+    pending:   { label:'Menunggu Verifikasi', color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)',  icon: Clock },
+    cancelled: { label:'Dibatalkan',         color:'#ef4444', bg:'rgba(239,68,68,0.15)',   border:'rgba(239,68,68,0.3)',   icon: Clock },
   };
 
   const copyToClipboard = (text: string) => {
@@ -133,7 +134,7 @@ export default function TagihanPage() {
                     <div className="flex items-center gap-1.5 font-bold text-base" style={{ color:'var(--green)' }}>
                       <DollarSign size={17} />Rp {Number(invoice.total)?.toLocaleString('id-ID') || 0}
                     </div>
-                    {invoice.status !== 'paid' && (
+                    {invoice.status !== 'paid' && invoice.status !== 'cancelled' && invoice.status !== 'pending' && (
                       <button onClick={() => { setSelectedInvoice(invoice); setPaymentMethod(''); }}
                         style={{ padding:'8px 18px', background:'linear-gradient(135deg, #10b981, #059669)', borderRadius:'10px', border:'none', color:'white', fontSize:'12px', fontWeight:600, cursor:'pointer', boxShadow:'0 3px 10px rgba(16,185,129,0.4)' }}>
                         Bayar
