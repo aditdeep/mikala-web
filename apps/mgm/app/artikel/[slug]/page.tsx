@@ -8,6 +8,26 @@ const GREEN = '#2d7a5e';
 const PINK = '#d63a7a';
 const WA = "https://wa.me/6281296998827";
 
+function cleanContent(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/\/in>/gi, '</i>')
+    .replace(/<\/in>/gi, '</i>')
+    .replace(/\bin\b(?=[^<]*<\/)/g, '')
+    .replace(/<p>\s*<\/p>/g, '')
+    .replace(/<p>\s*&nbsp;\s*<\/p>/g, '')
+    .trim();
+}
+
+function addDropCap(html: string): string {
+  if (!html) return '';
+  return html.replace(
+    /(<p[^>]*>)\s*([a-zA-Z])/,
+    (_match: string, tag: string, letter: string) =>
+      `${tag}<span style="float:left;font-size:3.8em;line-height:0.85;font-weight:900;color:#2d7a5e;margin:4px 10px 0 0;font-family:Georgia,serif;">${letter.toUpperCase()}</span>`
+  );
+}
+
 async function getArtikel(slug: string) {
   try {
     const res = await fetch(`${API}/cms/artikel/${slug}`, { cache: 'no-store' });
@@ -19,7 +39,7 @@ async function getArtikel(slug: string) {
 
 async function getRelated(slug: string) {
   try {
-    const res = await fetch(`${API}/cms/artikel?per_page=4`, { cache: 'no-store' });
+    const res = await fetch(`${API}/cms/artikel?per_page=4`, { next: { revalidate: 3600 } });
     const data = await res.json();
     const d = data.data;
     const all = Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : [];
@@ -27,43 +47,17 @@ async function getRelated(slug: string) {
   } catch { return []; }
 }
 
-function cleanContent(html: string): string {
-  if (!html) return '';
-  return html
-    .replace(/\\n/g, '
-')           // fix escaped newlines
-    .replace(/\\r/g, '')             // remove 
-    .replace(/\/in>/gi, '</i>')       // fix malformed /in> tags
-    .replace(/<\/in>/gi, '</i>')      // fix </in>
-    .replace(/\bin\b(?!<)/g, '')     // remove stray 'in' text
-    .replace(/<p>\s*<\/p>/g, '')       // remove empty paragraphs
-    .replace(/<p>\s*&nbsp;\s*<\/p>/g, '') // remove nbsp paragraphs
-    .replace(/
-{3,}/g, '
-
-')        // max 2 newlines
-    .trim();
-}
-
-function addDropCap(html: string): string {
-  if (!html) return '';
-  // Find first paragraph and add drop cap to first letter
-  return html.replace(
-    /(<p[^>]*>)\s*([a-zA-ZA-Z])/,
-    (match, tag, letter) => `${tag}<span style="float:left;font-size:4em;line-height:0.8;font-weight:900;color:#2d7a5e;margin:4px 8px 0 0;font-family:Georgia,serif;">${letter.toUpperCase()}</span>`
-  );
-}
-
 export default async function ArtikelDetailPage({ params }: { params: { slug: string } }) {
   const [artikel, related] = await Promise.all([getArtikel(params.slug), getRelated(params.slug)]);
   if (!artikel) notFound();
+
+  const kontenHtml = addDropCap(cleanContent(artikel.konten || `<p>${artikel.excerpt || ''}</p>`));
 
   return (
     <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
       <Navbar active="/artikel" />
 
       <div style={{ maxWidth:'820px', margin:'0 auto', padding:'clamp(24px,5vw,48px) 16px' }}>
-        {/* Breadcrumb */}
         <div style={{ display:'flex', gap:'6px', alignItems:'center', marginBottom:'20px', fontSize:'12px', color:'#9ca3af', flexWrap:'wrap' }}>
           <Link href="/" style={{ color:GREEN, textDecoration:'none' }}>Beranda</Link>
           <span>/</span>
@@ -72,7 +66,6 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
           <span style={{ color:'#374151', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'200px' }}>{artikel.judul}</span>
         </div>
 
-        {/* Meta */}
         <div style={{ display:'flex', gap:'10px', marginBottom:'14px', alignItems:'center', flexWrap:'wrap' }}>
           <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'12px', padding:'4px 12px', fontSize:'12px', fontWeight:600 }}>{artikel.kategori||'Artikel'}</span>
           <span style={{ color:'#9ca3af', fontSize:'12px' }}>
@@ -80,21 +73,17 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
           </span>
         </div>
 
-        {/* Title */}
         <h1 style={{ fontSize:'clamp(22px,4vw,38px)', fontWeight:800, color:'#1a2e25', lineHeight:1.2, margin:'0 0 20px' }}>{artikel.judul}</h1>
 
-        {/* Thumbnail */}
         {artikel.thumbnail && (
           <div style={{ borderRadius:'16px', overflow:'hidden', marginBottom:'32px', boxShadow:'0 8px 30px rgba(0,0,0,0.1)' }}>
             <img src={artikel.thumbnail} alt={artikel.judul} style={{ width:'100%', maxHeight:'clamp(200px,50vw,440px)', objectFit:'cover' }} />
           </div>
         )}
 
-        {/* Content */}
         <div className="article-content" style={{ fontSize:'clamp(15px,2vw,17px)', lineHeight:1.9, color:'#374151' }}
-          dangerouslySetInnerHTML={{ __html: addDropCap(cleanContent(artikel.konten || `<p>${artikel.excerpt || ''}</p>`)) }} />
+          dangerouslySetInnerHTML={{ __html: kontenHtml }} />
 
-        {/* Share */}
         <div style={{ marginTop:'48px', paddingTop:'24px', borderTop:`2px solid ${GREEN}20` }}>
           <p style={{ fontWeight:600, color:'#1a2e25', marginBottom:'12px', fontSize:'14px' }}>Bagikan artikel ini:</p>
           <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
@@ -111,7 +100,6 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
           </div>
         </div>
 
-        {/* CTA */}
         <div style={{ marginTop:'40px', background:`linear-gradient(135deg, ${GREEN}10, ${PINK}10)`, borderRadius:'20px', padding:'28px', textAlign:'center', border:`1px solid ${GREEN}20` }}>
           <p style={{ fontWeight:700, color:'#1a2e25', fontSize:'18px', margin:'0 0 8px' }}>Butuh Layanan Homecare?</p>
           <p style={{ color:'#6b7280', margin:'0 0 20px', fontSize:'14px' }}>Konsultasi gratis dengan tim Mikala Global Medika</p>
@@ -122,7 +110,6 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
         </div>
       </div>
 
-      {/* Related */}
       {related.length > 0 && (
         <div style={{ background:'white', padding:'clamp(32px,6vw,56px) 16px' }}>
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
