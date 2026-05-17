@@ -1,4 +1,5 @@
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
+import { ThemeProvider } from '../components/ThemeProvider';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
@@ -37,7 +38,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title" content="Mikala Internal" />
         <link rel="apple-touch-icon" href="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_internal_jpgggi.png" />
       </head>
-      <body>{children}<PWAInstallPrompt appName="Mikala Internal" color="#7c3aed" icon="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_internal_jpgggi.png" /></body>
+      <body>
+        <ThemeProvider>
+          {children}
+          <PWAInstallPrompt appName="Mikala Internal" color="#7c3aed" icon="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_internal_jpgggi.png" />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
