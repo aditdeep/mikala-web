@@ -14,7 +14,6 @@ const labelStyle: React.CSSProperties = { color:'var(--text2)', fontSize:'12px',
 const sectionStyle: React.CSSProperties = { background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'14px', padding:'16px', marginBottom:'12px' };
 
 const emptyForm = {
-  payment_type: 'cash' as 'cash'|'kredit',
   name:'', email:'', password:'', phone:'', nik:'', usia:'',
   tempat_lahir:'', tanggal_lahir:'', alamat:'', kelurahan:'', kecamatan:'',
   kota:'', provinsi:'', suku:'', pendidikan:'', jenis_kelamin:'L',
@@ -22,6 +21,7 @@ const emptyForm = {
   agama:'Islam', takut_hewan:'Tidak takut semua hewan',
   bisa_memasak:'3', tipe_pekerjaan:'Perawat Homecare',
   pengalaman_pelatihan:'', pengalaman:'',
+  payment_type: 'cash' as 'cash' | 'kredit',
 };
 
 export default function RekrutmenPage() {
@@ -43,6 +43,12 @@ export default function RekrutmenPage() {
   const [fotoUrl, setFotoUrl] = useState('');
   const [cvUrl, setCvUrl] = useState('');
 
+  // State untuk verifikasi
+  const [priceRateInput, setPriceRateInput] = useState('');
+  const [totalBiayaInput, setTotalBiayaInput] = useState('');
+  const [cicilanInput, setCicilanInput] = useState('');
+  const [verifying, setVerifying] = useState(false);
+
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = () => {
@@ -52,24 +58,18 @@ export default function RekrutmenPage() {
       .catch(() => { setData([]); setLoading(false); });
   };
 
-  const handleUpload = async (file: File, folder: string, setter: (url: string) => void, setLoading: (v: boolean) => void) => {
-    setLoading(true);
+  const handleUpload = async (file: File, folder: string, setter: (url: string) => void, setUploading: (v: boolean) => void) => {
+    setUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('folder', folder);
-      const res: any = await apiClient.post('/internal/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      if (res.data?.success) {
-        setter(res.data.url);
-        alert('Upload berhasil!');
-      } else {
-        alert('Upload gagal: ' + res.data?.message);
-      }
+      const res: any = await apiClient.post('/internal/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (res.data?.success) { setter(res.data.url); alert('Upload berhasil!'); }
+      else alert('Upload gagal: ' + res.data?.message);
     } catch (err: any) {
       alert('Upload error: ' + (err.response?.data?.message || err.message));
-    } finally { setLoading(false); }
+    } finally { setUploading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,20 +80,17 @@ export default function RekrutmenPage() {
       const payload = {
         foto_url: fotoUrl || undefined,
         ktp_file: cvUrl || undefined,
-        name: form.name,
-        email: form.email,
+        name: form.name, email: form.email,
         password: form.password || 'password123',
-        phone: form.phone,
-        nik: form.nik,
+        phone: form.phone, nik: form.nik,
         alamat: `${form.alamat}, ${form.kelurahan}, ${form.kecamatan}, ${form.kota}, ${form.provinsi}`,
-        kota: form.kota,
-        provinsi: form.provinsi,
+        kota: form.kota, provinsi: form.provinsi,
         tanggal_lahir: form.tanggal_lahir,
         jenis_kelamin: form.jenis_kelamin,
         pendidikan: form.pendidikan,
+        payment_type: form.payment_type,
         pengalaman: `PELATIHAN: ${form.pengalaman_pelatihan}\n\nPENGALAMAN KERJA: ${form.pengalaman}\n\nDATA TAMBAHAN: Usia: ${form.usia}, Tempat Lahir: ${form.tempat_lahir}, TB: ${form.tinggi}cm, BB: ${form.berat}kg, Vaksin: ${form.vaksin}, Agama: ${form.agama}, Status Nikah: ${form.status_nikah}, Takut Hewan: ${form.takut_hewan}, Memasak: ${form.bisa_memasak}/5, Tipe Pekerjaan: ${form.tipe_pekerjaan}, Suku: ${form.suku}`,
       };
-
       if (editItem) {
         await apiClient.patch(`/internal/rekrutmen/mitra/${editItem.id}`, payload);
       } else {
@@ -101,9 +98,7 @@ export default function RekrutmenPage() {
       }
       setShowModal(false);
       setEditItem(null);
-      if (!editItem) {
-        setShowKredensial({ email: form.email, password: form.password || 'password123', name: form.name });
-      }
+      if (!editItem) setShowKredensial({ email: form.email, password: form.password || 'password123', name: form.name });
       setForm({ ...emptyForm });
       fetchData();
     } catch (err: any) {
@@ -113,7 +108,6 @@ export default function RekrutmenPage() {
 
   const handleEdit = (item: any) => {
     setEditItem(item);
-    // Pre-fill form dari data yang ada
     const user = item.user || {};
     setForm({
       ...emptyForm,
@@ -130,6 +124,7 @@ export default function RekrutmenPage() {
       jenis_kelamin: item.jenis_kelamin || 'L',
       pengalaman: item.pengalaman || '',
       pengalaman_pelatihan: '',
+      payment_type: item.payment_type || 'cash',
     });
     setShowModal(true);
     setErrorMsg('');
@@ -142,6 +137,42 @@ export default function RekrutmenPage() {
       fetchData();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal menghapus data');
+    }
+  };
+
+  const handleTerima = async () => {
+    if (!priceRateInput) { alert('Isi price rate terlebih dahulu'); return; }
+    if (showDetail?.payment_type === 'kredit' && (!totalBiayaInput || !cicilanInput)) {
+      alert('Isi total biaya dan cicilan per job untuk metode kredit'); return;
+    }
+    setVerifying(true);
+    try {
+      await apiClient.post(`/internal/rekrutmen/mitra/${showDetail.id}/terima`, {
+        price_rate: priceRateInput,
+        total_biaya: totalBiayaInput || undefined,
+        cicilan_per_job: cicilanInput || undefined,
+      });
+      alert('✅ Mitra berhasil diterima dan diaktifkan!');
+      setShowDetail(null);
+      setPriceRateInput('');
+      setTotalBiayaInput('');
+      setCicilanInput('');
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal');
+    } finally { setVerifying(false); }
+  };
+
+  const handleTolak = async () => {
+    const catatan = prompt('Alasan penolakan (wajib diisi):');
+    if (!catatan) return;
+    try {
+      await apiClient.post(`/internal/rekrutmen/mitra/${showDetail.id}/tolak`, { catatan_rekrutmen: catatan });
+      alert('Mitra ditolak');
+      setShowDetail(null);
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal');
     }
   };
 
@@ -161,23 +192,35 @@ export default function RekrutmenPage() {
 
   const statusBadge = (s: string) => {
     const map: any = {
-      training: { color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)', label:'Training', icon: Clock },
-      available: { color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', label:'Tersedia', icon: CheckCircle },
-      on_job: { color:'#3b82f6', bg:'rgba(59,130,246,0.15)', border:'rgba(59,130,246,0.3)', label:'On Job', icon: CheckCircle },
-      inactive: { color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)', label:'Nonaktif', icon: XCircle },
-      re_training: { color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)', label:'Re-Training', icon: Clock },
+      training:    { color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)',  label:'Training',  icon: Clock },
+      available:   { color:'#10b981', bg:'rgba(16,185,129,0.15)',  border:'rgba(16,185,129,0.3)',  label:'Tersedia',  icon: CheckCircle },
+      on_job:      { color:'#3b82f6', bg:'rgba(59,130,246,0.15)',  border:'rgba(59,130,246,0.3)',  label:'On Job',    icon: CheckCircle },
+      inactive:    { color:'#ef4444', bg:'rgba(239,68,68,0.15)',   border:'rgba(239,68,68,0.3)',   label:'Nonaktif',  icon: XCircle },
+      re_training: { color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)', label:'Re-Training',icon: Clock },
     };
     return map[s] || map.training;
   };
 
+  const rekrutmenBadge = (s: string) => {
+    const map: any = {
+      pending:   { color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  label:'Pending' },
+      in_review: { color:'#3b82f6', bg:'rgba(59,130,246,0.1)', label:'Review' },
+      verified:  { color:'#10b981', bg:'rgba(16,185,129,0.1)', label:'Diterima' },
+      rejected:  { color:'#ef4444', bg:'rgba(239,68,68,0.1)',  label:'Ditolak' },
+    };
+    return map[s] || map.pending;
+  };
+
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'10px' }}>
         <div>
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Rekrutmen Mitra</h1>
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>{data.length} total pelamar terdaftar</p>
         </div>
-        <button onClick={() => { setShowModal(true); setEditItem(null); setForm({...emptyForm}); setErrorMsg(''); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer', boxShadow:'0 4px 12px rgba(124,58,237,0.35)' }}>
+        <button onClick={() => { setShowModal(true); setEditItem(null); setForm({...emptyForm}); setErrorMsg(''); setFotoUrl(''); setCvUrl(''); }}
+          style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer', boxShadow:'0 4px 12px rgba(124,58,237,0.35)' }}>
           <Plus size={15} />Tambah Pelamar
         </button>
       </div>
@@ -199,7 +242,8 @@ export default function RekrutmenPage() {
       {/* Search */}
       <div style={{ background:'var(--glass)', backdropFilter:'blur(16px)', border:'1px solid var(--glass-border)', borderRadius:'14px', display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px' }}>
         <Search size={16} style={{ color:'var(--text3)', flexShrink:0 }} />
-        <input placeholder="Cari nama, email, kota..." value={search} onChange={e => setSearch(e.target.value)} style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:'13px', width:'100%' }} />
+        <input placeholder="Cari nama, email, kota..." value={search} onChange={e => setSearch(e.target.value)}
+          style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:'13px', width:'100%' }} />
       </div>
 
       {/* Table */}
@@ -210,10 +254,10 @@ export default function RekrutmenPage() {
           </div>
         ) : filtered.length > 0 ? (
           <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'750px' }}>
               <thead>
                 <tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Nama','Email','Pendidikan','Kota','Status','Aksi'].map(h => (
+                  {['Nama','Email','Pendidikan','Kota','Status','Rekrutmen','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', whiteSpace:'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -221,24 +265,23 @@ export default function RekrutmenPage() {
               <tbody>
                 {filtered.map((item: any, i: number) => {
                   const badge = statusBadge(item.status);
+                  const rbadge = rekrutmenBadge(item.status_rekrutmen || 'pending');
                   const Icon = badge.icon;
                   const user = item.user || item;
                   return (
                     <tr key={item.id || i} style={{ borderBottom:'1px solid var(--border)' }}>
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                          <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--purple-light)', fontSize:'13px', fontWeight:700, flexShrink:0 }}>
-                            {item.foto_url ? (
-                              <img src={item.foto_url} alt="foto" style={{ width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover' }} />
-                            ) : (
-                              (item.nama_lengkap || user.name)?.[0]?.toUpperCase() || 'M'
-                            )}
+                          <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--purple-light)', fontSize:'13px', fontWeight:700, flexShrink:0, overflow:'hidden' }}>
+                            {item.foto_url
+                              ? <img src={item.foto_url} alt="foto" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                              : (item.nama_lengkap || user.name)?.[0]?.toUpperCase() || 'M'}
                           </div>
                           <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{item.nama_lengkap || user.name || '-'}</p>
                         </div>
                       </td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{user.email || '-'}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'150px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.pendidikan_terakhir || '-'}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'130px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.pendidikan_terakhir || '-'}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kota || '-'}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:badge.bg, color:badge.color, border:`1px solid ${badge.border}`, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
@@ -246,17 +289,26 @@ export default function RekrutmenPage() {
                         </span>
                       </td>
                       <td style={{ padding:'12px 16px' }}>
+                        <span style={{ fontSize:'11px', fontWeight:600, padding:'3px 8px', borderRadius:'8px', background:rbadge.bg, color:rbadge.color }}>
+                          {rbadge.label}
+                        </span>
+                      </td>
+                      <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
-                          <button onClick={() => setShowDetail(item)} title="Detail" style={{ padding:'5px 8px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                          <button onClick={() => { setShowDetail(item); setPriceRateInput(item.price_rate || ''); }} title="Detail"
+                            style={{ padding:'5px 8px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                             <Eye size={13} />
                           </button>
-                          <button onClick={() => handleEdit(item)} title="Edit" style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                          <button onClick={() => handleEdit(item)} title="Edit"
+                            style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                             <Pencil size={13} />
                           </button>
-                          <button onClick={() => router.push(`/rekrutmen/cv/${item.id}`)} title="CV" style={{ padding:'5px 8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                          <button onClick={() => router.push(`/rekrutmen/cv/${item.id}`)} title="CV"
+                            style={{ padding:'5px 8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
                             <FileText size={13} />CV
                           </button>
-                          <button onClick={() => setShowDeleteConfirm(item)} title="Hapus" style={{ padding:'5px 8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                          <button onClick={() => setShowDeleteConfirm(item)} title="Hapus"
+                            style={{ padding:'5px 8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                             <Trash2 size={13} />
                           </button>
                         </div>
@@ -277,7 +329,163 @@ export default function RekrutmenPage() {
         )}
       </div>
 
-      {/* Delete Confirm Modal */}
+      {/* ── DETAIL MODAL ─────────────────────────────────────── */}
+      {showDetail && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', overflowY:'auto' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'520px', padding:'24px', maxHeight:'90vh', overflowY:'auto' }}>
+            {/* Header */}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Detail Pelamar</h2>
+              <div style={{ display:'flex', gap:'6px' }}>
+                <button onClick={() => { setShowDetail(null); router.push(`/rekrutmen/cv/${showDetail.id}`); }}
+                  style={{ display:'flex', alignItems:'center', gap:'4px', padding:'7px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                  <FileText size={14} />CV
+                </button>
+                <button onClick={() => setShowDetail(null)}
+                  style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}>
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Avatar */}
+            <div style={{ textAlign:'center', marginBottom:'20px' }}>
+              <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 10px', overflow:'hidden', fontSize:'22px', fontWeight:700, color:'white' }}>
+                {showDetail.foto_url
+                  ? <img src={showDetail.foto_url} alt="foto" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  : (showDetail.nama_lengkap || showDetail.user?.name)?.[0]?.toUpperCase() || 'M'}
+              </div>
+              <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text)' }}>{showDetail.nama_lengkap || showDetail.user?.name}</p>
+              <p style={{ color:'var(--text3)', fontSize:'13px' }}>{showDetail.user?.email}</p>
+              <div style={{ display:'inline-flex', gap:'6px', marginTop:'6px' }}>
+                <span style={{ fontSize:'11px', fontWeight:600, padding:'2px 8px', borderRadius:'6px', background: showDetail.payment_type === 'kredit' ? 'rgba(236,72,153,0.1)' : 'rgba(16,185,129,0.1)', color: showDetail.payment_type === 'kredit' ? '#ec4899' : '#10b981' }}>
+                  {showDetail.payment_type === 'kredit' ? '💳 Kredit' : '💵 Cash'}
+                </span>
+                <span style={{ fontSize:'11px', fontWeight:600, padding:'2px 8px', borderRadius:'6px', background: rekrutmenBadge(showDetail.status_rekrutmen || 'pending').bg, color: rekrutmenBadge(showDetail.status_rekrutmen || 'pending').color }}>
+                  {rekrutmenBadge(showDetail.status_rekrutmen || 'pending').label}
+                </span>
+              </div>
+            </div>
+
+            {/* Data rows */}
+            {[
+              { label:'Telepon',    val: showDetail.user?.phone },
+              { label:'CV/Dok',     val: showDetail.cv_file ? '✓ Ada' : '-' },
+              { label:'NIK',        val: showDetail.nik },
+              { label:'Tgl Lahir',  val: showDetail.tanggal_lahir },
+              { label:'Kelamin',    val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
+              { label:'Kota',       val: showDetail.kota },
+              { label:'Pendidikan', val: showDetail.pendidikan_terakhir },
+              { label:'Status',     val: showDetail.status },
+              { label:'Pengalaman', val: showDetail.pengalaman },
+            ].map(f => (
+              <div key={f.label} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
+                <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'80px', flexShrink:0 }}>{f.label}</span>
+                <span style={{ color:'var(--text)', fontSize:'12px', fontWeight:500, wordBreak:'break-word' }}>{f.val || '-'}</span>
+              </div>
+            ))}
+
+            {/* Status buttons */}
+            <div style={{ display:'flex', gap:'8px', marginTop:'16px' }}>
+              {[
+                { s:'training',  label:'Training',  color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)' },
+                { s:'available', label:'Tersedia',  color:'#10b981', bg:'rgba(16,185,129,0.15)',  border:'rgba(16,185,129,0.3)' },
+                { s:'inactive',  label:'Nonaktif',  color:'#ef4444', bg:'rgba(239,68,68,0.15)',   border:'rgba(239,68,68,0.3)' },
+              ].map(({ s, label, color, bg, border }) => (
+                <button key={s} onClick={async () => {
+                  try {
+                    await apiClient.patch(`/internal/rekrutmen/mitra/${showDetail.id}`, { status: s });
+                    setShowDetail({ ...showDetail, status: s });
+                    fetchData();
+                  } catch {}
+                }} style={{ flex:1, padding:'8px', borderRadius:'10px', border:`1px solid ${border}`, background: showDetail.status === s ? bg : 'transparent', color, fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── VERIFIKASI REKRUTMEN ── */}
+            {(showDetail.status_rekrutmen === 'pending' || showDetail.status_rekrutmen === 'in_review' || !showDetail.status_rekrutmen) && (
+              <div style={{ marginTop:'16px', background:'rgba(124,58,237,0.05)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'14px', padding:'16px' }}>
+                <p style={{ fontSize:'13px', fontWeight:700, color:'var(--purple-light)', marginBottom:'12px' }}>🔍 Verifikasi Rekrutmen</p>
+
+                <div style={{ marginBottom:'10px' }}>
+                  <label style={labelStyle}>Price Rate per Job (Rp) *</label>
+                  <input
+                    type="number"
+                    value={priceRateInput}
+                    onChange={e => setPriceRateInput(e.target.value)}
+                    placeholder="contoh: 150000"
+                    style={inputStyle}
+                  />
+                </div>
+
+                {showDetail.payment_type === 'kredit' && (
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', marginBottom:'10px' }}>
+                    <div>
+                      <label style={labelStyle}>Total Biaya Pelatihan *</label>
+                      <input
+                        type="number"
+                        value={totalBiayaInput}
+                        onChange={e => setTotalBiayaInput(e.target.value)}
+                        placeholder="2000000"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Cicilan per Job *</label>
+                      <input
+                        type="number"
+                        value={cicilanInput}
+                        onChange={e => setCicilanInput(e.target.value)}
+                        placeholder="50000"
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display:'flex', gap:'8px', marginTop:'12px' }}>
+                  <button
+                    onClick={handleTerima}
+                    disabled={verifying}
+                    style={{ flex:1, padding:'10px', background:'linear-gradient(135deg,#10b981,#059669)', border:'none', borderRadius:'10px', color:'white', fontWeight:700, fontSize:'13px', cursor: verifying ? 'not-allowed' : 'pointer', opacity: verifying ? 0.7 : 1 }}>
+                    {verifying ? 'Memproses...' : '✓ Terima Mitra'}
+                  </button>
+                  <button
+                    onClick={handleTolak}
+                    style={{ flex:1, padding:'10px', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'10px', color:'#ef4444', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                    ✗ Tolak
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showDetail.status_rekrutmen === 'verified' && (
+              <div style={{ marginTop:'16px', background:'rgba(16,185,129,0.05)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'14px', padding:'14px', textAlign:'center' }}>
+                <CheckCircle size={28} style={{ color:'#10b981', margin:'0 auto 8px' }} />
+                <p style={{ fontWeight:700, color:'#10b981', fontSize:'14px' }}>Mitra Telah Diterima</p>
+                {showDetail.price_rate && (
+                  <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'4px' }}>
+                    Rate: Rp {Number(showDetail.price_rate).toLocaleString('id-ID')}/job
+                  </p>
+                )}
+              </div>
+            )}
+
+            {showDetail.status_rekrutmen === 'rejected' && (
+              <div style={{ marginTop:'16px', background:'rgba(239,68,68,0.05)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'14px', padding:'14px' }}>
+                <p style={{ fontWeight:700, color:'#ef4444', fontSize:'13px', marginBottom:'4px' }}>✗ Ditolak</p>
+                {showDetail.catatan_rekrutmen && (
+                  <p style={{ fontSize:'12px', color:'var(--text3)' }}>{showDetail.catatan_rekrutmen}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── DELETE CONFIRM ── */}
       {showDeleteConfirm && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'20px', padding:'24px', maxWidth:'360px', width:'100%', textAlign:'center' }}>
@@ -286,7 +494,7 @@ export default function RekrutmenPage() {
             </div>
             <h3 style={{ fontSize:'16px', fontWeight:700, color:'var(--text)', marginBottom:'8px' }}>Hapus Data Mitra?</h3>
             <p style={{ fontSize:'13px', color:'var(--text3)', marginBottom:'20px' }}>
-              Data <strong>{showDeleteConfirm.nama_lengkap || showDeleteConfirm.user?.name}</strong> akan dinonaktifkan. Aksi ini tidak bisa dibatalkan.
+              Data <strong>{showDeleteConfirm.nama_lengkap || showDeleteConfirm.user?.name}</strong> akan dinonaktifkan.
             </p>
             <div style={{ display:'flex', gap:'10px' }}>
               <button onClick={() => setShowDeleteConfirm(null)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
@@ -296,7 +504,7 @@ export default function RekrutmenPage() {
         </div>
       )}
 
-      {/* Form Modal (Add/Edit) */}
+      {/* ── ADD/EDIT FORM MODAL ── */}
       {showModal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, overflowY:'auto', padding:'20px' }} onClick={e => { if(e.target === e.currentTarget) setShowModal(false); }}>
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'700px', padding:'24px', margin:'auto' }}>
@@ -332,18 +540,32 @@ export default function RekrutmenPage() {
                     </div>
                   )}
                   <div>
-                    <label style={labelStyle}>Nomor HP *</label</label>
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Metode Biaya Pelatihan *</label>
-                    <select value={form.payment_type} onChange={e => set('payment_type', e.target.value)} style={inputStyle}>
-                      <option value="cash">💵 Cash — Bayar penuh sebelum mulai</option>
-                      <option value="kredit">💳 Kredit — Cicil dari pendapatan job</option>
-                    </select>
-                  </div>
+                    <label style={labelStyle}>Nomor HP *</label>
                     <input required value={form.phone} onChange={e => set('phone', e.target.value)} style={inputStyle} placeholder="08xxxxxxxxxx" />
                   </div>
                 </div>
+              </div>
+
+              {/* Biaya Pelatihan */}
+              <div style={sectionStyle}>
+                <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>💳 Biaya Pelatihan</p>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                  <button type="button" onClick={() => set('payment_type','cash')}
+                    style={{ padding:'14px', borderRadius:'12px', border:`2px solid ${form.payment_type==='cash'?'#10b981':'var(--border)'}`, background: form.payment_type==='cash'?'rgba(16,185,129,0.08)':'transparent', cursor:'pointer', textAlign:'left' as const }}>
+                    <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', marginBottom:'4px' }}>💵 Cash</p>
+                    <p style={{ fontSize:'11px', color:'var(--text3)' }}>Bayar penuh sebelum mulai</p>
+                  </button>
+                  <button type="button" onClick={() => set('payment_type','kredit')}
+                    style={{ padding:'14px', borderRadius:'12px', border:`2px solid ${form.payment_type==='kredit'?'#ec4899':'var(--border)'}`, background: form.payment_type==='kredit'?'rgba(236,72,153,0.08)':'transparent', cursor:'pointer', textAlign:'left' as const }}>
+                    <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', marginBottom:'4px' }}>💳 Kredit</p>
+                    <p style={{ fontSize:'11px', color:'var(--text3)' }}>Cicil dari pendapatan job</p>
+                  </button>
+                </div>
+                {form.payment_type === 'kredit' && (
+                  <div style={{ marginTop:'10px', background:'rgba(236,72,153,0.06)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'10px', padding:'10px 12px', fontSize:'12px', color:'#ec4899' }}>
+                    ℹ️ Besaran cicilan per-job akan ditentukan oleh Rekrutmen saat verifikasi.
+                  </div>
+                )}
               </div>
 
               {/* Data Pribadi */}
@@ -352,17 +574,16 @@ export default function RekrutmenPage() {
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                   <div style={{ gridColumn:'1/-1' }}>
                     <label style={labelStyle}>Nama Lengkap (sesuai KTP) *</label>
-                    <input required value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} placeholder="Nama lengkap" />
+                    <input required value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} />
                   </div>
-                  <div><label style={labelStyle}>NIK *</label><input required value={form.nik} onChange={e => set('nik', e.target.value)} style={inputStyle} placeholder="16 digit NIK" /></div>
+                  <div><label style={labelStyle}>NIK *</label><input required value={form.nik} onChange={e => set('nik', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Usia *</label><input required type="number" value={form.usia} onChange={e => set('usia', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Tempat Lahir *</label><input required value={form.tempat_lahir} onChange={e => set('tempat_lahir', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Tanggal Lahir *</label><input required type="date" value={form.tanggal_lahir} onChange={e => set('tanggal_lahir', e.target.value)} style={inputStyle} /></div>
                   <div>
                     <label style={labelStyle}>Jenis Kelamin *</label>
                     <select value={form.jenis_kelamin} onChange={e => set('jenis_kelamin', e.target.value)} style={inputStyle}>
-                      <option value="L">Laki-laki</option>
-                      <option value="P">Perempuan</option>
+                      <option value="L">Laki-laki</option><option value="P">Perempuan</option>
                     </select>
                   </div>
                   <div>
@@ -371,12 +592,12 @@ export default function RekrutmenPage() {
                       <option>Menikah</option><option>Belum Menikah</option>
                     </select>
                   </div>
-                  <div style={{ gridColumn:'1/-1' }}><label style={labelStyle}>Alamat sesuai KTP *</label><input required value={form.alamat} onChange={e => set('alamat', e.target.value)} style={inputStyle} /></div>
+                  <div style={{ gridColumn:'1/-1' }}><label style={labelStyle}>Alamat *</label><input required value={form.alamat} onChange={e => set('alamat', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Kelurahan</label><input value={form.kelurahan} onChange={e => set('kelurahan', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Kecamatan</label><input value={form.kecamatan} onChange={e => set('kecamatan', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Kota *</label><input required value={form.kota} onChange={e => set('kota', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Provinsi *</label><input required value={form.provinsi} onChange={e => set('provinsi', e.target.value)} style={inputStyle} /></div>
-                  <div><label style={labelStyle}>Suku</label><input value={form.suku} onChange={e => set('suku', e.target.value)} style={inputStyle} placeholder="Opsional" /></div>
+                  <div><label style={labelStyle}>Suku</label><input value={form.suku} onChange={e => set('suku', e.target.value)} style={inputStyle} /></div>
                   <div>
                     <label style={labelStyle}>Agama *</label>
                     <select value={form.agama} onChange={e => set('agama', e.target.value)} style={inputStyle}>
@@ -388,11 +609,11 @@ export default function RekrutmenPage() {
 
               {/* Data Fisik */}
               <div style={sectionStyle}>
-                <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>💪 Data Fisik & Preferensi</p>
+                <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>💪 Data Fisik</p>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                  <div><label style={labelStyle}>Tinggi Badan (CM) *</label><input required type="number" value={form.tinggi} onChange={e => set('tinggi', e.target.value)} style={inputStyle} placeholder="165" /></div>
-                  <div><label style={labelStyle}>Berat Badan (KG) *</label><input required type="number" value={form.berat} onChange={e => set('berat', e.target.value)} style={inputStyle} placeholder="55" /></div>
-                  <div><label style={labelStyle}>Vaksin *</label><input required value={form.vaksin} onChange={e => set('vaksin', e.target.value)} style={inputStyle} placeholder="Covid, Hepatitis" /></div>
+                  <div><label style={labelStyle}>Tinggi (cm) *</label><input required type="number" value={form.tinggi} onChange={e => set('tinggi', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Berat (kg) *</label><input required type="number" value={form.berat} onChange={e => set('berat', e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Vaksin *</label><input required value={form.vaksin} onChange={e => set('vaksin', e.target.value)} style={inputStyle} /></div>
                   <div>
                     <label style={labelStyle}>Takut Hewan *</label>
                     <select value={form.takut_hewan} onChange={e => set('takut_hewan', e.target.value)} style={inputStyle}>
@@ -400,27 +621,27 @@ export default function RekrutmenPage() {
                     </select>
                   </div>
                   <div>
-                    <label style={labelStyle}>Kemampuan Memasak (1-5) *</label>
+                    <label style={labelStyle}>Kemampuan Memasak (1-5)</label>
                     <select value={form.bisa_memasak} onChange={e => set('bisa_memasak', e.target.value)} style={inputStyle}>
-                      {[1,2,3,4,5].map(n => <option key={n} value={String(n)}>{n} - {n===1?'Tidak bisa':n===2?'Sedikit':n===3?'Cukup':n===4?'Mahir':'Sangat mahir'}</option>)}
+                      {[1,2,3,4,5].map(n => <option key={n} value={String(n)}>{n} - {['','Tidak bisa','Sedikit','Cukup','Mahir','Sangat mahir'][n]}</option>)}
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Pendidikan & Pekerjaan */}
+              {/* Pendidikan */}
               <div style={sectionStyle}>
                 <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>🎓 Pendidikan & Pekerjaan</p>
                 <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                   <div>
                     <label style={labelStyle}>Pendidikan Terakhir *</label>
                     <select required value={form.pendidikan} onChange={e => set('pendidikan', e.target.value)} style={inputStyle}>
-                      <option value="">-- Pilih pendidikan --</option>
+                      <option value="">-- Pilih --</option>
                       {PENDIDIKAN.map(p => <option key={p}>{p}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={labelStyle}>Tipe Pekerjaan yang Dilamar *</label>
+                    <label style={labelStyle}>Tipe Pekerjaan *</label>
                     <select value={form.tipe_pekerjaan} onChange={e => set('tipe_pekerjaan', e.target.value)} style={inputStyle}>
                       {TIPE_PEKERJAAN.map(t => <option key={t}>{t}</option>)}
                     </select>
@@ -428,14 +649,14 @@ export default function RekrutmenPage() {
                 </div>
               </div>
 
-              {/* Upload Dokumen */}
+              {/* Upload */}
               <div style={sectionStyle}>
                 <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>📎 Foto & Dokumen</p>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                   <div>
                     <label style={labelStyle}>Foto Profil</label>
-                    {fotoUrl && <img src={fotoUrl} alt="foto" style={{ width:'80px', height:'80px', borderRadius:'10px', objectFit:'cover', marginBottom:'8px', display:'block' }} />}
-                    <input type="file" accept="image/*" onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0], 'mitra/foto', setFotoUrl, setUploadingFoto); }} style={{ display:'none' }} id="upload-foto" />
+                    {fotoUrl && <img src={fotoUrl} alt="foto" style={{ width:'72px', height:'72px', borderRadius:'10px', objectFit:'cover', marginBottom:'8px', display:'block' }} />}
+                    <input type="file" accept="image/*" onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0],'mitra/foto',setFotoUrl,setUploadingFoto); }} style={{ display:'none' }} id="upload-foto" />
                     <label htmlFor="upload-foto" style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', borderRadius:'10px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer', fontWeight:600 }}>
                       {uploadingFoto ? 'Uploading...' : fotoUrl ? '✓ Ganti Foto' : '+ Upload Foto'}
                     </label>
@@ -443,7 +664,7 @@ export default function RekrutmenPage() {
                   <div>
                     <label style={labelStyle}>CV / Dokumen</label>
                     {cvUrl && <a href={cvUrl} target="_blank" rel="noreferrer" style={{ display:'block', color:'#10b981', fontSize:'12px', marginBottom:'8px' }}>✓ Lihat CV</a>}
-                    <input type="file" accept=".pdf,.doc,.docx,image/*" onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0], 'mitra/cv', setCvUrl, setUploadingCV); }} style={{ display:'none' }} id="upload-cv" />
+                    <input type="file" accept=".pdf,.doc,.docx,image/*" onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0],'mitra/cv',setCvUrl,setUploadingCV); }} style={{ display:'none' }} id="upload-cv" />
                     <label htmlFor="upload-cv" style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'10px', color:'#10b981', fontSize:'12px', cursor:'pointer', fontWeight:600 }}>
                       {uploadingCV ? 'Uploading...' : cvUrl ? '✓ Ganti CV' : '+ Upload CV'}
                     </label>
@@ -457,11 +678,11 @@ export default function RekrutmenPage() {
                 <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                   <div>
                     <label style={labelStyle}>Pelatihan / Pendidikan non-formal *</label>
-                    <textarea required value={form.pengalaman_pelatihan} onChange={e => set('pengalaman_pelatihan', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' as const }} placeholder="Sebutkan pelatihan, atau tulis 'Tidak ada'" />
+                    <textarea required value={form.pengalaman_pelatihan} onChange={e => set('pengalaman_pelatihan', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pelatihan, atau 'Tidak ada'" />
                   </div>
                   <div>
                     <label style={labelStyle}>Pengalaman Kerja / Magang *</label>
-                    <textarea required value={form.pengalaman} onChange={e => set('pengalaman', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' as const }} placeholder="Ceritakan pengalaman kerja, atau tulis 'Tidak ada'" />
+                    <textarea required value={form.pengalaman} onChange={e => set('pengalaman', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pengalaman, atau 'Tidak ada'" />
                   </div>
                 </div>
               </div>
@@ -477,103 +698,27 @@ export default function RekrutmenPage() {
         </div>
       )}
 
-      {/* Detail Modal */}
-      {showDetail && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
-          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'520px', padding:'24px', maxHeight:'85vh', overflowY:'auto' }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
-              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Detail Pelamar</h2>
-              <div style={{ display:'flex', gap:'6px' }}>
-                <button onClick={() => { setShowDetail(null); router.push(`/rekrutmen/cv/${showDetail.id}`); }} style={{ display:'flex', alignItems:'center', gap:'4px', padding:'7px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                  <FileText size={14} />CV
-                </button>
-                <button onClick={() => setShowDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={18} /></button>
-              </div>
-            </div>
-            <div style={{ textAlign:'center', marginBottom:'20px' }}>
-              <div style={{ width:'60px', height:'60px', borderRadius:'18px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 10px', fontSize:'22px', fontWeight:700, color:'white' }}>
-                {showDetail.foto_url ? (
-                  <img src={showDetail.foto_url} alt="foto" style={{ width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover' }} />
-                ) : (
-                  (showDetail.nama_lengkap || showDetail.user?.name)?.[0]?.toUpperCase() || 'M'
-                )}
-              </div>
-              <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text)' }}>{showDetail.nama_lengkap || showDetail.user?.name}</p>
-              <p style={{ color:'var(--text3)', fontSize:'13px' }}>{showDetail.user?.email}</p>
-            </div>
-            {[
-              { label:'Telepon', val: showDetail.user?.phone },
-              { label:'CV/Dokumen', val: showDetail.cv_file ? '[[cv]]' : '-' },
-              { label:'NIK', val: showDetail.nik },
-              { label:'Tgl Lahir', val: showDetail.tanggal_lahir },
-              { label:'Jenis Kelamin', val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
-              { label:'Alamat', val: showDetail.alamat },
-              { label:'Kota', val: showDetail.kota },
-              { label:'Pendidikan', val: showDetail.pendidikan_terakhir },
-              { label:'Status', val: showDetail.status },
-              { label:'Training', val: showDetail.training_status },
-              { label:'Pengalaman', val: showDetail.pengalaman },
-            ].map(f => (
-              <div key={f.label} style={{ display:'flex', gap:'12px', padding:'9px 0', borderBottom:'1px solid var(--border)' }}>
-                <span style={{ color:'var(--text3)', fontSize:'12px', minWidth:'100px', flexShrink:0 }}>{f.label}</span>
-                <span style={{ color:'var(--text)', fontSize:'13px', fontWeight:500, wordBreak:'break-word' as const }}>{f.val || '-'}</span>
-              </div>
-            ))}
-            <div style={{ marginTop:'16px', display:'flex', gap:'8px' }}>
-              {[
-                { s:'training', label:'Training', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)' },
-                { s:'available', label:'Tersedia', color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
-                { s:'inactive', label:'Nonaktif', color:'#ef4444', bg:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)' },
-              ].map(({ s, label, color, bg, border }) => (
-                <button key={s} onClick={async () => {
-                  try {
-                    await apiClient.patch(`/internal/rekrutmen/mitra/${showDetail.id}`, { status: s });
-                    setShowDetail({ ...showDetail, status: s });
-                    fetchData();
-                  } catch {}
-                }} style={{ flex:1, padding:'8px', borderRadius:'10px', border:`1px solid ${border}`, background: showDetail.status === s ? bg : 'transparent', color, fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Kredensial */}
+      {/* ── KREDENSIAL MODAL ── */}
       {showKredensial && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
-          <div style={{ background:'var(--card)', borderRadius:'20px', padding:'28px', width:'100%', maxWidth:'400px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+          <div style={{ background:'var(--card)', borderRadius:'20px', padding:'28px', width:'100%', maxWidth:'400px' }}>
             <div style={{ textAlign:'center', marginBottom:'20px' }}>
-              <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:'linear-gradient(135deg, #10b981, #059669)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}>
-                <span style={{ fontSize:'24px' }}>✓</span>
-              </div>
+              <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:'linear-gradient(135deg, #10b981, #059669)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px', fontSize:'24px' }}>✓</div>
               <h3 style={{ fontWeight:700, fontSize:'18px', color:'var(--text)' }}>Mitra Berhasil Didaftarkan!</h3>
               <p style={{ color:'var(--text3)', fontSize:'13px', marginTop:'4px' }}>Simpan kredensial login berikut</p>
             </div>
-
             <div style={{ background:'rgba(16,185,129,0.08)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'14px', padding:'16px', marginBottom:'16px' }}>
-              <p style={{ color:'var(--text3)', fontSize:'11px', marginBottom:'12px', fontWeight:600, textTransform:'uppercase' }}>Kredensial Login Mitra</p>
-              <div style={{ marginBottom:'10px' }}>
-                <p style={{ color:'var(--text3)', fontSize:'11px' }}>Nama</p>
-                <p style={{ color:'var(--text)', fontSize:'14px', fontWeight:600 }}>{showKredensial.name}</p>
-              </div>
-              <div style={{ marginBottom:'10px' }}>
-                <p style={{ color:'var(--text3)', fontSize:'11px' }}>Email</p>
-                <p style={{ color:'var(--text)', fontSize:'14px', fontWeight:600 }}>{showKredensial.email}</p>
-              </div>
-              <div>
-                <p style={{ color:'var(--text3)', fontSize:'11px' }}>Password</p>
-                <p style={{ color:'#10b981', fontSize:'18px', fontWeight:700, letterSpacing:'2px' }}>{showKredensial.password}</p>
-              </div>
+              {[{ label:'Nama', val: showKredensial.name }, { label:'Email', val: showKredensial.email }, { label:'Password', val: showKredensial.password }].map(f => (
+                <div key={f.label} style={{ marginBottom:'10px' }}>
+                  <p style={{ color:'var(--text3)', fontSize:'11px' }}>{f.label}</p>
+                  <p style={{ color: f.label==='Password'?'#10b981':'var(--text)', fontSize: f.label==='Password'?'18px':'14px', fontWeight:700, letterSpacing: f.label==='Password'?'2px':'normal' }}>{f.val}</p>
+                </div>
+              ))}
             </div>
-
             <div style={{ background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'10px', padding:'10px 12px', marginBottom:'16px' }}>
-              <p style={{ color:'#f59e0b', fontSize:'12px' }}>⚠️ Catat dan bagikan kredensial ini ke mitra. Password tidak bisa dilihat lagi setelah ditutup.</p>
+              <p style={{ color:'#f59e0b', fontSize:'12px' }}>⚠️ Catat dan bagikan ke mitra. Password tidak bisa dilihat lagi.</p>
             </div>
-
-            <button onClick={() => setShowKredensial(null)}
-              style={{ width:'100%', padding:'12px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer' }}>
+            <button onClick={() => setShowKredensial(null)} style={{ width:'100%', padding:'12px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer' }}>
               Sudah Dicatat, Tutup
             </button>
           </div>
