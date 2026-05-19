@@ -14,6 +14,7 @@ const labelStyle: React.CSSProperties = { color:'var(--text2)', fontSize:'12px',
 const sectionStyle: React.CSSProperties = { background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'14px', padding:'16px', marginBottom:'12px' };
 
 const emptyForm = {
+  payment_type: 'cash' as 'cash'|'kredit',
   name:'', email:'', password:'', phone:'', nik:'', usia:'',
   tempat_lahir:'', tanggal_lahir:'', alamat:'', kelurahan:'', kecamatan:'',
   kota:'', provinsi:'', suku:'', pendidikan:'', jenis_kelamin:'L',
@@ -331,7 +332,15 @@ export default function RekrutmenPage() {
                     </div>
                   )}
                   <div>
-                    <label style={labelStyle}>Nomor HP *</label>
+                    <label style={labelStyle}>Nomor HP *</label</label>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Metode Biaya Pelatihan *</label>
+                    <select value={form.payment_type} onChange={e => set('payment_type', e.target.value)} style={inputStyle}>
+                      <option value="cash">💵 Cash — Bayar penuh sebelum mulai</option>
+                      <option value="kredit">💳 Kredit — Cicil dari pendapatan job</option>
+                    </select>
+                  </div>
                     <input required value={form.phone} onChange={e => set('phone', e.target.value)} style={inputStyle} placeholder="08xxxxxxxxxx" />
                   </div>
                 </div>
