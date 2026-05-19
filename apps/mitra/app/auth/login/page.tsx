@@ -131,7 +131,11 @@ export default function LoginPage() {
         </div>
 
         <p style={{ color:'rgba(167,139,250,0.5)', fontSize:'12px', textAlign:'center', marginTop:'24px' }}>
-          © 2026 Mikala Global Medika
+          <p style={{ textAlign:'center', marginTop:'14px', fontSize:'13px', color:'rgba(255,255,255,0.4)' }}>
+        Ingin bergabung?{' '}
+        <a href="/auth/register" style={{ color:'#a78bfa', fontWeight:600, textDecoration:'none' }}>Daftar sebagai Mitra</a>
+      </p>
+      <p style={{ textAlign:'center', fontSize:'12px', color:'rgba(255,255,255,0.3)', marginTop:'14px' }}>© 2026 Mikala Global Medika
         </p>
       </div>
     </div>
