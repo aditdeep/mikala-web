@@ -134,6 +134,9 @@ export default function RekrutmenPage() {
     try {
       await apiClient.delete(`/internal/rekrutmen/mitra/${id}`);
       setShowDeleteConfirm(null);
+      // Hapus dari local state langsung (tidak perlu tunggu fetch)
+      setData(prev => prev.filter((d: any) => d.id !== id));
+      // Fetch ulang untuk sinkronisasi
       fetchData();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal menghapus data');
@@ -179,6 +182,8 @@ export default function RekrutmenPage() {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const filtered = data.filter((d: any) => {
+    // Exclude inactive & keluar dari semua tab kecuali kalau memang dicari
+    if (activeTab === 'semua' && (d.status === 'inactive' || d.status === 'keluar')) return false;
     const matchTab = activeTab === 'semua' || d.status === activeTab;
     return matchTab && JSON.stringify(d).toLowerCase().includes(search.toLowerCase());
   });

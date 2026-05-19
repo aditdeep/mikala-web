@@ -28,6 +28,14 @@ export default function CVPage() {
     apiClient.get(`/internal/rekrutmen/mitra/${params.id}`)
       .then((res: any) => {
         const data = res.data?.data;
+        // Guard: hitung field yang missing
+        const missingFields: string[] = [];
+        if (!data.foto_url)            missingFields.push('Foto Profil');
+        if (!data.cv_file)             missingFields.push('CV / Dokumen');
+        if (!data.nik)                 missingFields.push('NIK');
+        if (!data.tanggal_lahir)       missingFields.push('Tanggal Lahir');
+        if (!data.pendidikan_terakhir) missingFields.push('Pendidikan');
+        if (!data.pengalaman)          missingFields.push('Pengalaman');
         setMitra(data);
         const m: string[] = [];
         if (!data?.nama_lengkap && !data?.user?.name) m.push('Nama Lengkap');
@@ -51,6 +59,27 @@ export default function CVPage() {
     const m = p?.match(/PENGALAMAN KERJA:[\s\S]*?([\s\S]*?)(?=DATA TAMBAHAN:|$)/i);
     return m ? m[1].trim() : '';
   };
+
+  // Guard: CV hanya bisa dilihat setelah verified
+  if (!loading && mitra && mitra.status_rekrutmen !== 'verified') {
+    return (
+      <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)', padding:'20px' }}>
+        <div style={{ textAlign:'center', maxWidth:'400px' }}>
+          <div style={{ width:'80px', height:'80px', borderRadius:'50%', background:'rgba(245,158,11,0.15)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px' }}>
+            <span style={{ fontSize:'36px' }}>🔒</span>
+          </div>
+          <h2 style={{ color:'var(--text)', fontSize:'20px', fontWeight:700, marginBottom:'10px' }}>CV Belum Tersedia</h2>
+          <p style={{ color:'var(--text3)', fontSize:'14px', lineHeight:'1.6', marginBottom:'20px' }}>
+            CV mitra <strong style={{ color:'var(--text)' }}>{mitra.nama_lengkap || mitra.user?.name}</strong> belum dapat dilihat karena status rekrutmen masih <strong style={{ color:'#f59e0b' }}>{mitra.status_rekrutmen || 'Pending'}</strong>.
+          </p>
+          <p style={{ color:'var(--text3)', fontSize:'13px', marginBottom:'24px' }}>CV hanya tersedia setelah mitra diterima (status: Verified).</p>
+          <button onClick={() => router.back()} style={{ padding:'10px 24px', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, cursor:'pointer' }}>
+            ← Kembali ke Rekrutmen
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'400px' }}>

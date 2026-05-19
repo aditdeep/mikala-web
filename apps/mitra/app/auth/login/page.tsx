@@ -35,11 +35,10 @@ export default function LoginPage() {
       {/* Orbs */}
       <div style={{ position:'absolute', top:'-10%', right:'-5%', width:'350px', height:'350px', borderRadius:'50%', background:'radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)', pointerEvents:'none' }}/>
       <div style={{ position:'absolute', bottom:'5%', left:'-10%', width:'300px', height:'300px', borderRadius:'50%', background:'radial-gradient(circle, rgba(236,72,153,0.2) 0%, transparent 70%)', pointerEvents:'none' }}/>
-      <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'500px', height:'500px', borderRadius:'50%', background:'radial-gradient(circle, rgba(79,70,229,0.1) 0%, transparent 70%)', pointerEvents:'none' }}/>
 
       <div style={{ width:'100%', maxWidth:'400px', position:'relative', zIndex:1 }}>
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div style={{ textAlign:'center', marginBottom:'32px' }}>
           <div style={{
             width:'72px', height:'72px', borderRadius:'22px', margin:'0 auto 16px',
             background:'linear-gradient(135deg, #7c3aed, #4f46e5)',
@@ -59,11 +58,7 @@ export default function LoginPage() {
           boxShadow:'0 24px 64px rgba(0,0,0,0.4)',
         }}>
           {error && (
-            <div style={{
-              background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)',
-              borderRadius:'12px', padding:'12px 16px', marginBottom:'20px',
-              color:'#f87171', fontSize:'14px',
-            }}>
+            <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'12px', padding:'12px 16px', marginBottom:'20px', color:'#f87171', fontSize:'14px' }}>
               {error}
             </div>
           )}
@@ -72,70 +67,55 @@ export default function LoginPage() {
             <div>
               <label style={{ color:'rgba(167,139,250,0.8)', fontSize:'13px', fontWeight:500, display:'block', marginBottom:'8px' }}>Email</label>
               <div style={{ position:'relative' }}>
-                <Mail size={17} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'rgba(167,139,250,0.6)' }} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  required
-                  style={{
-                    width:'100%', padding:'13px 14px 13px 42px',
-                    background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)',
-                    borderRadius:'14px', color:'white', fontSize:'14px', outline:'none',
-                  }}
-                />
+                <Mail size={17} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'rgba(167,139,250,0.6)' }}/>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="nama@email.com" required
+                  style={{ width:'100%', padding:'13px 14px 13px 42px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'14px', color:'white', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }}/>
               </div>
             </div>
 
             <div>
               <label style={{ color:'rgba(167,139,250,0.8)', fontSize:'13px', fontWeight:500, display:'block', marginBottom:'8px' }}>Password</label>
               <div style={{ position:'relative' }}>
-                <Lock size={17} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'rgba(167,139,250,0.6)' }} />
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  style={{
-                    width:'100%', padding:'13px 42px 13px 42px',
-                    background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)',
-                    borderRadius:'14px', color:'white', fontSize:'14px', outline:'none',
-                  }}
-                />
-                <button type="button" onClick={() => setShowPass(!showPass)} style={{
-                  position:'absolute', right:'14px', top:'50%', transform:'translateY(-50%)',
-                  background:'none', border:'none', cursor:'pointer', color:'rgba(167,139,250,0.6)',
-                }}>
-                  {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
+                <Lock size={17} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'rgba(167,139,250,0.6)' }}/>
+                <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required
+                  style={{ width:'100%', padding:'13px 42px 13px 42px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'14px', color:'white', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }}/>
+                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position:'absolute', right:'14px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'rgba(167,139,250,0.6)', display:'flex' }}>
+                  {showPass ? <EyeOff size={17}/> : <Eye size={17}/>}
                 </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                marginTop:'8px', padding:'15px',
-                background: loading ? 'rgba(124,58,237,0.5)' : 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-                border:'none', borderRadius:'14px', color:'white',
-                fontSize:'15px', fontWeight:700, cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow:'0 4px 20px rgba(124,58,237,0.4)',
-                transition:'all 0.2s',
-              }}
-            >
+            <button type="submit" disabled={loading} style={{
+              marginTop:'8px', padding:'15px',
+              background: loading ? 'rgba(124,58,237,0.5)' : 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+              border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:700,
+              cursor: loading ? 'not-allowed' : 'pointer', boxShadow:'0 4px 20px rgba(124,58,237,0.4)',
+            }}>
               {loading ? 'Masuk...' : 'Masuk'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div style={{ display:'flex', alignItems:'center', gap:'12px', margin:'20px 0' }}>
+            <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.08)' }}/>
+            <span style={{ color:'rgba(255,255,255,0.3)', fontSize:'12px' }}>atau</span>
+            <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.08)' }}/>
+          </div>
+
+          {/* Daftar button */}
+          <a href="/auth/register" style={{
+            display:'block', width:'100%', padding:'14px',
+            background:'rgba(124,58,237,0.12)', border:'2px solid rgba(124,58,237,0.4)',
+            borderRadius:'14px', color:'#a78bfa', fontSize:'14px', fontWeight:700,
+            textAlign:'center', textDecoration:'none', boxSizing:'border-box' as const,
+            transition:'all 0.2s',
+          }}>
+            🚀 Daftar sebagai Mitra
+          </a>
         </div>
 
-        <p style={{ color:'rgba(167,139,250,0.5)', fontSize:'12px', textAlign:'center', marginTop:'24px' }}>
-          <p style={{ textAlign:'center', marginTop:'14px', fontSize:'13px', color:'rgba(255,255,255,0.4)' }}>
-        Ingin bergabung?{' '}
-        <a href="/auth/register" style={{ color:'#a78bfa', fontWeight:600, textDecoration:'none' }}>Daftar sebagai Mitra</a>
-      </p>
-      <p style={{ textAlign:'center', fontSize:'12px', color:'rgba(255,255,255,0.3)', marginTop:'14px' }}>© 2026 Mikala Global Medika
+        <p style={{ color:'rgba(167,139,250,0.4)', fontSize:'12px', textAlign:'center', marginTop:'24px' }}>
+          © 2026 Mikala Global Medika
         </p>
       </div>
     </div>
