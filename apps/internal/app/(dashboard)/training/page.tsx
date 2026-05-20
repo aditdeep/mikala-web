@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { GraduationCap, Search, Eye, X, CheckCircle, Clock, XCircle, TrendingUp, MessageSquare, DollarSign, BarChart2, Plus, Save, Users, Star } from 'lucide-react';
+import { GraduationCap, Search, Eye, X, CheckCircle, Clock, XCircle, TrendingUp, MessageSquare, DollarSign, BarChart2, Plus, Save, Users, Star, CheckCircle2, Circle, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
 
 const statusMap: any = {
   pending:     { label:'Pending',  color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)',  icon: Clock },
@@ -38,7 +38,42 @@ export default function TrainingPage() {
   const [report, setReport] = useState<any>(null);
   const [loadingReport, setLoadingReport] = useState(false);
 
+  // Checklist state
+  const [checklistMitra, setChecklistMitra] = useState<any>(null);
+  const [selectedMitraId, setSelectedMitraId] = useState<number|null>(null);
+  const [loadingChecklist, setLoadingChecklist] = useState(false);
+  const [savingCheck, setSavingCheck] = useState<number|null>(null);
+  const [defaultTgl, setDefaultTgl] = useState(new Date().toISOString().split('T')[0]);
+  const [defaultPengajar, setDefaultPengajar] = useState('');
+  const [openKat, setOpenKat] = useState<string[]>(['Dasar','PHC']);
+  const [checkInputs, setCheckInputs] = useState<Record<number,{tanggal:string,pengajar:string}>>({});
+
   useEffect(() => { fetchData(); }, []);
+
+  const fetchChecklist = async (mitraId: number) => {
+    setLoadingChecklist(true);
+    setSelectedMitraId(mitraId);
+    try {
+      const r: any = await apiClient.get(`/internal/training/mitra/${mitraId}/progress`);
+      setChecklistMitra(r.data);
+    } catch {}
+    setLoadingChecklist(false);
+  };
+
+  const toggleCheck = async (materiId: number, checked: boolean) => {
+    if (!selectedMitraId) return;
+    const tgl      = checkInputs[materiId]?.tanggal || defaultTgl;
+    const pengajar = checkInputs[materiId]?.pengajar || defaultPengajar;
+    if (!checked && !pengajar) { alert('Isi nama pengajar terlebih dahulu'); return; }
+    setSavingCheck(materiId);
+    try {
+      await apiClient.post(`/internal/training/mitra/${selectedMitraId}/checklist/${materiId}`, {
+        tanggal_dapat: tgl, pengajar: pengajar || 'Trainer',
+      });
+      fetchChecklist(selectedMitraId);
+    } catch {}
+    setSavingCheck(null);
+  };
   useEffect(() => {
     if (activeTab === 'feedback') fetchFeedback();
     if (activeTab === 'pricing') fetchPricing();
@@ -127,10 +162,11 @@ export default function TrainingPage() {
   };
 
   const TABS = [
-    { key:'training', label:'Training', icon: GraduationCap },
-    { key:'feedback', label:'Feedback', icon: MessageSquare },
-    { key:'pricing',  label:'Pricing',  icon: DollarSign },
-    { key:'report',   label:'Report',   icon: BarChart2 },
+    { key:'training',  label:'Training',  icon: GraduationCap },
+    { key:'checklist', label:'Checklist', icon: ClipboardList },
+    { key:'feedback',  label:'Feedback',  icon: MessageSquare },
+    { key:'pricing',   label:'Pricing',   icon: DollarSign },
+    { key:'report',    label:'Report',    icon: BarChart2 },
   ];
 
   const cardStyle = { background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' };
@@ -224,6 +260,133 @@ export default function TrainingPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* TAB CHECKLIST */}
+      {activeTab === 'checklist' && (
+        <div className="space-y-4">
+          {/* Pilih Mitra */}
+          <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
+            <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', marginBottom:'10px' }}>Pilih Mitra</p>
+            <select
+              value={selectedMitraId||''}
+              onChange={e => e.target.value && fetchChecklist(Number(e.target.value))}
+              style={{ width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
+              <option value="">-- Pilih mitra untuk ceklis materi --</option>
+              {data.map((m: any) => (
+                <option key={m.id} value={m.id}>{m.user?.name||m.nama_lengkap} ({m.training_persen||0}%)</option>
+              ))}
+            </select>
+          </div>
+
+          {loadingChecklist && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Memuat checklist...</div>}
+
+          {checklistMitra && !loadingChecklist && (
+            <>
+              {/* Summary */}
+              <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'12px' }}>
+                  <div>
+                    <p style={{ fontWeight:700, fontSize:'15px', color:'var(--text)' }}>{checklistMitra.mitra?.nama}</p>
+                    <p style={{ fontSize:'12px', color:'var(--text3)' }}>{checklistMitra.selesai}/{checklistMitra.total} materi ({checklistMitra.persen}%)</p>
+                  </div>
+                  <div style={{ fontSize:'24px', fontWeight:800, color: checklistMitra.persen===100?'#10b981':'var(--purple-light)' }}>{checklistMitra.persen}%</div>
+                </div>
+                <div style={{ height:'8px', background:'rgba(255,255,255,0.08)', borderRadius:'99px', overflow:'hidden', marginBottom:'14px' }}>
+                  <div style={{ height:'100%', borderRadius:'99px', width:`${checklistMitra.persen}%`, background: checklistMitra.persen===100?'linear-gradient(90deg,#10b981,#34d399)':'linear-gradient(90deg,#7c3aed,#4f46e5)' }}/>
+                </div>
+                {/* Progress per kategori */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', marginBottom:'14px' }}>
+                  {checklistMitra.by_kategori?.map((k: any) => (
+                    <div key={k.kategori} style={{ background:'rgba(255,255,255,0.04)', borderRadius:'10px', padding:'10px' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'4px' }}>
+                        <span style={{ fontSize:'12px', fontWeight:600, color: k.kategori==='PHC'?'#0ea5e9':'#7c3aed' }}>{k.kategori}</span>
+                        <span style={{ fontSize:'11px', color:'var(--text3)' }}>{k.selesai}/{k.total}</span>
+                      </div>
+                      <div style={{ height:'4px', background:'rgba(255,255,255,0.08)', borderRadius:'99px' }}>
+                        <div style={{ height:'100%', borderRadius:'99px', width:`${k.persen}%`, background: k.kategori==='PHC'?'#0ea5e9':'#7c3aed' }}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Default input */}
+                <div style={{ borderTop:'1px solid var(--border)', paddingTop:'12px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                  <div>
+                    <label style={{ fontSize:'11px', color:'var(--text3)', display:'block', marginBottom:'4px' }}>Tanggal Default</label>
+                    <input type="date" value={defaultTgl} onChange={e => setDefaultTgl(e.target.value)}
+                      style={{ width:'100%', padding:'7px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'12px', outline:'none' }}/>
+                  </div>
+                  <div>
+                    <label style={{ fontSize:'11px', color:'var(--text3)', display:'block', marginBottom:'4px' }}>Pengajar Default *</label>
+                    <input value={defaultPengajar} onChange={e => setDefaultPengajar(e.target.value)} placeholder="Nama trainer..."
+                      style={{ width:'100%', padding:'7px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'12px', outline:'none' }}/>
+                  </div>
+                </div>
+              </div>
+
+              {/* Materi per kategori */}
+              {['Dasar','PHC'].map(kat => {
+                const items = checklistMitra.materi?.filter((m: any) => m.kategori === kat) || [];
+                const isOpen = openKat.includes(kat);
+                const selesai = items.filter((m: any) => m.checked).length;
+                const katColor = kat==='PHC'?'#0ea5e9':'#7c3aed';
+                return (
+                  <div key={kat} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', overflow:'hidden' }}>
+                    <button onClick={() => setOpenKat(prev => prev.includes(kat)?prev.filter(k=>k!==kat):[...prev,kat])}
+                      style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 16px', background:'transparent', border:'none', cursor:'pointer' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                        <span style={{ fontSize:'13px', fontWeight:700, color:katColor }}>Materi {kat}</span>
+                        <span style={{ fontSize:'11px', color:'var(--text3)', background:'var(--bg)', padding:'2px 8px', borderRadius:'99px' }}>{selesai}/{items.length}</span>
+                      </div>
+                      {isOpen ? <ChevronDown size={16} style={{ color:'var(--text3)' }}/> : <ChevronRight size={16} style={{ color:'var(--text3)' }}/>}
+                    </button>
+                    {isOpen && (
+                      <div style={{ borderTop:'1px solid var(--border)' }}>
+                        {items.map((m: any) => {
+                          const indent = m.parent_kode ? (m.kode?.split('-').length > 2 ? 40 : 20) : 0;
+                          const isSaving = savingCheck === m.id;
+                          return (
+                            <div key={m.id} style={{ display:'flex', alignItems:'flex-start', gap:'10px', padding:`10px 16px`, paddingLeft:`${16+indent}px`, borderBottom:'1px solid rgba(255,255,255,0.04)', background: m.checked?'rgba(16,185,129,0.04)':'transparent' }}>
+                              <button onClick={() => toggleCheck(m.id, m.checked)} disabled={isSaving}
+                                style={{ background:'none', border:'none', cursor:'pointer', padding:'2px', flexShrink:0, marginTop:'1px' }}>
+                                {isSaving
+                                  ? <div style={{ width:'18px', height:'18px', borderRadius:'50%', border:'2px solid rgba(124,58,237,0.3)', borderTopColor:'#7c3aed' }}/>
+                                  : m.checked
+                                    ? <CheckCircle2 size={18} style={{ color:'#10b981' }}/>
+                                    : <Circle size={18} style={{ color:'var(--text3)' }}/>}
+                              </button>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <p style={{ fontSize:'13px', color: m.checked?'var(--text3)':'var(--text)', textDecoration: m.checked?'line-through':'none', lineHeight:'1.4' }}>
+                                  <span style={{ color:'var(--text3)', fontSize:'11px', marginRight:'6px' }}>{m.kode}</span>{m.nama}
+                                </p>
+                                {m.checked && (
+                                  <p style={{ fontSize:'11px', color:'#10b981', marginTop:'2px' }}>
+                                    ✓ {m.tanggal_dapat} · {m.pengajar}
+                                    {m.checked_by && <span style={{ color:'var(--text3)' }}> · oleh {m.checked_by}</span>}
+                                  </p>
+                                )}
+                                {!m.checked && !m.parent_kode && (
+                                  <div style={{ display:'flex', gap:'6px', marginTop:'6px' }}>
+                                    <input type="date" defaultValue={defaultTgl}
+                                      onChange={e => setCheckInputs(prev=>({...prev,[m.id]:{...prev[m.id],tanggal:e.target.value}}))}
+                                      style={{ padding:'4px 8px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text)', fontSize:'11px', outline:'none' }}/>
+                                    <input placeholder="Pengajar" defaultValue={defaultPengajar}
+                                      onChange={e => setCheckInputs(prev=>({...prev,[m.id]:{...prev[m.id],pengajar:e.target.value}}))}
+                                      style={{ flex:1, padding:'4px 8px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text)', fontSize:'11px', outline:'none' }}/>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
       )}
 
