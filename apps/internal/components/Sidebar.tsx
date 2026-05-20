@@ -8,7 +8,6 @@ import {
   Building2, UserCheck,
 } from 'lucide-react';
 
-// ── Menu config ────────────────────────────────────────────────────────────────
 const ALL_MENU = [
   {
     icon: Home, label: 'Dashboard', href: '/',
@@ -18,8 +17,8 @@ const ALL_MENU = [
     icon: Users, label: 'Rekrutmen', href: '/rekrutmen',
     roles: ['manajemen','rekrutmen'],
     children: [
-      { icon: UserCheck, label: 'Data Mitra',  href: '/rekrutmen' },
-      { icon: Building2, label: 'Lembaga',     href: '/rekrutmen/lembaga' },
+      { icon: UserCheck, label: 'Data Mitra', href: '/rekrutmen' },
+      { icon: Building2, label: 'Lembaga',    href: '/rekrutmen/lembaga' },
     ],
   },
   {
@@ -51,74 +50,67 @@ const ALL_MENU = [
 export function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname  = usePathname();
   const router    = useRouter();
-  const [user, setUser] = useState<any>(null);
-
-  // Track expanded submenus
-  const [expanded, setExpanded] = useState<string[]>(() => {
-    // Auto-expand kalau sedang di salah satu child route
-    return ['/rekrutmen']; // default expand rekrutmen
-  });
+  const [user, setUser]         = useState<any>(null);
+  const [expanded, setExpanded] = useState<string[]>(['/rekrutmen']);
 
   useEffect(() => {
     setUser(authService.getUser());
-    // Auto-expand menu yang sedang aktif
+    // Auto-expand parent kalau child aktif
     ALL_MENU.forEach(item => {
-      if (item.children && item.children.some(c => pathname.startsWith(c.href))) {
+      if (item.children?.some(c => pathname === c.href || pathname.startsWith(c.href + '/'))) {
         setExpanded(prev => prev.includes(item.href) ? prev : [...prev, item.href]);
       }
     });
   }, [pathname]);
 
-  const role       = user?.role || '';
-  const menuItems  = ALL_MENU.filter(item => item.roles.includes(role));
-  const initials   = user?.name?.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase() || 'M';
+  const role      = user?.role || '';
+  const menuItems = ALL_MENU.filter(m => m.roles.includes(role));
+  const initials  = user?.name?.split(' ').map((n: string) => n[0]).join('').slice(0,2).toUpperCase() || 'M';
 
-  const roleLabel: Record<string, string> = {
-    manajemen:      'Manajemen',
-    rekrutmen:      'Rekrutmen',
-    training_center:'Training Center',
-    customer_care:  'Customer Care',
-    finance:        'Finance',
-    marketing:      'Marketing',
+  const roleLabel: Record<string,string> = {
+    manajemen:'Manajemen', rekrutmen:'Rekrutmen',
+    training_center:'Training Center', customer_care:'Customer Care',
+    finance:'Finance', marketing:'Marketing',
   };
 
-  const navigate = (href: string) => {
-    router.push(href);
-    onClose?.();
+  const navigate = (href: string) => { router.push(href); onClose?.(); };
+  const toggleExpand = (href: string) =>
+    setExpanded(prev => prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]);
+  const handleLogout = async () => { await authService.logout(); router.push('/login'); };
+
+  // ── Active logic ──────────────────────────────────────────────────────────
+  // Child: exact match saja (kecuali ada sub-sub route)
+  const isChildActive = (href: string) => {
+    if (href === '/rekrutmen') {
+      // Data Mitra aktif HANYA kalau path exact /rekrutmen atau /rekrutmen/{id}
+      // BUKAN /rekrutmen/lembaga
+      return pathname === '/rekrutmen' || 
+        (pathname.startsWith('/rekrutmen/') && !pathname.startsWith('/rekrutmen/lembaga'));
+    }
+    return pathname === href || pathname.startsWith(href + '/');
   };
 
-  const toggleExpand = (href: string) => {
-    setExpanded(prev =>
-      prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]
-    );
-  };
-
-  const handleLogout = async () => {
-    await authService.logout();
-    router.push('/login');
-  };
-
-  const isActive = (href: string) =>
-    pathname === href || (href !== '/' && pathname === href);
-
+  // Parent aktif kalau salah satu child aktif
   const isParentActive = (item: typeof ALL_MENU[0]) => {
-    if (!item.children) return isActive(item.href);
-    return item.children.some(c => pathname === c.href || pathname.startsWith(c.href + '/'));
+    if (!item.children) {
+      return pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
+    }
+    return item.children.some(c => isChildActive(c.href));
   };
 
   return (
     <aside style={{
-      width: '240px', height: '100vh',
-      background: 'var(--bg2)',
-      display: 'flex', flexDirection: 'column',
-      borderRight: '1px solid var(--border)',
-      overflowY: 'auto', transition: 'background 0.3s',
+      width:'240px', height:'100vh', background:'var(--bg2)',
+      display:'flex', flexDirection:'column',
+      borderRight:'1px solid var(--border)',
+      overflowY:'auto', transition:'background 0.3s',
     }}>
       {/* Logo */}
       <div style={{ padding:'20px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid var(--border)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
           <div>
-            <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Mikala" style={{ height:'36px', objectFit:'contain' }}/>
+            <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png"
+              alt="Mikala" style={{ height:'36px', objectFit:'contain' }}/>
             <p style={{ color:'var(--text3)', fontSize:'11px', marginTop:'2px' }}>Internal</p>
           </div>
         </div>
@@ -145,22 +137,15 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         <p style={{ color:'var(--text3)', fontSize:'10px', fontWeight:600, letterSpacing:'1px', padding:'8px 8px 4px', textTransform:'uppercase' }}>Menu</p>
 
         {menuItems.map((item) => {
-          const Icon        = item.icon;
-          const hasChildren = !!(item.children && item.children.length > 0);
-          const parentActive= isParentActive(item);
-          const isOpen      = expanded.includes(item.href);
+          const Icon         = item.icon;
+          const hasChildren  = !!(item.children?.length);
+          const parentActive = isParentActive(item);
+          const isOpen       = expanded.includes(item.href);
 
           return (
             <div key={item.href}>
-              {/* Parent menu item */}
               <button
-                onClick={() => {
-                  if (hasChildren) {
-                    toggleExpand(item.href);
-                  } else {
-                    navigate(item.href);
-                  }
-                }}
+                onClick={() => hasChildren ? toggleExpand(item.href) : navigate(item.href)}
                 style={{
                   width:'100%', display:'flex', alignItems:'center', gap:'10px',
                   padding:'10px 12px', borderRadius:'12px', cursor:'pointer',
@@ -174,19 +159,17 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
                 </div>
                 <span style={{ fontSize:'13px', fontWeight: parentActive ? 600 : 400, flex:1 }}>{item.label}</span>
                 {hasChildren
-                  ? (isOpen
-                      ? <ChevronDown size={14} style={{ opacity:0.6, transition:'transform 0.2s' }}/>
-                      : <ChevronRight size={14} style={{ opacity:0.6, transition:'transform 0.2s' }}/>)
+                  ? (isOpen ? <ChevronDown size={14} style={{ opacity:0.6 }}/> : <ChevronRight size={14} style={{ opacity:0.6 }}/>)
                   : (parentActive && <ChevronRight size={14} style={{ opacity:0.6 }}/>)
                 }
               </button>
 
-              {/* Children submenu */}
+              {/* Submenu */}
               {hasChildren && isOpen && (
                 <div style={{ marginLeft:'14px', marginTop:'2px', display:'flex', flexDirection:'column', gap:'2px', borderLeft:'2px solid rgba(124,58,237,0.2)', paddingLeft:'10px' }}>
                   {item.children!.map((child) => {
-                    const ChildIcon    = child.icon;
-                    const childActive  = pathname === child.href || pathname.startsWith(child.href + '/');
+                    const ChildIcon   = child.icon;
+                    const childActive = isChildActive(child.href);
                     return (
                       <button key={child.href} onClick={() => navigate(child.href)}
                         style={{
@@ -211,7 +194,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      {/* Logout + Footer */}
+      {/* Logout */}
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
         <button onClick={handleLogout}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'12px', border:'1px solid rgba(239,68,68,0.2)', cursor:'pointer', background:'rgba(239,68,68,0.06)', color:'#ef4444' }}>
