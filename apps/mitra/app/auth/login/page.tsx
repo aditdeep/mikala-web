@@ -74,7 +74,10 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label style={{ color:'rgba(167,139,250,0.8)', fontSize:'13px', fontWeight:500, display:'block', marginBottom:'8px' }}>Password</label>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
+                <label style={{ color:'rgba(167,139,250,0.8)', fontSize:'13px', fontWeight:500 }}>Password</label>
+                <a href="/auth/forgot-password" style={{ color:'rgba(167,139,250,0.6)', fontSize:'12px', textDecoration:'none' }}>Lupa password?</a>
+              </div>
               <div style={{ position:'relative' }}>
                 <Lock size={17} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'rgba(167,139,250,0.6)' }}/>
                 <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required
