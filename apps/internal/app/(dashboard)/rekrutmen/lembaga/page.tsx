@@ -242,11 +242,31 @@ export default function LembagaPage() {
                           {f.fee_status === 'paid' ? '✓ Dibayar' : '⏳ Pending'}
                         </span>
                       </div>
-                      {f.fee_status === 'pending' && f.fee_amount > 0 && (
-                        <button onClick={() => bayarFee(f.id)} style={{ padding:'7px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                          Bayar
-                        </button>
-                      )}
+                      <div style={{ display:'flex', flexDirection:'column', gap:'4px', alignItems:'flex-end' }}>
+                        {f.fee_status === 'pending' && (
+                          <div style={{ display:'flex', gap:'4px' }}>
+                            <input
+                              type="number"
+                              defaultValue={f.fee_amount}
+                              id={`fee-input-${f.id}`}
+                              placeholder="Set fee..."
+                              style={{ width:'100px', padding:'5px 8px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'12px', outline:'none' }}
+                            />
+                            <button onClick={async () => {
+                              const val = (document.getElementById(`fee-input-${f.id}`) as HTMLInputElement)?.value;
+                              await apiClient.put(`/internal/referral/${f.id}/set-fee`, { fee_amount: val }).catch(() => {});
+                              fetchFee();
+                            }} style={{ padding:'5px 10px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer' }}>
+                              Set
+                            </button>
+                          </div>
+                        )}
+                        {f.fee_status === 'pending' && Number(f.fee_amount) > 0 && (
+                          <button onClick={() => bayarFee(f.id)} style={{ padding:'5px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                            Bayar
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
