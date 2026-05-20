@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-// v2.1 — with Sumber step (Sendiri/Lembaga/Orang Terdekat)import { useRouter } from 'next/navigation';
+'use client';
+mport { useState, useEffect } from 'react';
 import { apiClient } from '@mikala/lib';
 import { ChevronLeft, ChevronRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
