@@ -7,12 +7,14 @@ export default function KontrolGajiPage() {
   const [kredit, setKredit]   = useState<any>(null);
   const [tab, setTab]         = useState<'kredit'|'kasbon'>('kredit');
   const [kasbon, setKasbon]   = useState<any[]>([]);
+  const [fee, setFee]         = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       apiClient.get('/mitra/kredit-pelatihan').then((r: any) => setKredit(r.data?.data)).catch(() => {}),
       apiClient.get('/mitra/kasbon').then((r: any) => setKasbon(r.data?.data || [])).catch(() => {}),
+      apiClient.get('/mitra/fee-saya').then((r: any) => setFee(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -31,14 +33,14 @@ export default function KontrolGajiPage() {
 
       {/* Tabs */}
       <div style={{ display:'flex', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'4px' }}>
-        {(['kredit','kasbon'] as const).map(t => (
+        {(['kredit','kasbon','fee'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             flex:1, padding:'8px', borderRadius:'9px', fontSize:'13px', fontWeight:600, cursor:'pointer',
             background: tab === t ? 'white' : 'transparent',
             color: tab === t ? '#7c3aed' : 'var(--text3)',
             border: 'none', boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
           }}>
-            {t === 'kredit' ? '💳 Kredit Pelatihan' : '💰 Kasbon'}
+            {t === 'kredit' ? '💳 Kredit' : t === 'kasbon' ? '💰 Kasbon' : '🎁 Fee Referral'}
           </button>
         ))}
       </div>
@@ -138,6 +140,57 @@ export default function KontrolGajiPage() {
             <AlertCircle size={14} style={{ marginTop:'1px', flexShrink:0 }} />
             Pengajuan kasbon dilakukan melalui koordinator atau Divisi Finance Mikala.
           </div>
+        </div>
+      )}
+
+      {tab === 'fee' && (
+        <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+          {/* Summary */}
+          {fee && (
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+              <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'14px', padding:'14px', textAlign:'center' }}>
+                <p style={{ fontSize:'11px', color:'var(--text3)', marginBottom:'4px' }}>Fee Pending</p>
+                <p style={{ fontSize:'18px', fontWeight:800, color:'#f59e0b' }}>Rp {Number(fee.total_pending||0).toLocaleString('id-ID')}</p>
+              </div>
+              <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'14px', padding:'14px', textAlign:'center' }}>
+                <p style={{ fontSize:'11px', color:'var(--text3)', marginBottom:'4px' }}>Fee Diterima</p>
+                <p style={{ fontSize:'18px', fontWeight:800, color:'#10b981' }}>Rp {Number(fee.total_paid||0).toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+          )}
+
+          {fee?.fee_referrer?.length > 0 ? (
+            <>
+              <p style={{ fontSize:'12px', fontWeight:600, color:'var(--text2)' }}>Mitra yang Anda referensikan:</p>
+              {fee.fee_referrer.map((f: any) => (
+                <div key={f.id} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'14px', padding:'14px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                    <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:'linear-gradient(135deg,rgba(124,58,237,0.2),rgba(79,70,229,0.2))', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', fontWeight:700, color:'var(--purple-light)', overflow:'hidden' }}>
+                      {f.mitra?.foto_url ? <img src={f.mitra.foto_url} style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : f.mitra?.nama_lengkap?.[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight:600, fontSize:'13px', color:'var(--text)' }}>{f.mitra?.nama_lengkap}</p>
+                      <p style={{ fontSize:'11px', color:'var(--text3)' }}>Didaftarkan via referral Anda</p>
+                    </div>
+                  </div>
+                  <div style={{ textAlign:'right' }}>
+                    <p style={{ fontSize:'14px', fontWeight:700, color: f.fee_amount > 0 ? '#10b981' : 'var(--text3)' }}>
+                      {f.fee_amount > 0 ? `Rp ${Number(f.fee_amount).toLocaleString('id-ID')}` : 'Fee belum diset'}
+                    </p>
+                    <span style={{ fontSize:'11px', fontWeight:600, padding:'2px 8px', borderRadius:'6px', background: f.fee_status==='paid'?'rgba(16,185,129,0.1)':'rgba(245,158,11,0.1)', color: f.fee_status==='paid'?'#10b981':'#f59e0b' }}>
+                      {f.fee_status === 'paid' ? '✓ Dibayar' : '⏳ Pending'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div style={{ textAlign:'center', padding:'40px 0', color:'var(--text3)' }}>
+              <div style={{ fontSize:'40px', marginBottom:'12px' }}>🎁</div>
+              <p style={{ fontWeight:600 }}>Belum ada referral</p>
+              <p style={{ fontSize:'12px', marginTop:'4px' }}>Ajak teman untuk bergabung sebagai mitra Mikala dan dapatkan fee referral!</p>
+            </div>
+          )}
         </div>
       )}
     </div>

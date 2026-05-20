@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
 import { ChevronLeft, ChevronRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { SumberMikala } from '@/components/SumberMikala';
 
 const PENDIDIKAN=['SMA Negeri / Swasta','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
 const TIPE=['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)'];
@@ -53,6 +54,7 @@ export default function RegisterPage(){
     status_nikah:'Belum Menikah',agama:'Islam',tinggi:'',berat:'',
     pendidikan:'',tipe_pekerjaan:'Perawat Homecare',pengalaman_pelatihan:'',pengalaman:'',vaksin:'',
     payment_type:'cash' as 'cash'|'kredit',contract_agreed:false,
+    sumber_tipe:'sendiri',sumber_detail:'',lembaga_id:undefined as number|undefined,referrer_mitra_id:undefined as number|undefined,
   });
   const s=(k:string,v:any)=>setForm(f=>({...f,[k]:v}));
 
@@ -76,6 +78,8 @@ export default function RegisterPage(){
         pengalaman:`PELATIHAN: ${form.pengalaman_pelatihan}\nPENGALAMAN: ${form.pengalaman}`,
         vaksin:form.vaksin,tinggi:form.tinggi,berat:form.berat,
         payment_type:form.payment_type,contract_agreed:true,
+        sumber_tipe:form.sumber_tipe,sumber_detail:form.sumber_detail,
+        lembaga_id:form.lembaga_id,referrer_mitra_id:form.referrer_mitra_id,
       });
       router.push('/auth/register/success');
     }catch(err:any){
@@ -160,7 +164,7 @@ export default function RegisterPage(){
           {form.payment_type==='kredit'&&<div style={{background:'rgba(236,72,153,0.08)',border:'1px solid rgba(236,72,153,0.2)',borderRadius:'10px',padding:'10px',fontSize:'12px',color:'#f9a8d4'}}>ℹ️ Besaran cicilan ditentukan tim Rekrutmen saat verifikasi.</div>}
         </div>}
 
-        {step===4&&<div>
+        {step===5&&<div>
           <div onScroll={e=>{const el=e.currentTarget;if(el.scrollHeight-el.scrollTop<=el.clientHeight+40)setScrolled(true);}} style={{height:'240px',overflowY:'auto',background:'rgba(0,0,0,0.25)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'12px',padding:'14px',marginBottom:'12px',fontSize:'12px',color:'rgba(255,255,255,0.7)',lineHeight:'1.75',whiteSpace:'pre-line'as const,fontFamily:'monospace'}}>
             {KONTRAK}
           </div>

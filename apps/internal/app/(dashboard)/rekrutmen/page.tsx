@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
 import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText } from 'lucide-react';
+import { SumberMikala } from '@/components/SumberMikala';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','MA, MAN, atau Sekolah Keagamaan Lainnya','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
 const TIPE_PEKERJAAN = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)','Ke Jepang Lainnya'];
@@ -22,6 +23,10 @@ const emptyForm = {
   bisa_memasak:'3', tipe_pekerjaan:'Perawat Homecare',
   pengalaman_pelatihan:'', pengalaman:'',
   payment_type: 'cash' as 'cash' | 'kredit',
+  sumber_tipe: 'sendiri',
+  sumber_detail: '',
+  lembaga_id: undefined as number | undefined,
+  referrer_mitra_id: undefined as number | undefined,
 };
 
 export default function RekrutmenPage() {
@@ -89,6 +94,10 @@ export default function RekrutmenPage() {
         jenis_kelamin: form.jenis_kelamin,
         pendidikan: form.pendidikan,
         payment_type: form.payment_type,
+        sumber_tipe: form.sumber_tipe,
+        sumber_detail: form.sumber_detail,
+        lembaga_id: form.lembaga_id,
+        referrer_mitra_id: form.referrer_mitra_id,
         pengalaman: `PELATIHAN: ${form.pengalaman_pelatihan}\n\nPENGALAMAN KERJA: ${form.pengalaman}\n\nDATA TAMBAHAN: Usia: ${form.usia}, Tempat Lahir: ${form.tempat_lahir}, TB: ${form.tinggi}cm, BB: ${form.berat}kg, Vaksin: ${form.vaksin}, Agama: ${form.agama}, Status Nikah: ${form.status_nikah}, Takut Hewan: ${form.takut_hewan}, Memasak: ${form.bisa_memasak}/5, Tipe Pekerjaan: ${form.tipe_pekerjaan}, Suku: ${form.suku}`,
       };
       if (editItem) {
