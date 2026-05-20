@@ -1,5 +1,5 @@
 'use client';
-mport { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { apiClient } from '@mikala/lib';
 import { ChevronLeft, ChevronRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
