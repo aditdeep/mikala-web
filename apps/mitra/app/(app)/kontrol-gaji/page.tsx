@@ -5,7 +5,7 @@ import { apiClient } from '@mikala/lib';
 
 export default function KontrolGajiPage() {
   const [kredit, setKredit]   = useState<any>(null);
-  const [tab, setTab]         = useState<'kredit'|'kasbon'>('kredit');
+  const [tab, setTab]         = useState<'kredit'|'kasbon'|'fee'>('kredit');
   const [kasbon, setKasbon]   = useState<any[]>([]);
   const [fee, setFee]         = useState<any>(null);
   const [loading, setLoading] = useState(true);
