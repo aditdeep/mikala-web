@@ -90,13 +90,21 @@ export default function ForgotPasswordPage() {
                 </div>
               )}
 
-              {/* WA Button */}
+              {/* WA Button — selalu tampil sebagai alternatif */}
               {result.wa_url && (
-                <a href={result.wa_url} target="_blank" rel="noopener noreferrer"
-                  style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', width:'100%', padding:'13px', background:'rgba(37,211,102,0.15)', border:'1px solid rgba(37,211,102,0.3)', borderRadius:'14px', color:'#25d366', fontSize:'14px', fontWeight:700, textDecoration:'none', marginBottom:'12px', boxSizing:'border-box' as const }}>
-                  <span style={{ fontSize:'18px' }}>💬</span>
-                  Hubungi via WhatsApp
-                </a>
+                <div style={{ marginBottom:'12px' }}>
+                  <p style={{ color:'rgba(255,255,255,0.4)', fontSize:'11px', textAlign:'center', marginBottom:'8px' }}>
+                    — atau —
+                  </p>
+                  <a href={result.wa_url} target="_blank" rel="noopener noreferrer"
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', width:'100%', padding:'13px', background:'rgba(37,211,102,0.15)', border:'2px solid rgba(37,211,102,0.4)', borderRadius:'14px', color:'#25d366', fontSize:'14px', fontWeight:700, textDecoration:'none', boxSizing:'border-box' as const }}>
+                    <span style={{ fontSize:'20px' }}>💬</span>
+                    <span>Hubungi CS via WhatsApp</span>
+                  </a>
+                  <p style={{ color:'rgba(255,255,255,0.3)', fontSize:'11px', textAlign:'center', marginTop:'6px' }}>
+                    Respon cepat di jam kerja 08.00–21.00 WIB
+                  </p>
+                </div>
               )}
 
               <button onClick={() => router.push('/auth/login')}
