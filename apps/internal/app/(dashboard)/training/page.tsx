@@ -78,6 +78,7 @@ export default function TrainingPage() {
     if (activeTab === 'feedback') fetchFeedback();
     if (activeTab === 'pricing') fetchPricing();
     if (activeTab === 'report') fetchReport();
+    if (activeTab === 'checklist' && data.length === 0) fetchData();
   }, [activeTab]);
 
   const fetchData = () => {
