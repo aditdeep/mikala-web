@@ -1,9 +1,9 @@
 'use client';
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
 import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText } from 'lucide-react';
-import { SumberMikala } from '@/components/SumberMikala';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','MA, MAN, atau Sekolah Keagamaan Lainnya','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
 const TIPE_PEKERJAAN = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)','Ke Jepang Lainnya'];
@@ -28,6 +28,95 @@ const emptyForm = {
   lembaga_id: undefined as number | undefined,
   referrer_mitra_id: undefined as number | undefined,
 };
+
+
+// ── SumberInline — komponen inline untuk form rekrutmen ──────────────────────
+function SumberInline({ form, setForm }: { form: any; setForm: any }) {
+  const [lembagaList, setLembagaList] = React.useState<any[]>([]);
+  const [mitraList, setMitraList]     = React.useState<any[]>([]);
+  const [loadingL, setLoadingL]       = React.useState(false);
+  const [loadingM, setLoadingM]       = React.useState(false);
+
+  React.useEffect(() => {
+    if (form.sumber_tipe === 'lembaga' && lembagaList.length === 0) {
+      setLoadingL(true);
+      apiClient.get('/public/lembaga')
+        .then((r: any) => setLembagaList(r.data?.data || []))
+        .catch(() => {})
+        .finally(() => setLoadingL(false));
+    }
+    if (form.sumber_tipe === 'orang_terdekat' && mitraList.length === 0) {
+      setLoadingM(true);
+      apiClient.get('/public/mitra-list')
+        .then((r: any) => setMitraList(r.data?.data || []))
+        .catch(() => {})
+        .finally(() => setLoadingM(false));
+    }
+  }, [form.sumber_tipe]);
+
+  const s = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+  const inp2: React.CSSProperties = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
+  const lbl2: React.CSSProperties = { color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' };
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px' }}>
+        {[
+          { v:'sendiri',        emoji:'🔍', label:'Sendiri' },
+          { v:'lembaga',        emoji:'🏫', label:'Lembaga' },
+          { v:'orang_terdekat', emoji:'👥', label:'Orang Terdekat' },
+        ].map(opt => (
+          <button key={opt.v} type="button"
+            onClick={() => setForm((f: any) => ({ ...f, sumber_tipe: opt.v, sumber_detail:'', lembaga_id: undefined, referrer_mitra_id: undefined }))}
+            style={{ padding:'10px 6px', borderRadius:'10px', cursor:'pointer', textAlign:'center' as const, fontSize:'12px', fontWeight:600, border:`2px solid ${form.sumber_tipe===opt.v?'rgba(124,58,237,0.6)':'var(--border)'}`, background: form.sumber_tipe===opt.v?'rgba(124,58,237,0.1)':'transparent', color: form.sumber_tipe===opt.v?'var(--purple-light)':'var(--text3)' }}>
+            <div style={{ fontSize:'18px', marginBottom:'3px' }}>{opt.emoji}</div>
+            <span style={{ fontSize:'11px' }}>{opt.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {form.sumber_tipe === 'sendiri' && (
+        <div>
+          <label style={lbl2}>Platform</label>
+          <select value={form.sumber_detail||''} onChange={e => s('sumber_detail', e.target.value)} style={inp2}>
+            <option value="">-- Pilih platform --</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="website">Website Mikala</option>
+            <option value="tiktok">TikTok</option>
+            <option value="youtube">YouTube</option>
+            <option value="lainnya">Lainnya</option>
+          </select>
+        </div>
+      )}
+
+      {form.sumber_tipe === 'lembaga' && (
+        <div>
+          <label style={lbl2}>Nama Lembaga</label>
+          {loadingL ? <p style={{ fontSize:'12px', color:'var(--text3)' }}>Memuat...</p> : (
+            <select value={form.lembaga_id||''} onChange={e => { const l=lembagaList.find((x:any)=>x.id===Number(e.target.value)); setForm((f:any)=>({...f,lembaga_id:Number(e.target.value),sumber_detail:l?.nama||''})); }} style={inp2}>
+              <option value="">-- Pilih lembaga --</option>
+              {lembagaList.map((l:any) => <option key={l.id} value={l.id}>{l.nama}{l.kota?` (${l.kota})`:''}</option>)}
+            </select>
+          )}
+          {lembagaList.length === 0 && !loadingL && <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>Belum ada lembaga. Tambah di menu Lembaga.</p>}
+        </div>
+      )}
+
+      {form.sumber_tipe === 'orang_terdekat' && (
+        <div>
+          <label style={lbl2}>Nama Mitra Referrer</label>
+          {loadingM ? <p style={{ fontSize:'12px', color:'var(--text3)' }}>Memuat...</p> : (
+            <select value={form.referrer_mitra_id||''} onChange={e => { const m=mitraList.find((x:any)=>x.id===Number(e.target.value)); setForm((f:any)=>({...f,referrer_mitra_id:Number(e.target.value),sumber_detail:m?.nama_lengkap||''})); }} style={inp2}>
+              <option value="">-- Pilih mitra --</option>
+              {mitraList.map((m:any) => <option key={m.id} value={m.id}>{m.nama_lengkap}{m.kota?` - ${m.kota}`:''}</option>)}
+            </select>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function RekrutmenPage() {
   const router = useRouter();
@@ -191,8 +280,6 @@ export default function RekrutmenPage() {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const filtered = data.filter((d: any) => {
-    // Exclude inactive & keluar dari semua tab kecuali kalau memang dicari
-    if (activeTab === 'semua' && (d.status === 'inactive' || d.status === 'keluar')) return false;
     const matchTab = activeTab === 'semua' || d.status === activeTab;
     return matchTab && JSON.stringify(d).toLowerCase().includes(search.toLowerCase());
   });
@@ -580,6 +667,12 @@ export default function RekrutmenPage() {
                     ℹ️ Besaran cicilan per-job akan ditentukan oleh Rekrutmen saat verifikasi.
                   </div>
                 )}
+              </div>
+
+              {/* Sumber Informasi */}
+              <div style={sectionStyle}>
+                <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>📡 Tahu Mikala dari</p>
+                <SumberInline form={form} setForm={setForm} />
               </div>
 
               {/* Data Pribadi */}
