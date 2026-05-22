@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Navbar from '../../(components)/Navbar';
@@ -30,6 +31,8 @@ function addDropCap(html: string): string {
 
 async function getArtikel(slug: string) {
   try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 5000);
     const res = await fetch(`${API}/cms/artikel/${slug}`, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
@@ -39,6 +42,8 @@ async function getArtikel(slug: string) {
 
 async function getRelated(slug: string) {
   try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 5000);
     const res = await fetch(`${API}/cms/artikel?per_page=4`, { next: { revalidate: 3600 } });
     const data = await res.json();
     const d = data.data;

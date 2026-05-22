@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import Navbar from '../(components)/Navbar';
 import Footer from '../(components)/Footer';
@@ -9,6 +10,8 @@ const PER_PAGE = 12;
 
 async function getArtikel(page = 1) {
   try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 5000);
     const res = await fetch(`${API}/cms/artikel?per_page=${PER_PAGE}&page=${page}`, { next: { revalidate: 1800 } });
     const data = await res.json();
     const d = data.data;
