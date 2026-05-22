@@ -122,13 +122,12 @@ export default async function LayananPage() {
               {/* Gambar */}
               <div style={{ minHeight:'240px', overflow:'hidden', order: i%2===0 ? 0 : 1, position:'relative' }}>
                 {l.gambar ? (
-                  <img src={l.gambar} alt={l.nama} style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:'240px' }}
-                    onError={(e: any) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-                  />
-                ) : null}
-                <div style={{ display: l.gambar ? 'none' : 'flex', position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, alignItems:'center', justifyContent:'center', fontSize:'80px' }}>
-                  {l.icon||'🏥'}
-                </div>
+                  <img src={l.gambar} alt={l.nama} style={{ width:'100%', height:'100%', objectFit:'cover', minHeight:'240px' }} />
+                ) : (
+                  <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'80px' }}>
+                    {l.icon||'🏥'}
+                  </div>
+                )}
               </div>
 
               {/* Konten */}
