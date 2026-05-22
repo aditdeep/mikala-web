@@ -29,12 +29,12 @@ export default async function HomePage() {
   const { settings, layanan, artikel, testimoni } = await getData();
 
   const defaultLayanan = [
-    { nama:'Perawat Medis', deskripsi:'Perawat profesional di rumah & RS', gambar:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/1.jpg', icon:'🏥' },
-    { nama:'Perawat Jiwa', deskripsi:'Dukungan kesehatan mental profesional', gambar:'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/Perawatan-khusus.png', icon:'🧠' },
-    { nama:'Caregiver', deskripsi:'Pendamping lansia & pasien kronik', gambar:'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/rawat-jalan.jpg', icon:'👴' },
-    { nama:'Babysitter', deskripsi:'Perawat bayi & anak terlatih', gambar:'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/babysitter_oke.jpg', icon:'👶' },
-    { nama:'Dokter Visit', deskripsi:'Dokter terbaik ke rumah Anda', gambar:'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/periksa-berkala_new.jpg', icon:'👨‍⚕️' },
-    { nama:'Medikal Evakuasi', deskripsi:'Ambulan dengan peralatan lengkap', gambar:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Medikal-evakuasi.jpg', icon:'🚑' },
+    { nama:'Perawat Medis', deskripsi:'Perawat profesional di rumah & RS', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-medis.jpg', icon:'🏥' },
+    { nama:'Perawat Jiwa', deskripsi:'Dukungan kesehatan mental profesional', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-jiwa.jpg', icon:'🧠' },
+    { nama:'Caregiver', deskripsi:'Pendamping lansia & pasien kronik', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/caregiver.jpg', icon:'👴' },
+    { nama:'Babysitter', deskripsi:'Perawat bayi & anak terlatih', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/babysitter.jpg', icon:'👶' },
+    { nama:'Dokter Visit', deskripsi:'Dokter terbaik ke rumah Anda', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/dokter-visit.jpg', icon:'👨‍⚕️' },
+    { nama:'Medikal Evakuasi', deskripsi:'Ambulan dengan peralatan lengkap', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/medikal-evakuasi.jpg', icon:'🚑' },
   ];
 
   const defaultTestimoni = [
@@ -69,7 +69,7 @@ export default async function HomePage() {
         {/* Hero image overlay */}
         <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'50%', overflow:'hidden' }} className="hide-mobile">
           <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, #062914 0%, transparent 60%)', zIndex:1 }} />
-          <img src={settings.hero_image||'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/09/home-imag-MGM.jpg'} alt="Homecare" style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.35 }} />
+          <img src={settings.hero_image||'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png'} alt="Homecare" style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.35 }} />
         </div>
 
         <div style={{ position:'relative', zIndex:2, maxWidth:'1200px', margin:'0 auto', padding:'80px 20px' }} className="section-pad">
@@ -185,7 +185,7 @@ export default async function HomePage() {
             </div>
             <div style={{ position:'relative' }}>
               <div style={{ borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(45,122,94,0.2)' }}>
-                <img src="https://www.mikalaglobalmedika.com/wp-content/uploads/2024/09/home-imag-MGM.jpg" alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
+                <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
               </div>
               <div style={{ position:'absolute', bottom:'-16px', right:'-16px', background:'white', borderRadius:'16px', padding:'16px 20px', boxShadow:'0 8px 30px rgba(0,0,0,0.12)', display:'flex', alignItems:'center', gap:'10px' }}>
                 <div style={{ fontSize:'28px' }}>⭐</div>
