@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: 'Mikala Global Akademi',
     locale: 'id_ID',
     type: 'website',
-    images: [{ url: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png', width: 1200, height: 630 }],
+    images: [{ url: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153869/logo-mga-web_digdlz.png', width: 1200, height: 630 }],
   },
   robots: { index: true, follow: true },
 };

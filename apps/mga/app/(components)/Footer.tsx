@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const LOGO = 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png';
+const LOGO = 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo-mga-web_digdlz.png';
 
 export default function Footer() {
   return (
