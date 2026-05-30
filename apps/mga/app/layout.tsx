@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Script from 'next/script';
+import { LangProvider } from '../lib/LangContext';
 
 export const metadata: Metadata = {
   title: 'Mikala Global Akademi — LPK Perawat Profesional untuk Jepang',
@@ -32,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
       </head>
       <body>
-        {children}
+        <LangProvider>{children}</LangProvider>
       </body>
     </html>
   );

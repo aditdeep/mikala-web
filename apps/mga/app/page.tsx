@@ -1,3 +1,4 @@
+import { StatsBar, ProgramsSection, StepsSection, TestimoniSection, CtaSection, HeroBadges } from './(components)/HomeClient';
 import Navbar from './(components)/Navbar';
 import Footer from './(components)/Footer';
 import Link from 'next/link';
@@ -139,19 +140,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── STATS BAR ──────────────────────────────────────────────────────── */}
-      <section style={{ background: 'var(--green)', padding: 'clamp(20px,4vw,28px) 0' }}>
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '20px' }}>
-            {STATS.map(s => (
-              <div key={s.num} style={{ textAlign: 'center', color: 'white' }}>
-                <div style={{ fontSize: 'clamp(24px,4vw,36px)', fontWeight: 800 }}>{s.num}</div>
-                <div style={{ fontSize: '13px', opacity: 0.85 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <StatsBar/>
 
       {/* ── PROGRAM ────────────────────────────────────────────────────────── */}
       <section className="section" style={{ background: 'white' }}>
