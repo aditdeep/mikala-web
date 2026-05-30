@@ -1,15 +1,113 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-@layer base {
-  :root {
-    --primary: #4F46E5;
-    --primary-dark: #4338CA;
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
+:root {
+  --green:      #1a7a5e;
+  --green2:     #22a07a;
+  --green3:     #e8f5f0;
+  --blue:       #1a4a8a;
+  --blue2:      #2563eb;
+  --blue3:      #e8f0fb;
+  --dark:       #0d1f1a;
+  --dark2:      #1a2e28;
+  --text:       #1a2e28;
+  --text2:      #4a5e58;
+  --text3:      #8a9e98;
+  --white:      #ffffff;
+  --bg:         #f8fdfb;
+  --border:     rgba(26,122,94,0.12);
+  --shadow:     0 4px 24px rgba(26,122,94,0.1);
+  --shadow-lg:  0 16px 48px rgba(26,74,138,0.12);
+  --radius:     16px;
+  --radius-sm:  10px;
+  --radius-lg:  24px;
 }
 
+html { scroll-behavior: smooth; }
+body { font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+
+.animate-fadeup  { animation: fadeUp  0.7s ease both; }
+.animate-fadein  { animation: fadeIn  0.5s ease both; }
+.animate-float   { animation: float   4s ease-in-out infinite; }
+
+/* Responsive container */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px); }
+
+/* Button styles */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--green), var(--green2));
+  color: white; padding: 14px 28px; border-radius: 50px;
+  font-weight: 700; font-size: 15px; border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(26,122,94,0.35);
+  transition: all 0.25s; text-decoration: none;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(26,122,94,0.45); }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--green);
+  padding: 13px 27px; border-radius: 50px;
+  font-weight: 700; font-size: 15px;
+  border: 2px solid var(--green); cursor: pointer;
+  transition: all 0.25s; text-decoration: none;
+}
+.btn-secondary:hover { background: var(--green3); }
+
+.btn-white {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: white; color: var(--green);
+  padding: 14px 28px; border-radius: 50px;
+  font-weight: 700; font-size: 15px; border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transition: all 0.25s; text-decoration: none;
+}
+.btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.15); }
+
+/* Section spacing */
+.section { padding: clamp(60px, 10vw, 100px) 0; }
+.section-sm { padding: clamp(40px, 6vw, 60px) 0; }
+
+/* Card */
+.card {
+  background: white; border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+/* Tag */
+.tag {
+  display: inline-block; padding: 5px 14px; border-radius: 50px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.tag-green { background: var(--green3); color: var(--green); }
+.tag-blue  { background: var(--blue3);  color: var(--blue);  }
+
+/* Grid */
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 40px; align-items: center; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; }
+
+@media (max-width: 768px) {
+  .grid-2 { gap: 24px; }
+  .hide-mobile { display: none !important; }
+}
