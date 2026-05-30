@@ -74,7 +74,7 @@ export default async function HomePage() {
       <section style={{
         minHeight: '100vh', position: 'relative', overflow: 'hidden',
         background: 'linear-gradient(135deg, var(--dark) 0%, var(--dark2) 40%, #0d2a4a 100%)',
-        display: 'flex', alignItems: 'center',
+        display: 'flex', alignItems: 'center', width: '100%',
       }}>
         {/* Background pattern */}
         <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}/>
@@ -83,8 +83,8 @@ export default async function HomePage() {
         <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(26,122,94,0.3) 0%, transparent 70%)', pointerEvents: 'none' }}/>
         <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%)', pointerEvents: 'none' }}/>
 
-        <div className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '100px', paddingBottom: '60px' }}>
-          <div className="grid-2">
+        <div className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '100px', paddingBottom: '60px', width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 440px), 1fr))', gap: '48px', alignItems: 'center' }}>
             {/* Left: text */}
             <div className="animate-fadeup">
               <div className="tag tag-green" style={{ marginBottom: '20px' }}>🎌 Program Kaigo Jepang 2026</div>
@@ -92,9 +92,7 @@ export default async function HomePage() {
                 fontSize: 'clamp(36px, 6vw, 64px)', fontWeight: 800, color: 'white',
                 lineHeight: 1.15, marginBottom: '20px', fontFamily: "'DM Serif Display', serif",
               }}>
-                Wujudkan Karir<br/>
-                <span style={{ color: 'var(--green2)' }}>Perawat Profesional</span><br/>
-                di Jepang
+                {settings.hero_title || <>Wujudkan Karir<br/><span style={{ color: 'var(--green2)' }}>Perawat Profesional</span><br/>di Jepang</>}
               </h1>
               <p style={{ fontSize: 'clamp(15px,2vw,18px)', color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, marginBottom: '32px', maxWidth: '480px' }}>
                 Mikala Global Akademi membuka jalan karir Anda sebagai tenaga perawat (Kaigo) di Jepang. Pelatihan komprehensif, bersertifikat, dan penempatan langsung.
@@ -122,7 +120,7 @@ export default async function HomePage() {
                 border: '1px solid rgba(255,255,255,0.12)', borderRadius: '28px', padding: '28px',
               }}>
                 <img
-                  src="https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/Perawatan-khusus.png"
+                  src={settings.hero_image || "https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/Perawatan-khusus.png"}
                   alt="Program Kaigo"
                   style={{ width: '100%', height: '260px', objectFit: 'cover', borderRadius: '18px', marginBottom: '20px' }}
                 />
@@ -232,9 +230,11 @@ export default async function HomePage() {
               Cerita Sukses Alumni MGA
             </h2>
           </div>
-          <div className="grid-3">
+          {/* Desktop: grid 3, Mobile: scroll horizontal */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(280px, 1fr))', gap: '20px', overflowX: 'auto', paddingBottom: '8px' }}
+            className="mga-testi-scroll">
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px' }}>
+              <div key={i} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', minWidth: '280px' }}>
                 <div style={{ fontSize: '28px', color: 'var(--green2)', marginBottom: '16px' }}>"</div>
                 <p style={{ fontSize: '15px', lineHeight: 1.8, color: 'rgba(255,255,255,0.8)', marginBottom: '20px' }}>{t.text}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
