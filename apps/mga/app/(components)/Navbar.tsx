@@ -83,10 +83,10 @@ export default function Navbar({ active = '/', lang = 'id' }: { active?: string;
             {/* Hamburger */}
             <button onClick={() => setMenuOpen(m => !m)}
               className="mga-hamburger"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', display: 'flex', flexDirection: 'column', gap: '5px', width: '36px' }}>
-              <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: scrolled ? 'var(--dark)' : menuOpen ? 'var(--dark)' : 'white', transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none' }}/>
-              <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: scrolled ? 'var(--dark)' : menuOpen ? 'var(--dark)' : 'white', opacity: menuOpen ? 0 : 1 }}/>
-              <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: scrolled ? 'var(--dark)' : menuOpen ? 'var(--dark)' : 'white', transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none' }}/>
+              style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px', width: '40px', backdropFilter: 'blur(10px)' }}>
+              <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: '#1a2e28', transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none' }}/>
+              <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: '#1a2e28', opacity: menuOpen ? 0 : 1 }}/>
+              <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: '#1a2e28', transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none' }}/>
             </button>
           </div>
         </div>
