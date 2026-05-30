@@ -5,7 +5,7 @@ import { authService } from '@mikala/lib';
 import {
   Home, Users, GraduationCap, Headphones, DollarSign,
   TrendingUp, Settings, ChevronRight, ChevronDown, X, LogOut, Globe,
-  Building2, UserCheck,
+  Building2, UserCheck, BookOpen,
 } from 'lucide-react';
 
 const ALL_MENU = [
@@ -44,6 +44,10 @@ const ALL_MENU = [
   {
     icon: Globe, label: 'Website MGM', href: '/website',
     roles: ['manajemen','marketing'],
+    children: [
+      { icon: Globe,     label: 'CMS MGM', href: '/website' },
+      { icon: BookOpen,  label: 'CMS MGA', href: '/website-mga' },
+    ],
   },
 ];
 
