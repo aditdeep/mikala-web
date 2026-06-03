@@ -4,10 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Colors } from '../../lib/theme';
+import { useTheme } from '../../lib/ThemeContext';
 import api from '../../lib/api';
 import { authService } from '../../lib/auth';
 
 export default function HomeScreen() {
+  const { isDark, colors, toggleTheme } = useTheme();
   const [user, setUser]       = useState<any>(null);
   const [rekrutmen, setRekrutmen] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -39,9 +41,14 @@ export default function HomeScreen() {
             <Text style={{color:'white',fontSize:22,fontWeight:'800'}}>Halo, {user?.name?.split(' ')[0]||'Mitra'} 👋</Text>
             <Text style={{color:'rgba(255,255,255,0.4)',fontSize:13,marginTop:2}}>Selamat datang di Mikala Mitra</Text>
           </View>
-          <TouchableOpacity onPress={()=>router.push('/(app)/profile')} style={{width:44,height:44,borderRadius:14,backgroundColor:'rgba(124,58,237,0.2)',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'rgba(124,58,237,0.3)'}}>
+          <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
+            <TouchableOpacity onPress={toggleTheme} style={{width:40,height:40,borderRadius:12,backgroundColor:'rgba(255,255,255,0.08)',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'rgba(255,255,255,0.1)'}}>
+              <Ionicons name={isDark?'sunny-outline':'moon-outline'} size={18} color={isDark?'#fbbf24':'#7c3aed'}/>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={()=>router.push('/(app)/profile')} style={{width:40,height:40,borderRadius:12,backgroundColor:'rgba(124,58,237,0.2)',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'rgba(124,58,237,0.3)'}}>
             <Text style={{color:Colors.primary,fontSize:18,fontWeight:'700'}}>{user?.name?.[0]?.toUpperCase()||'M'}</Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Status Card */}
