@@ -137,16 +137,17 @@ img { max-width: 100%; display: block; }
   }
 }
 
-/* Google Translate Widget Styling */
-#google_translate_element .goog-te-gadget-simple {
-  background: transparent !important;
-  border: 1px solid rgba(255,255,255,0.3) !important;
-  border-radius: 8px !important;
-  padding: 4px 8px !important;
-  font-size: 12px !important;
-}
-#google_translate_element .goog-te-gadget-simple span {
-  color: white !important;
-}
+/* Google Translate — sembunyikan semua UI bawaan */
+#google_translate_element { display: none !important; }
 .goog-te-banner-frame { display: none !important; }
-body { top: 0 !important; }
+.goog-te-balloon-frame { display: none !important; }
+.goog-tooltip { display: none !important; }
+.goog-tooltip:hover { display: none !important; }
+.goog-text-highlight { background: none !important; box-shadow: none !important; }
+iframe.goog-te-menu-frame { display: none !important; }
+.skiptranslate { display: none !important; }
+body { top: 0 !important; position: static !important; }
+/* Sembunyikan bar translate di atas halaman */
+body > .skiptranslate { display: none !important; }
+#goog-gt-tt { display: none !important; }
+.goog-te-spinner-pos { display: none !important; }

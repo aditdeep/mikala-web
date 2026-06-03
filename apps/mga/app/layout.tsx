@@ -31,13 +31,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous"/>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
-        {/* Google Translate */}
+        {/* Google Translate — hidden widget, custom button di Navbar */}
         <Script id="google-translate-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
           function googleTranslateElementInit() {
             new google.translate.TranslateElement({
               pageLanguage: 'id',
               includedLanguages: 'en,id',
-              layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
               autoDisplay: false,
             }, 'google_translate_element');
           }

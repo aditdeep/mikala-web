@@ -1,4 +1,5 @@
 'use client';
+import TranslateButton from './TranslateButton';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -65,8 +66,8 @@ export default function Navbar({ active = '/' }: { active?: string }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto', flexShrink: 0 }}>
-            {/* Google Translate */}
-            <div id="google_translate_element" style={{ fontSize: '12px' }}/>
+            {/* Translate Button */}
+            <TranslateButton scrolled={scrolled} />
 
             <a href={MITRA_DAFTAR} className="btn-primary mga-daftar-btn"
               style={{ padding: '9px 20px', fontSize: '13px' }} target="_blank" rel="noreferrer">
@@ -117,10 +118,7 @@ export default function Navbar({ active = '/' }: { active?: string }) {
             onClick={() => setMenuOpen(false)}>
             🚀 Daftar Sekarang
           </a>
-          <button onClick={() => {}}
-            style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '11px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', color: 'var(--text2)' }}>
-            🌐 Translate
-          </button>
+          <TranslateButton scrolled={true} />
         </div>
       </div>
 
