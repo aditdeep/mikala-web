@@ -42,6 +42,10 @@ export default function HomeScreen() {
             <Text style={{color:'rgba(255,255,255,0.4)',fontSize:13,marginTop:2}}>Selamat datang di Mikala Mitra</Text>
           </View>
           <View style={{flexDirection:'row',gap:8,alignItems:'center'}}>
+            <TouchableOpacity onPress={()=>router.push('/(app)/notifikasi')}
+              style={{width:40,height:40,borderRadius:12,backgroundColor:'rgba(255,255,255,0.08)',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'rgba(255,255,255,0.1)',position:'relative'}}>
+              <Ionicons name="notifications-outline" size={18} color="rgba(255,255,255,0.8)"/>
+            </TouchableOpacity>
             <TouchableOpacity onPress={toggleTheme} style={{width:40,height:40,borderRadius:12,backgroundColor:'rgba(255,255,255,0.08)',alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'rgba(255,255,255,0.1)'}}>
               <Ionicons name={isDark?'sunny-outline':'moon-outline'} size={18} color={isDark?'#fbbf24':'#7c3aed'}/>
             </TouchableOpacity>

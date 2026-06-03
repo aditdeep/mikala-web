@@ -1,7 +1,10 @@
-import { Tabs } from 'expo-router';
+'use client';import { Tabs } from 'expo-router';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../../lib/ThemeContext';
+import api from '../../lib/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function TabIcon({ name, color, label, focused }: any) {
   return (
@@ -15,6 +18,20 @@ function TabIcon({ name, color, label, focused }: any) {
 
 export default function AppLayout() {
   const { isDark, colors } = useTheme();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await api.get('/mitra/notifikasi');
+        setUnreadCount(res.data?.unread_count || 0);
+      } catch {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000); // poll setiap 30 detik
+    return () => clearInterval(interval);
+  }, []);
+  const insets = useSafeAreaInsets();
   return (
     <Tabs screenOptions={{
       headerShown: false,
@@ -22,7 +39,7 @@ export default function AppLayout() {
         position:'absolute',
         backgroundColor: isDark ? 'rgba(15,15,26,0.97)' : 'rgba(255,255,255,0.97)',
         borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-        borderTopWidth:1, height:70, paddingBottom:8,
+        borderTopWidth:1, height: 60 + insets.bottom, paddingBottom: insets.bottom + 4,
       },
       tabBarActiveTintColor: '#7c3aed',
       tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)',
