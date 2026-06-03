@@ -7,11 +7,42 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mikala-mitra",
     "userInterfaceStyle": "dark",
-    "splash": { "image": "./assets/images/splash-icon.png", "resizeMode": "contain", "backgroundColor": "#0f0f1a" },
-    "ios": { "supportsTablet": false, "bundleIdentifier": "com.mikalaglobalmedika.mitra" },
-    "android": { "adaptiveIcon": { "foregroundImage": "./assets/images/adaptive-icon.png", "backgroundColor": "#7c3aed" }, "package": "com.mikalaglobalmedika.mitra" },
-    "plugins": ["expo-router", "expo-secure-store", "expo-camera", "expo-image-picker"],
-    "experiments": { "typedRoutes": true },
-    "extra": { "apiUrl": "https://mikala-api.onrender.com/api" }
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f1a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.mikalaglobalmedika.mitra"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#7c3aed"
+      },
+      "package": "com.mikalaglobalmedika.mitra",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-camera",
+      "expo-image-picker"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "https://mikala-api.onrender.com/api",
+      "router": {},
+      "eas": {
+        "projectId": "394405c3-ddab-43a0-a018-4fc13cee075f"
+      }
+    },
+    "owner": "aditdeep"
   }
 }
