@@ -117,9 +117,9 @@ export default function Navbar({ active = '/' }: { active?: string }) {
             onClick={() => setMenuOpen(false)}>
             🚀 Daftar Sekarang
           </a>
-          <button onClick={toggle}
+          <button onClick={() => {}}
             style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '11px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', color: 'var(--text2)' }}>
-            {lang === 'id' ? '🇬🇧 Switch to English' : '🇮🇩 Ganti ke Indonesia'}
+            🌐 Translate
           </button>
         </div>
       </div>
