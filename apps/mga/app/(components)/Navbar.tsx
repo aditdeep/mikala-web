@@ -1,23 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useLang } from '../../lib/LangContext';
-import { translations } from '../../lib/i18n';
 
 const LOGO        = 'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153869/logo-mga-web_digdlz.png';
 const MITRA_DAFTAR = 'https://mikala-web-mitra.vercel.app/auth/register';
 
 export default function Navbar({ active = '/' }: { active?: string }) {
-  const { lang, toggle } = useLang();
-  const nav = translations.nav;
-
   const NAV = [
-    { label: nav.home[lang],    href: '/' },
-    { label: nav.about[lang],   href: '/tentang' },
-    { label: nav.program[lang], href: '/program' },
-    { label: nav.gallery[lang], href: '/galeri' },
-    { label: nav.article[lang], href: '/artikel' },
-    { label: nav.contact[lang], href: '/kontak' },
+    { label: 'Beranda',  href: '/' },
+    { label: 'Tentang',  href: '/tentang' },
+    { label: 'Program',  href: '/program' },
+    { label: 'Galeri',   href: '/galeri' },
+    { label: 'Artikel',  href: '/artikel' },
+    { label: 'Kontak',   href: '/kontak' },
   ];
 
   const [scrolled, setScrolled] = useState(false);
@@ -70,15 +65,12 @@ export default function Navbar({ active = '/' }: { active?: string }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto', flexShrink: 0 }}>
-            {/* Lang toggle */}
-            <button onClick={toggle}
-              style={{ background: scrolled ? 'var(--bg)' : 'rgba(255,255,255,0.15)', border: `1px solid ${scrolled ? 'var(--border)' : 'rgba(255,255,255,0.3)'}`, borderRadius: '8px', padding: '5px 10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', color: scrolled ? 'var(--text2)' : 'white', backdropFilter: 'blur(10px)' }}>
-              {lang === 'id' ? '🇮🇩 ID' : '🇬🇧 EN'}
-            </button>
+            {/* Google Translate */}
+            <div id="google_translate_element" style={{ fontSize: '12px' }}/>
 
             <a href={MITRA_DAFTAR} className="btn-primary mga-daftar-btn"
               style={{ padding: '9px 20px', fontSize: '13px' }} target="_blank" rel="noreferrer">
-              {nav.apply[lang]} →
+              Daftar Sekarang →
             </a>
 
             {/* Hamburger */}
@@ -123,7 +115,7 @@ export default function Navbar({ active = '/' }: { active?: string }) {
           <a href={MITRA_DAFTAR} target="_blank" rel="noreferrer"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'linear-gradient(135deg, var(--green), var(--green2))', color: 'white', padding: '14px', borderRadius: '14px', fontWeight: 700, fontSize: '15px', textDecoration: 'none' }}
             onClick={() => setMenuOpen(false)}>
-            🚀 {nav.apply[lang]}
+            🚀 Daftar Sekarang
           </a>
           <button onClick={toggle}
             style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '11px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', color: 'var(--text2)' }}>
