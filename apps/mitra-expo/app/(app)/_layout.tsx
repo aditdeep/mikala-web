@@ -2,32 +2,30 @@ import { useEffect, useState } from 'react';
 import { Tabs } from 'expo-router';
 import { View, Text, Platform, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { useTheme } from '../../lib/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../../lib/api';
 
 function TabIcon({ name, color, label, focused, badge }: any) {
   return (
-    <View style={{ alignItems:'center', paddingTop:6 }}>
+    <View style={{ alignItems:'center', paddingTop:4 }}>
       <View style={{ position:'relative' }}>
-        <Ionicons name={name} size={23} color={color}/>
+        <Ionicons name={name} size={22} color={color}/>
         {badge > 0 && (
           <View style={{ position:'absolute', top:-4, right:-8, backgroundColor:'#ef4444', borderRadius:99, minWidth:16, height:16, alignItems:'center', justifyContent:'center', paddingHorizontal:3 }}>
             <Text style={{ color:'white', fontSize:9, fontWeight:'800' }}>{badge > 99 ? '99+' : badge}</Text>
           </View>
         )}
       </View>
-      <Text style={{ color, fontSize:10, marginTop:3, fontWeight: focused?'700':'400', letterSpacing:-0.2 }}>{label}</Text>
       {focused && (
-        <View style={{ width:18, height:2.5, borderRadius:99, backgroundColor:color, marginTop:3 }}/>
+        <View style={{ width:4, height:4, borderRadius:2, backgroundColor:color, marginTop:4 }}/>
       )}
     </View>
   );
 }
 
 export default function AppLayout() {
-  const { isDark, colors } = useTheme();
+  const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const [unread, setUnread] = useState(0);
 
@@ -43,60 +41,41 @@ export default function AppLayout() {
     return () => clearInterval(interval);
   }, []);
 
-  const TAB_HEIGHT = 58 + insets.bottom;
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
         tabBarActiveTintColor: '#7c3aed',
-        tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)',
+        tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)',
         tabBarStyle: {
           position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: TAB_HEIGHT,
-          backgroundColor: 'transparent',
-          borderTopWidth: 0,
-          elevation: 0,
+          bottom: insets.bottom + 12,
+          left: 32,
+          right: 32,
+          height: 62,
+          borderRadius: 31,
+          backgroundColor: isDark ? 'rgba(20,15,40,0.92)' : 'rgba(255,255,255,0.92)',
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+          elevation: 20,
+          shadowColor: '#7c3aed',
+          shadowOffset: { width:0, height:8 },
+          shadowOpacity: 0.25,
+          shadowRadius: 24,
+          paddingHorizontal: 8,
         },
-        tabBarBackground: () => (
-          <View style={{
-            position:'absolute', inset:0,
-            backgroundColor: isDark ? 'rgba(15,12,26,0.85)' : 'rgba(255,255,255,0.85)',
-            borderTopWidth: StyleSheet.hairlineWidth,
-            borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-            ...(Platform.OS === 'ios' ? {} : {
-              shadowColor: '#000',
-              shadowOffset: { width:0, height:-2 },
-              shadowOpacity: isDark ? 0.3 : 0.08,
-              shadowRadius: 12,
-              elevation: 20,
-            }),
-          }}>
-            {Platform.OS === 'ios' && (
-              <BlurView
-                intensity={isDark ? 80 : 60}
-                tint={isDark ? 'dark' : 'light'}
-                style={{ position:'absolute', inset:0 }}
-              />
-            )}
-          </View>
-        ),
       }}>
       <Tabs.Screen name="index"
-        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'home':'home-outline'} color={color} label="Home" focused={focused}/> }}/>
+        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'home':'home-outline'} color={color} focused={focused}/> }}/>
       <Tabs.Screen name="jobs"
-        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'briefcase':'briefcase-outline'} color={color} label="Jobs" focused={focused}/> }}/>
+        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'briefcase':'briefcase-outline'} color={color} focused={focused}/> }}/>
       <Tabs.Screen name="pelatihan"
-        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'book':'book-outline'} color={color} label="Pelatihan" focused={focused}/> }}/>
+        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'book':'book-outline'} color={color} focused={focused}/> }}/>
       <Tabs.Screen name="gaji"
-        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'wallet':'wallet-outline'} color={color} label="Gaji" focused={focused}/> }}/>
+        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'wallet':'wallet-outline'} color={color} focused={focused}/> }}/>
       <Tabs.Screen name="profile"
-        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'person':'person-outline'} color={color} label="Profile" focused={focused}/> }}/>
-      {/* Hidden screen — tidak tampil di tab bar */}
+        options={{ tabBarIcon:({color,focused})=><TabIcon name={focused?'person':'person-outline'} color={color} focused={focused}/> }}/>
       <Tabs.Screen name="notifikasi" options={{ href: null }}/>
     </Tabs>
   );
