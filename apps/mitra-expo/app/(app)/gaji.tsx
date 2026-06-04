@@ -257,50 +257,58 @@ export default function GajiScreen() {
         )}
 
         {/* FEE REFERRAL */}
-        {tab === 'Fee' && (
-          !fee || (!fee.logs && !fee.data && !fee.total_fee) ? (
+        {tab === 'Fee' && (() => {
+          const feeReferrer = fee?.fee_referrer || [];
+          const myFee = fee?.referral;
+          const totalFee = feeReferrer.reduce((sum:number, f:any) => sum + Number(f.fee_amount||0), 0);
+          const totalPaid = feeReferrer.filter((f:any)=>f.fee_status==='paid').reduce((sum:number,f:any)=>sum+Number(f.fee_amount||0),0);
+          const totalPending = feeReferrer.filter((f:any)=>f.fee_status==='pending').reduce((sum:number,f:any)=>sum+Number(f.fee_amount||0),0);
+
+          return feeReferrer.length === 0 ? (
             <View style={{alignItems:'center',padding:48}}>
               <Ionicons name="people-outline" size={48} color={colors.text3}/>
               <Text style={{color:colors.text2,fontSize:16,fontWeight:'600',marginTop:12}}>Belum ada fee referral</Text>
+              <Text style={{color:colors.text3,fontSize:13,marginTop:6,textAlign:'center'}}>Fee akan muncul ketika mitra yang Anda referensikan bergabung</Text>
             </View>
           ) : (
             <View>
               <LinearGradient colors={['#7c3aed','#4f46e5']} style={{borderRadius:20,padding:24,marginBottom:16,alignItems:'center'}}>
                 <Text style={{color:'rgba(255,255,255,0.7)',fontSize:13}}>Total Fee Referral</Text>
                 <Text style={{color:'white',fontSize:36,fontWeight:'800',marginTop:4}}>
-                  Rp {Number(fee.total_fee||fee.total||0).toLocaleString('id-ID')}
+                  Rp {totalFee.toLocaleString('id-ID')}
                 </Text>
                 <View style={{flexDirection:'row',gap:24,marginTop:16}}>
                   <View style={{alignItems:'center'}}>
                     <Text style={{color:'rgba(255,255,255,0.6)',fontSize:11}}>Terbayar</Text>
-                    <Text style={{color:Colors.success,fontSize:16,fontWeight:'700',marginTop:2}}>Rp {Number(fee.total_dibayar||0).toLocaleString('id-ID')}</Text>
+                    <Text style={{color:Colors.success,fontSize:16,fontWeight:'700',marginTop:2}}>Rp {totalPaid.toLocaleString('id-ID')}</Text>
                   </View>
                   <View style={{width:1,backgroundColor:'rgba(255,255,255,0.2)'}}/>
                   <View style={{alignItems:'center'}}>
                     <Text style={{color:'rgba(255,255,255,0.6)',fontSize:11}}>Pending</Text>
-                    <Text style={{color:Colors.warning,fontSize:16,fontWeight:'700',marginTop:2}}>Rp {Number(fee.total_pending||0).toLocaleString('id-ID')}</Text>
+                    <Text style={{color:Colors.warning,fontSize:16,fontWeight:'700',marginTop:2}}>Rp {totalPending.toLocaleString('id-ID')}</Text>
                   </View>
                 </View>
               </LinearGradient>
-              {(fee.logs||fee.data||[]).map((f:any,i:number)=>(
+
+              {feeReferrer.map((f:any,i:number)=>(
                 <View key={f.id||i} style={{backgroundColor:colors.card,borderRadius:16,padding:16,marginBottom:10,borderWidth:1,borderColor:colors.glassBorder}}>
                   <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
                     <View style={{flex:1}}>
-                      <Text style={{color:colors.text,fontSize:14,fontWeight:'600'}}>{f.nama_mitra||f.mitra_nama||`Referral #${f.id}`}</Text>
+                      <Text style={{color:colors.text,fontSize:14,fontWeight:'600'}}>{f.mitra?.nama_lengkap||`Mitra #${f.mitra_id}`}</Text>
                       <Text style={{color:colors.text3,fontSize:12,marginTop:3}}>{f.created_at?new Date(f.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):''}</Text>
                     </View>
                     <View style={{alignItems:'flex-end'}}>
-                      <Text style={{color:Colors.success,fontSize:15,fontWeight:'700'}}>+Rp {Number(f.jumlah||f.amount||0).toLocaleString('id-ID')}</Text>
-                      <View style={{marginTop:4,backgroundColor:`${statusColor[f.status]||Colors.warning}20`,borderRadius:6,paddingHorizontal:8,paddingVertical:3}}>
-                        <Text style={{color:statusColor[f.status]||Colors.warning,fontSize:11,fontWeight:'600'}}>{statusLabel[f.status]||f.status||'Pending'}</Text>
+                      <Text style={{color:Colors.success,fontSize:15,fontWeight:'700'}}>+Rp {Number(f.fee_amount||0).toLocaleString('id-ID')}</Text>
+                      <View style={{marginTop:4,backgroundColor:`${statusColor[f.fee_status]||Colors.warning}20`,borderRadius:6,paddingHorizontal:8,paddingVertical:3}}>
+                        <Text style={{color:statusColor[f.fee_status]||Colors.warning,fontSize:11,fontWeight:'600'}}>{statusLabel[f.fee_status]||f.fee_status||'Pending'}</Text>
                       </View>
                     </View>
                   </View>
                 </View>
               ))}
             </View>
-          )
-        )}
+          );
+        })()}
 
         <View style={{height:100}}/>
       </ScrollView>
