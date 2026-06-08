@@ -62,7 +62,24 @@ export default function TrainingPage() {
     setLoadingChecklist(false);
   };
 
-  const toggleCheck = async (materiId: number, checked: boolean) => {
+  const handleCheckClick = (materiId: number, materiNama: string, checked: boolean) => {
+    if (checked) {
+      // Sudah dicentang — langsung uncheck
+      toggleCheck(materiId, checked, 0);
+    } else {
+      // Belum dicentang — tampilkan popup rating
+      setRatingPopup({ materiId, materiNama, isCheck: true });
+      setTempRating(5);
+    }
+  };
+
+  const submitRating = async () => {
+    if (!ratingPopup) return;
+    await toggleCheck(ratingPopup.materiId, false, tempRating);
+    setRatingPopup(null);
+  };
+
+  const toggleCheck = async (materiId: number, checked: boolean, rating: number = 5) => {
     if (!selectedMitraId) return;
     const tgl      = checkInputs[materiId]?.tanggal || defaultTgl;
     const pengajar = checkInputs[materiId]?.pengajar || defaultPengajar;
@@ -70,6 +87,7 @@ export default function TrainingPage() {
     setSavingCheck(materiId);
     try {
       await apiClient.post(`/internal/training/mitra/${selectedMitraId}/checklist/${materiId}`, {
+        rating: rating,
         tanggal_dapat: tgl, pengajar: pengajar || 'Trainer',
       });
       fetchChecklist(selectedMitraId);
@@ -277,7 +295,7 @@ export default function TrainingPage() {
               onChange={e => e.target.value && fetchChecklist(Number(e.target.value))}
               style={{ width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
               <option value="">-- Pilih mitra untuk ceklis materi --</option>
-              {data.map((m: any) => (
+              {data.filter((m: any) => !searchMitra || m.nama_lengkap?.toLowerCase().includes(searchMitra.toLowerCase())).map((m: any) => (
                 <option key={m.id} value={m.id}>{m.user?.name||m.nama_lengkap} ({m.training_persen||0}%)</option>
               ))}
             </select>
@@ -293,6 +311,33 @@ export default function TrainingPage() {
                   <div>
                     <p style={{ fontWeight:700, fontSize:'15px', color:'var(--text)' }}>{checklistMitra.mitra?.nama}</p>
                     <p style={{ fontSize:'12px', color:'var(--text3)' }}>{checklistMitra.selesai}/{checklistMitra.total} materi ({checklistMitra.persen}%)</p>
+                {checklistMitra.nilai_rata > 0 && (
+                  <p style={{ fontSize:'12px', color:'#fbbf24', fontWeight:700, marginTop:'2px' }}>★ Nilai Rata-rata: {Number(checklistMitra.nilai_rata).toFixed(2)} / 5.0</p>
+                )}
+                {checklistMitra.status_lulus === 'lulus' && (
+                  <div style={{ marginTop:'8px', padding:'8px 12px', background:'rgba(16,185,129,0.15)', border:'1px solid rgba(16,185,129,0.4)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:'10px' }}>
+                    <span style={{ color:'#10b981', fontSize:'12px', fontWeight:700 }}>🏆 LULUS</span>
+                    {!checklistMitra.sertifikat ? (
+                      <button onClick={async () => {
+                        if (!confirm('Terbitkan sertifikat untuk mitra ini?')) return;
+                        try {
+                          await apiClient.post(`/internal/training/mitra/${selectedMitraId}/sertifikat`, {});
+                          alert('✅ Sertifikat berhasil diterbitkan!');
+                          loadProgress();
+                        } catch (e: any) {
+                          alert('Error: ' + (e?.response?.data?.message || 'Gagal terbitkan'));
+                        }
+                      }} style={{ background:'#10b981', border:'none', borderRadius:'8px', padding:'5px 10px', color:'white', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>
+                        + Terbitkan Sertifikat
+                      </button>
+                    ) : (
+                      <span style={{ color:'var(--text3)', fontSize:'10px' }}>✓ {checklistMitra.sertifikat.nomor_sertifikat}</span>
+                    )}
+                  </div>
+                )}
+                {checklistMitra.status_lulus === 'tidak_lulus' && (
+                  <p style={{ marginTop:'6px', color:'#ef4444', fontSize:'12px', fontWeight:600 }}>❌ Tidak Lulus (nilai &lt; 4.5)</p>
+                )}
                   </div>
                   <div style={{ fontSize:'24px', fontWeight:800, color: checklistMitra.persen===100?'#10b981':'var(--purple-light)' }}>{checklistMitra.persen}%</div>
                 </div>
@@ -330,7 +375,8 @@ export default function TrainingPage() {
 
               {/* Materi per kategori */}
               {['Dasar','PHC'].map(kat => {
-                const items = checklistMitra.materi?.filter((m: any) => m.kategori === kat) || [];
+                const katData = checklistMitra.by_kategori?.find((k: any) => k.kategori === kat);
+                const items = katData?.materi || [];
                 const isOpen = openKat.includes(kat);
                 const selesai = items.filter((m: any) => m.checked).length;
                 const katColor = kat==='PHC'?'#0ea5e9':'#7c3aed';
@@ -351,7 +397,7 @@ export default function TrainingPage() {
                           const isSaving = savingCheck === m.id;
                           return (
                             <div key={m.id} style={{ display:'flex', alignItems:'flex-start', gap:'10px', padding:`10px 16px`, paddingLeft:`${16+indent}px`, borderBottom:'1px solid rgba(255,255,255,0.04)', background: m.checked?'rgba(16,185,129,0.04)':'transparent' }}>
-                              <button onClick={() => toggleCheck(m.id, m.checked)} disabled={isSaving}
+                              <button onClick={() => handleCheckClick(m.id, m.nama, m.checked)} disabled={isSaving}
                                 style={{ background:'none', border:'none', cursor:'pointer', padding:'2px', flexShrink:0, marginTop:'1px' }}>
                                 {isSaving
                                   ? <div style={{ width:'18px', height:'18px', borderRadius:'50%', border:'2px solid rgba(124,58,237,0.3)', borderTopColor:'#7c3aed' }}/>
@@ -657,5 +703,44 @@ export default function TrainingPage() {
         </div>
       )}
     </div>
+
+
+      {/* Modal Rating Popup */}
+      {ratingPopup && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:'20px' }}>
+          <div style={{ background:'var(--bg)', borderRadius:'20px', padding:'24px', maxWidth:'420px', width:'100%', border:'1px solid var(--border)' }}>
+            <h3 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', marginBottom:'6px' }}>Beri Penilaian</h3>
+            <p style={{ fontSize:'13px', color:'var(--text3)', marginBottom:'20px' }}>{ratingPopup.materiNama}</p>
+
+            <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', padding:'20px', marginBottom:'16px', textAlign:'center' }}>
+              <p style={{ fontSize:'12px', color:'var(--text3)', marginBottom:'12px' }}>Nilai pemahaman mitra (0–5 bintang)</p>
+              <div style={{ display:'flex', justifyContent:'center', gap:'8px', marginBottom:'12px' }}>
+                {[1,2,3,4,5].map(star => (
+                  <button key={star} onClick={() => setTempRating(star)}
+                    style={{ background:'none', border:'none', cursor:'pointer', padding:'4px', fontSize:'32px', color: star <= tempRating ? '#fbbf24' : 'rgba(255,255,255,0.2)' }}>
+                    {star <= tempRating ? '★' : '☆'}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize:'24px', fontWeight:800, color:'#fbbf24' }}>{tempRating}.0 / 5.0</p>
+              <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>
+                {tempRating >= 5 ? '🌟 Sangat Baik' : tempRating >= 4 ? '👍 Baik' : tempRating >= 3 ? '⚠️ Cukup' : '❌ Kurang'}
+              </p>
+            </div>
+
+            <div style={{ display:'flex', gap:'10px' }}>
+              <button onClick={() => setRatingPopup(null)}
+                style={{ flex:1, padding:'11px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text)', fontWeight:600, cursor:'pointer' }}>
+                Batal
+              </button>
+              <button onClick={submitRating}
+                style={{ flex:2, padding:'11px', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, cursor:'pointer' }}>
+                Simpan Ceklis + Rating
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
   );
 }
