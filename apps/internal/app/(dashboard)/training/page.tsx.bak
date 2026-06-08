@@ -40,8 +40,6 @@ export default function TrainingPage() {
 
   // Checklist state
   const [checklistMitra, setChecklistMitra] = useState<any>(null);
-  const [searchMitra, setSearchMitra] = useState('');
-  const [ratingPopup, setRatingPopup] = useState<any>(null);
   const [selectedMitraId, setSelectedMitraId] = useState<number|null>(null);
   const [loadingChecklist, setLoadingChecklist] = useState(false);
   const [savingCheck, setSavingCheck] = useState<number|null>(null);
