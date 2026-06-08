@@ -292,6 +292,7 @@ const [tempRating, setTempRating] = useState(5);
           {/* Pilih Mitra */}
           <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
             <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', marginBottom:'10px' }}>Pilih Mitra</p>
+<input type="text" placeholder="Cari nama mitra..." value={searchMitra} onChange={(e) => setSearchMitra(e.target.value)} style={{ width: '100%', padding: '9px 12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text)', fontSize: '13px', outline: 'none', marginBottom: '8px' }} />
             <select
               value={selectedMitraId||''}
               onChange={e => e.target.value && fetchChecklist(Number(e.target.value))}
