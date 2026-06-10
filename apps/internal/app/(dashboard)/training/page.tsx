@@ -334,7 +334,15 @@ const [tempRating, setTempRating] = useState(5);
                         + Terbitkan Sertifikat
                       </button>
                     ) : (
-                      <span style={{ color:'var(--text3)', fontSize:'10px' }}>✓ {checklistMitra.sertifikat.nomor_sertifikat}</span>
+                      <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                        <span style={{ color:'var(--text3)', fontSize:'10px' }}>✓ {checklistMitra.sertifikat.nomor_sertifikat}</span>
+                        {checklistMitra.sertifikat.url_pdf && (
+                          <a href={checklistMitra.sertifikat.url_pdf} target="_blank" rel="noopener noreferrer"
+                            style={{ background:'#10b981', borderRadius:'6px', padding:'4px 8px', color:'white', fontSize:'10px', fontWeight:700, textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'4px' }}>
+                            📄 View PDF
+                          </a>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
