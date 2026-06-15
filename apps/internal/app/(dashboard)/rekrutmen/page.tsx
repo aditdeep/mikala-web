@@ -242,7 +242,7 @@ export default function RekrutmenPage() {
   };
 
   const handleTerima = async () => {
-    if (!priceRateInput) { alert('Isi price rate terlebih dahulu'); return; }
+    // price_rate sekarang opsional, akan diset setelah mitra lulus training
     if (showDetail?.payment_type === 'kredit' && (!totalBiayaInput || !cicilanInput)) {
       alert('Isi total biaya dan cicilan per job untuk metode kredit'); return;
     }
@@ -511,7 +511,7 @@ export default function RekrutmenPage() {
                 <p style={{ fontSize:'13px', fontWeight:700, color:'var(--purple-light)', marginBottom:'12px' }}>🔍 Verifikasi Rekrutmen</p>
 
                 <div style={{ marginBottom:'10px' }}>
-                  <label style={labelStyle}>Price Rate per Job (Rp) *</label>
+                  <label style={labelStyle}>Price Rate per Job (opsional, set setelah lulus training)</label>
                   <input
                     type="number"
                     value={priceRateInput}
@@ -566,6 +566,46 @@ export default function RekrutmenPage() {
               <div style={{ marginTop:'16px', background:'rgba(16,185,129,0.05)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'14px', padding:'14px', textAlign:'center' }}>
                 <CheckCircle size={28} style={{ color:'#10b981', margin:'0 auto 8px' }} />
                 <p style={{ fontWeight:700, color:'#10b981', fontSize:'14px' }}>Mitra Telah Diterima</p>
+                {/* Set Price Rate setelah lulus training */}
+                {showDetail.status_lulus === 'lulus' && (
+                  <div style={{ marginTop:'12px', padding:'12px', background:'rgba(16,185,129,0.08)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'10px' }}>
+                    <p style={{ fontSize:'12px', fontWeight:700, color:'#10b981', marginBottom:'8px' }}>🏆 Mitra LULUS — Set Price Rate</p>
+                    <div style={{ display:'flex', gap:'8px' }}>
+                      <input
+                        type="number"
+                        placeholder="Rp per job"
+                        value={priceRateInput}
+                        onChange={e => setPriceRateInput(e.target.value)}
+                        style={{ flex:1, padding:'8px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}
+                      />
+                      <button onClick={async () => {
+                        if (!priceRateInput || Number(priceRateInput) <= 0) { alert('Isi price rate dengan angka valid'); return; }
+                        try {
+                          await apiClient.post(`/internal/rekrutmen/mitra/${showDetail.id}/price-rate`, {
+                            price_rate: priceRateInput,
+                          });
+                          alert('✅ Price rate berhasil di-set! Mitra siap menerima job.');
+                          fetchData();
+                          setShowDetail(null);
+                        } catch (e: any) {
+                          alert('Error: ' + (e?.response?.data?.message || 'Gagal'));
+                        }
+                      }} style={{ background:'#10b981', border:'none', borderRadius:'8px', padding:'8px 14px', color:'white', fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
+                        Set Rate
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {showDetail.status_lulus === 'training' && !showDetail.price_rate && (
+                  <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'8px' }}>
+                    ⏳ Menunggu mitra menyelesaikan training (price rate akan di-set setelah lulus)
+                  </p>
+                )}
+                {showDetail.status_lulus === 'tidak_lulus' && (
+                  <p style={{ fontSize:'11px', color:'#ef4444', marginTop:'8px', fontWeight:600 }}>
+                    ❌ Mitra tidak lulus training — perlu re-training
+                  </p>
+                )}
                 {showDetail.price_rate && (
                   <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'4px' }}>
                     Rate: Rp {Number(showDetail.price_rate).toLocaleString('id-ID')}/job
