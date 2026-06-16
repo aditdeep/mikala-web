@@ -6,6 +6,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../lib/theme';
+import { useRouter } from 'expo-router';
 import { useTheme } from '../../lib/ThemeContext';
 import api from '../../lib/api';
 
@@ -13,6 +14,7 @@ const TABS = ['Payroll','Kredit','Kasbon','Fee'] as const;
 type Tab = typeof TABS[number];
 
 export default function GajiScreen() {
+  const router = useRouter();
   const { colors, isDark } = useTheme();
   const [tab, setTab]           = useState<Tab>('Payroll');
   const [payroll, setPayroll]   = useState<any[]>([]);
@@ -126,6 +128,25 @@ export default function GajiScreen() {
           )}
         </View>
       </LinearGradient>
+
+      {/* Card Cuti */}
+      <TouchableOpacity onPress={() => router.push('/cuti')}
+        style={{
+          marginHorizontal:16, marginTop:12, marginBottom:4,
+          backgroundColor:`${Colors.primary}15`,
+          borderRadius:14, padding:14,
+          flexDirection:'row', alignItems:'center', gap:12,
+          borderWidth:1, borderColor:`${Colors.primary}30`,
+        }}>
+        <View style={{ width:42, height:42, borderRadius:12, backgroundColor:`${Colors.primary}30`, justifyContent:'center', alignItems:'center' }}>
+          <Ionicons name="calendar-outline" size={22} color={Colors.primary}/>
+        </View>
+        <View style={{ flex:1 }}>
+          <Text style={{ color:colors.text, fontSize:14, fontWeight:'700' }}>Ajukan Cuti</Text>
+          <Text style={{ color:colors.text3, fontSize:11, marginTop:2 }}>Lihat quota & history pengajuan cuti</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.text3}/>
+      </TouchableOpacity>
 
       {/* Tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{paddingHorizontal:16,paddingVertical:10,maxHeight:52}}>
