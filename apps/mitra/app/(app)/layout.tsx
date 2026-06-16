@@ -5,6 +5,7 @@ import { authService } from '@mikala/lib';
 import { BottomNav } from '@/components/BottomNav';
 import { useTheme } from '@/components/ThemeProvider';
 import { Sun, Moon } from 'lucide-react';
+import RealtimeNotifProvider from '@/components/RealtimeNotifProvider';
 
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
@@ -30,7 +31,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="fixed top-4 right-4 z-40">
         <ThemeToggle />
       </div>
-      {children}
+      <RealtimeNotifProvider>{children}</RealtimeNotifProvider>
       <BottomNav />
       {/* Background orbs */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
