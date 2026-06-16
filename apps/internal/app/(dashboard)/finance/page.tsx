@@ -387,6 +387,19 @@ export default function FinancePage() {
 
       {/* TAB PAYROLL */}
       {activeTab === 'payroll' && (
+        <>
+          {/* Generate Payroll Bar */}
+          <div style={{ background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.25)', borderRadius:'14px', padding:'14px', marginBottom:'14px', display:'flex', gap:'10px', alignItems:'flex-end', flexWrap:'wrap' }}>
+            <div style={{ flex:1, minWidth:'180px' }}>
+              <p style={{ fontSize:'12px', color:'var(--text3)', marginBottom:'4px', fontWeight:600 }}>Generate Payroll Periode</p>
+              <input type="month" value={periodePayroll} onChange={(e) => setPeriodePayroll(e.target.value)}
+                style={{ width:'100%', padding:'8px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}/>
+            </div>
+            <button onClick={(e: any) => handleGeneratePayroll(e)} disabled={generatingPayroll}
+              style={{ background: generatingPayroll ? '#666' : 'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'10px', padding:'9px 18px', color:'white', fontWeight:700, fontSize:'13px', cursor: generatingPayroll ? 'not-allowed' : 'pointer' }}>
+              {generatingPayroll ? 'Generating...' : 'Generate Payroll'}
+            </button>
+          </div>
         <div style={cardStyle}>
           {loading ? <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div> : (
             <div style={{ overflowX:'auto' }}>
@@ -409,7 +422,7 @@ export default function FinancePage() {
                           <span style={{ background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>
                         </td>
                         <td style={{ padding:'12px 16px' }}>
-                          <button onClick={() => setDetail(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer' }}>
+                          <button onClick={() => openPayrollDetail(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'8px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer' }}>
                             <Eye size={12}/>Detail
                           </button>
                         </td>
@@ -422,6 +435,7 @@ export default function FinancePage() {
             </div>
           )}
         </div>
+        </>
       )}
 
       {/* TAB JURNAL */}
