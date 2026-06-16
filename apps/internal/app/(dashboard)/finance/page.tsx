@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { DollarSign, Search, Eye, X, Plus, TrendingUp, TrendingDown, FileText, BookOpen, BarChart2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { DollarSign, Search, Eye, X, Plus, TrendingUp, TrendingDown, FileText, BookOpen, BarChart2, ArrowUpCircle, ArrowDownCircle , Calendar, Settings as SettingsIcon, Check, AlertCircle } from "lucide-react";
 
 const statusTagihan: any = {
   paid:      { label:'Lunas',       color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
@@ -16,6 +16,8 @@ const TABS = [
   { key:'payroll',  label:'Payroll',  icon: DollarSign },
   { key:'jurnal',   label:'Jurnal',   icon: BookOpen },
   { key:'report',   label:'Report',   icon: BarChart2 },
+  { key:'cuti',     label:'Cuti',     icon: Calendar },
+  { key:'settings', label:'Settings', icon: SettingsIcon },
 ];
 
 export default function FinancePage() {
@@ -724,6 +726,176 @@ export default function FinancePage() {
           </div>
         </div>
       )}
+
+      {/* === CUTI TAB === */}
+      {activeTab === 'cuti' && (
+        <div>
+          <div style={{ display:'flex', gap:'8px', marginBottom:'14px', alignItems:'center', flexWrap:'wrap' }}>
+            <span style={{ fontSize:'13px', color:'var(--text3)' }}>Filter:</span>
+            {[['all','Semua'],['pending','Pending'],['approved','Disetujui'],['rejected','Ditolak']].map(([k,l]) => (
+              <button key={k} onClick={() => { setCutiFilter(k); setTimeout(fetchCuti, 50); }}
+                style={{ padding:'5px 12px', borderRadius:'8px', fontSize:'12px', fontWeight:600, cursor:'pointer',
+                  background: cutiFilter===k ? '#7c3aed' : 'var(--glass)',
+                  color: cutiFilter===k ? 'white' : 'var(--text3)',
+                  border: cutiFilter===k ? 'none' : '1px solid var(--border)' }}>
+                {l}
+              </button>
+            ))}
+          </div>
+          {cutiLoading ? <p style={{ color:'var(--text3)', textAlign:'center' }}>Loading...</p> :
+            cutiList.length === 0 ? (
+              <div style={{ textAlign:'center', padding:'48px', color:'var(--text3)' }}>
+                <Calendar size={32} style={{ opacity:0.2, marginBottom:8 }}/>
+                <p>Belum ada pengajuan cuti</p>
+              </div>
+            ) : (
+              <div style={{ display:'grid', gap:'10px' }}>
+                {cutiList.map((c: any) => (
+                  <div key={c.id} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', padding:'14px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'10px' }}>
+                      <div style={{ flex:1 }}>
+                        <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)' }}>{c.mitra?.nama_lengkap || ('Mitra #' + c.mitra_id)}</p>
+                        <p style={{ fontSize:'12px', color:'var(--text2)', marginTop:'2px' }}>
+                          {new Date(c.tanggal_mulai).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})} – {new Date(c.tanggal_selesai).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})} ({c.jumlah_hari} hari)
+                        </p>
+                        <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'4px' }}>Alasan: {c.alasan}</p>
+                        {c.catatan_admin && <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px', fontStyle:'italic' }}>Catatan admin: {c.catatan_admin}</p>}
+                      </div>
+                      <div style={{ textAlign:'right' }}>
+                        <span style={{
+                          padding:'3px 10px', borderRadius:'8px', fontSize:'11px', fontWeight:700,
+                          background: c.status === 'pending' ? 'rgba(245,158,11,0.15)' : c.status === 'approved' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                          color: c.status === 'pending' ? '#f59e0b' : c.status === 'approved' ? '#10b981' : '#ef4444',
+                        }}>
+                          {c.status === 'pending' ? 'Pending' : c.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                        </span>
+                        {c.status === 'pending' && (
+                          <div style={{ display:'flex', gap:'6px', marginTop:'8px' }}>
+                            <button onClick={() => handleApproveCuti(c.id, 'approved')} style={{ background:'#10b981', border:'none', borderRadius:'6px', padding:'5px 10px', color:'white', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>Setujui</button>
+                            <button onClick={() => handleApproveCuti(c.id, 'rejected')} style={{ background:'#ef4444', border:'none', borderRadius:'6px', padding:'5px 10px', color:'white', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>Tolak</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+        </div>
+      )}
+
+      {/* === SETTINGS TAB === */}
+      {activeTab === 'settings' && (
+        <div>
+          {settingsLoading ? <p style={{ color:'var(--text3)' }}>Loading...</p> : (
+            <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'20px', maxWidth:'500px' }}>
+              <h3 style={{ fontSize:'15px', fontWeight:700, color:'var(--text)', marginBottom:'16px' }}>Pengaturan Payroll</h3>
+              <div style={{ marginBottom:'14px' }}>
+                <label style={{ fontSize:'12px', color:'var(--text3)', display:'block', marginBottom:'6px', fontWeight:600 }}>Rate Uang Cuti per Hari (Rp)</label>
+                <input type="number" value={rateCuti} onChange={(e) => setRateCuti(e.target.value)}
+                  style={{ width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' }}/>
+                <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>Tarif default cuti per hari</p>
+              </div>
+              <div style={{ marginBottom:'16px' }}>
+                <label style={{ fontSize:'12px', color:'var(--text3)', display:'block', marginBottom:'6px', fontWeight:600 }}>Max Hari Cuti per Bulan</label>
+                <input type="number" value={maxCuti} onChange={(e) => setMaxCuti(e.target.value)}
+                  style={{ width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' }}/>
+                <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>Maksimal cuti yang dapat diajukan mitra per bulan</p>
+              </div>
+              <button onClick={handleSaveSettings}
+                style={{ background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'10px', padding:'10px 20px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                Simpan Settings
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* === MODAL PAYROLL DETAIL === */}
+      {payrollDetail && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:'20px' }}>
+          <div style={{ background:'var(--bg)', borderRadius:'20px', padding:'24px', maxWidth:'600px', width:'100%', maxHeight:'90vh', overflowY:'auto', border:'1px solid var(--border)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'16px' }}>
+              <div>
+                <h3 style={{ fontSize:'17px', fontWeight:800, color:'var(--text)' }}>Detail Payroll</h3>
+                <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'3px' }}>{payrollDetail.payroll_number}</p>
+              </div>
+              <button onClick={() => setPayrollDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 10px', color:'var(--text)', cursor:'pointer' }}>x</button>
+            </div>
+            <div style={{ background:'var(--glass)', borderRadius:'12px', padding:'14px', marginBottom:'14px' }}>
+              <p style={{ fontSize:'11px', color:'var(--text3)' }}>Mitra</p>
+              <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)' }}>{payrollDetail.mitra?.nama_lengkap || ('#' + payrollDetail.mitra_id)}</p>
+              <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'6px' }}>Periode</p>
+              <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
+                {new Date(payrollDetail.periode_mulai).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})} - {new Date(payrollDetail.periode_selesai).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
+              </p>
+            </div>
+            {[
+              ['Jumlah Hari Kerja','jumlah_hari_kerja','int'],
+              ['Tarif per Hari (Rp)','tarif_per_hari','rp'],
+              ['Hari Cuti','hari_cuti','int'],
+              ['Rate Cuti per Hari (Rp)','rate_cuti','rp'],
+              ['Bonus (Rp)','bonus','rp'],
+              ['Potongan Kasbon (Rp)','potongan_kasbon','rp'],
+              ['Potongan Kredit (Rp)','potongan_kredit','rp'],
+              ['Adjustment (+/-)','adjustment','rp'],
+            ].map(([label, key, type]) => (
+              <div key={key} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
+                <span style={{ fontSize:'12px', color:'var(--text3)' }}>{label}</span>
+                {payrollEditMode && payrollDetail.status === 'draft' ? (
+                  <input
+                    type="number"
+                    value={payrollForm[key as string] ?? 0}
+                    onChange={(e) => setPayrollForm({ ...payrollForm, [key as string]: e.target.value })}
+                    style={{ width:'140px', padding:'5px 8px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text)', fontSize:'12px', textAlign:'right' }}
+                  />
+                ) : (
+                  <span style={{ fontSize:'12px', fontWeight:600, color:'var(--text)' }}>
+                    {type === 'int' ? Number(payrollDetail[key as string] || 0) : 'Rp ' + Number(payrollDetail[key as string] || 0).toLocaleString('id-ID')}
+                  </span>
+                )}
+              </div>
+            ))}
+            {payrollEditMode && payrollDetail.status === 'draft' && (
+              <div style={{ marginTop:'10px' }}>
+                <label style={{ fontSize:'11px', color:'var(--text3)' }}>Catatan Adjustment</label>
+                <textarea value={payrollForm.catatan_adjustment || ''} onChange={(e) => setPayrollForm({ ...payrollForm, catatan_adjustment: e.target.value })}
+                  style={{ width:'100%', padding:'8px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'12px', marginTop:'4px', minHeight:'50px', resize:'vertical' }}
+                />
+              </div>
+            )}
+            <div style={{ background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', borderRadius:'10px', padding:'12px', marginTop:'14px' }}>
+              <p style={{ fontSize:'11px', color:'var(--text3)', marginBottom:'2px' }}>Total Gaji Bersih</p>
+              <p style={{ fontSize:'22px', fontWeight:800, color:'#a78bfa' }}>Rp {Number(payrollDetail.total || 0).toLocaleString('id-ID')}</p>
+              <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>
+                Status: <strong style={{ color: payrollDetail.status === 'paid' ? '#10b981' : payrollDetail.status === 'approved' ? '#3b82f6' : '#f59e0b' }}>
+                  {payrollDetail.status === 'paid' ? 'Paid' : payrollDetail.status === 'approved' ? 'Approved' : 'Draft'}
+                </strong>
+              </p>
+            </div>
+            <div style={{ display:'flex', gap:'8px', marginTop:'18px', flexWrap:'wrap' }}>
+              {payrollDetail.status === 'draft' && (
+                payrollEditMode ? (
+                  <>
+                    <button onClick={() => setPayrollEditMode(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontWeight:600, cursor:'pointer' }}>Batal</button>
+                    <button onClick={handleSaveAdjust} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'10px', color:'white', fontWeight:700, cursor:'pointer' }}>Simpan Adjustment</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => setPayrollEditMode(true)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontWeight:600, cursor:'pointer' }}>Edit</button>
+                    <button onClick={() => handleApprovePayroll(payrollDetail.id)} style={{ flex:1, padding:'10px', background:'#3b82f6', border:'none', borderRadius:'10px', color:'white', fontWeight:700, cursor:'pointer' }}>Approve</button>
+                  </>
+                )
+              )}
+              {payrollDetail.status === 'approved' && (
+                <button onClick={() => handleMarkPaid(payrollDetail.id)} style={{ flex:1, padding:'10px', background:'#10b981', border:'none', borderRadius:'10px', color:'white', fontWeight:700, cursor:'pointer' }}>Mark as Paid</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
