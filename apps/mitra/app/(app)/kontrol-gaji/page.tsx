@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Wallet, TrendingDown, CreditCard, AlertCircle } from 'lucide-react';
+import { Wallet, TrendingDown, CreditCard, AlertCircle, Calendar, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { apiClient } from '@mikala/lib';
 
 export default function KontrolGajiPage() {
@@ -30,6 +31,25 @@ export default function KontrolGajiPage() {
         <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Kontrol Gaji</h1>
         <p style={{ color:'var(--text3)', fontSize:'13px' }}>Kredit pelatihan & kasbon Anda</p>
       </div>
+
+      {/* Card Cuti */}
+      <Link href="/cuti" style={{ textDecoration:'none' }}>
+        <div style={{
+          background:'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(79,70,229,0.08))',
+          border:'1px solid rgba(124,58,237,0.3)',
+          borderRadius:'14px', padding:'14px',
+          display:'flex', alignItems:'center', gap:'12px', cursor:'pointer'
+        }}>
+          <div style={{ width:'42px', height:'42px', borderRadius:'12px', background:'rgba(124,58,237,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Calendar size={20} color="#a78bfa"/>
+          </div>
+          <div style={{ flex:1 }}>
+            <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)' }}>Ajukan Cuti</p>
+            <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>Lihat quota & history pengajuan cuti</p>
+          </div>
+          <ChevronRight size={18} color="var(--text3)"/>
+        </div>
+      </Link>
 
       {/* Tabs */}
       <div style={{ display:'flex', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'4px' }}>
