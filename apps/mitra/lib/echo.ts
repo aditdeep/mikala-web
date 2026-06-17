@@ -26,7 +26,7 @@ export function getEcho(token: string | null): any {
     key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
     cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER || 'ap1',
     forceTLS: true,
-    authEndpoint: `${apiUrl}/api/broadcasting/auth`,
+    authEndpoint: `${apiUrl}/broadcasting/auth`,
     auth: {
       headers: {
         Authorization: `Bearer ${token}`,
