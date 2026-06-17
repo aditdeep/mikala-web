@@ -39,7 +39,7 @@ export default function RealtimeNotifProvider({ children }: { children: React.Re
     const channel = echo.private(`notifikasi.${userId}`);
 
     channel.listen('.notifikasi.created', (payload: NotifPayload) => {
-      console.log('🔔 Notif baru:', payload);
+      console.log('🔔 Notif baru:', payload); alert('NOTIF: ' + payload.title);
       setToast(payload);
       setTimeout(() => setToast(null), 5000);
       window.dispatchEvent(new CustomEvent('notif-received', { detail: payload }));
