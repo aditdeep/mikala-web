@@ -42,7 +42,7 @@ export default function RealtimeNotifProvider({ children }: { children: React.Re
     channel.listen('.notifikasi.created', (payload: NotifPayload) => {
       console.log('🔔 Notif baru:', payload); 
       setToast(payload);
-      setTimeout(() => setToast(null), 5000);
+      setTimeout(() => setToast(null), 15000);
       window.dispatchEvent(new CustomEvent('notif-received', { detail: payload }));
     });
 
