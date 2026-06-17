@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { getEcho } from '../lib/echo';
 import { Bell } from 'lucide-react';
 
@@ -39,7 +40,7 @@ export default function RealtimeNotifProvider({ children }: { children: React.Re
     const channel = echo.private(`notifikasi.${userId}`);
 
     channel.listen('.notifikasi.created', (payload: NotifPayload) => {
-      console.log('🔔 Notif baru:', payload); alert('NOTIF: ' + payload.title);
+      console.log('🔔 Notif baru:', payload); 
       setToast(payload);
       setTimeout(() => setToast(null), 5000);
       window.dispatchEvent(new CustomEvent('notif-received', { detail: payload }));
@@ -54,7 +55,7 @@ export default function RealtimeNotifProvider({ children }: { children: React.Re
   return (
     <>
       {children}
-      {toast && (
+      {toast && typeof document !== 'undefined' && createPortal(
         <div
           onClick={() => setToast(null)}
           style={{
@@ -81,7 +82,8 @@ export default function RealtimeNotifProvider({ children }: { children: React.Re
             <p style={{ fontSize: '13px', fontWeight: 700, marginBottom: '3px' }}>{toast.title}</p>
             <p style={{ fontSize: '12px', opacity: 0.92 }}>{toast.message}</p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
