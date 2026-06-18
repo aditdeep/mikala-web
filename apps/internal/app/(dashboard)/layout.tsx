@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@mikala/lib';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import RealtimeNotifProvider from '@/components/RealtimeNotifProvider';
 
 const ROLE_HOME: Record<string, string> = {
   manajemen:      '/',
@@ -30,6 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!checked) return null;
 
   return (
+    <RealtimeNotifProvider>
     <div style={{ display:'flex', height:'100vh', width:'100%', overflow:'hidden', background:'var(--bg)', position:'relative' }}>
 
       {/* Mobile overlay */}
@@ -59,5 +61,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </div>
+    </RealtimeNotifProvider>
   );
 }
