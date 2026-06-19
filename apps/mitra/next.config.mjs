@@ -2,7 +2,7 @@ import withPWAInit from 'next-pwa';
 import path from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const withPWA = withPWAInit({ dest: 'public', register: true, skipWaiting: true, disable: process.env.NODE_ENV === 'development' });
+const withPWA = withPWAInit({ dest: 'public', register: true, skipWaiting: true, disable: process.env.NODE_ENV === 'development', buildExcludes: [/app-build-manifest\.json$/, /_next\/app-build-manifest\.json$/] });
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@mikala/ui', '@mikala/lib', '@mikala/hooks', '@mikala/store', '@mikala/types'],
