@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, Check } from 'lucide-react';
 import { apiClient } from '@mikala/lib';
 
@@ -27,7 +28,9 @@ export function NotifBell() {
   const [items, setItems] = useState<NotifItem[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const fetchUnread = useCallback(async () => {
     try {
@@ -52,14 +55,12 @@ export function NotifBell() {
 
   useEffect(() => {
     fetchUnread();
-    // Realtime: dengar event dari RealtimeNotifProvider
     const handler = (e: any) => {
       const payload = e.detail;
       setUnread((u) => u + 1);
       if (payload) setItems((prev) => [payload, ...prev]);
     };
     window.addEventListener('notif-received', handler);
-    // Poll fallback tiap 60 detik
     const poll = setInterval(fetchUnread, 60000);
     return () => {
       window.removeEventListener('notif-received', handler);
@@ -67,19 +68,43 @@ export function NotifBell() {
     };
   }, [fetchUnread]);
 
-  // Tutup saat klik di luar
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t)) return;
+      if (panelRef.current?.contains(t)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      if (!btnRef.current) return;
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 8, right: window.innerWidth - r.right });
+    };
+    update();
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
+  }, [open]);
+
   const toggle = () => {
     const next = !open;
     setOpen(next);
-    if (next) fetchList();
+    if (next) {
+      if (btnRef.current) {
+        const r = btnRef.current.getBoundingClientRect();
+        setPos({ top: r.bottom + 8, right: window.innerWidth - r.right });
+      }
+      fetchList();
+    }
   };
 
   const markRead = async (id: number) => {
@@ -95,8 +120,8 @@ export function NotifBell() {
   };
 
   return (
-    <div style={{ position: 'relative' }} ref={ref}>
-      <button onClick={toggle} style={{ width:'36px', height:'36px', borderRadius:'10px', background:'var(--glass)', border:'1px solid var(--glass-border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', position:'relative' }}>
+    <>
+      <button ref={btnRef} onClick={toggle} style={{ width:'36px', height:'36px', borderRadius:'10px', background:'var(--glass)', border:'1px solid var(--glass-border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', position:'relative' }}>
         <Bell size={15} style={{ color:'var(--text2)' }} />
         {unread > 0 && (
           <span style={{ position:'absolute', top:'-3px', right:'-3px', minWidth:'16px', height:'16px', padding:'0 4px', borderRadius:'8px', background:'#ef4444', color:'white', fontSize:'10px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', border:'1.5px solid var(--bg)' }}>
@@ -105,8 +130,8 @@ export function NotifBell() {
         )}
       </button>
 
-      {open && (
-        <div style={{ position:'absolute', right:0, top:'calc(100% + 8px)', width:'340px', maxWidth:'90vw', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', boxShadow:'0 12px 40px rgba(0,0,0,0.2)', overflow:'hidden', zIndex:200 }}>
+      {open && typeof document !== 'undefined' && createPortal(
+        <div ref={panelRef} style={{ position:'fixed', top:`${pos.top}px`, right:`${pos.right}px`, width:'340px', maxWidth:'90vw', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', boxShadow:'0 12px 40px rgba(0,0,0,0.35)', overflow:'hidden', zIndex:99999 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderBottom:'1px solid var(--border)' }}>
             <span style={{ fontWeight:700, fontSize:'14px', color:'var(--text)' }}>Notifikasi</span>
             {unread > 0 && (
@@ -134,8 +159,9 @@ export function NotifBell() {
               ))
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
