@@ -30,21 +30,30 @@ export default function RealtimeNotifProvider({ children }: { children: React.Re
     const userId = Number((user as any).id);
     if (!userId) return;
 
-    const echo = getEcho(token);
-    if (!echo) return;
+    let channel: any = null;
+    let echoRef: any = null;
 
-    const channel = echo.private(`notifikasi.${userId}`);
-
-    channel.listen('.notifikasi.created', (payload: NotifPayload) => {
-      console.log('🔔 Notif baru:', payload);
-      setToast(payload);
-      setTimeout(() => setToast(null), 15000);
-      window.dispatchEvent(new CustomEvent('notif-received', { detail: payload }));
+    getEcho(token).then((echo) => {
+      if (!echo) return;
+      echoRef = echo;
+      try {
+        channel = echo.private(`notifikasi.${userId}`);
+        channel.listen('.notifikasi.created', (payload: NotifPayload) => {
+          console.log('🔔 Notif baru:', payload);
+          setToast(payload);
+          setTimeout(() => setToast(null), 15000);
+          window.dispatchEvent(new CustomEvent('notif-received', { detail: payload }));
+        });
+      } catch (e) {
+        console.warn('[notif] subscribe gagal:', e);
+      }
     });
 
     return () => {
-      channel.stopListening('.notifikasi.created');
-      echo.leave(`notifikasi.${userId}`);
+      try {
+        if (channel) channel.stopListening('.notifikasi.created');
+        if (echoRef) echoRef.leave(`notifikasi.${userId}`);
+      } catch {}
     };
   }, []);
 
