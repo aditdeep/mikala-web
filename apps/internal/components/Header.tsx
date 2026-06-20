@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Bell, LogOut, Sun, Moon, Search, Menu } from 'lucide-react';
+import { LogOut, Sun, Moon, Search, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@mikala/lib';
 import { useTheme } from '@/components/ThemeProvider';
+import { NotifBell } from '@/components/NotifBell';
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
@@ -33,10 +34,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <button onClick={toggle} style={{ width:'36px', height:'36px', borderRadius:'10px', background:'var(--glass)', border:'1px solid var(--glass-border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           {theme === 'dark' ? <Sun size={15} style={{ color:'#fbbf24' }} /> : <Moon size={15} style={{ color:'var(--purple-light)' }} />}
         </button>
-        <button style={{ width:'36px', height:'36px', borderRadius:'10px', background:'var(--glass)', border:'1px solid var(--glass-border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', position:'relative' }}>
-          <Bell size={15} style={{ color:'var(--text2)' }} />
-          <span style={{ position:'absolute', top:'7px', right:'7px', width:'7px', height:'7px', borderRadius:'50%', background:'#ef4444', border:'1.5px solid var(--bg)' }}/>
-        </button>
+        <NotifBell />
         <div style={{ position:'relative' }}>
           <button onClick={() => setShowDropdown(!showDropdown)} style={{ display:'flex', alignItems:'center', gap:'7px', padding:'5px 10px 5px 5px', borderRadius:'12px', background:'var(--glass)', border:'1px solid var(--glass-border)', cursor:'pointer' }}>
             <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'11px', fontWeight:700 }}>{initials}</div>
