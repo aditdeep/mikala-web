@@ -38,7 +38,8 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('mikala_token');
         localStorage.removeItem('mikala_user');
-        window.location.href = '/login';
+        const loginPath = process.env.NEXT_PUBLIC_LOGIN_PATH || '/auth/login';
+        window.location.href = loginPath;
       }
     }
 
