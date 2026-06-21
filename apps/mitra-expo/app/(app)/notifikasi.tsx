@@ -26,7 +26,7 @@ export default function NotifikasiScreen() {
 
   const markRead = async (id: number) => {
     try {
-      await api.patch(`/mitra/notifikasi/${id}/read`);
+      await api.patch(`/notifikasi/${id}/read`);
       setNotifs(prev => prev.map(n => n.id === id ? {...n, is_read: true} : n));
       setUnread(prev => Math.max(0, prev - 1));
     } catch {}
@@ -34,7 +34,7 @@ export default function NotifikasiScreen() {
 
   const markAllRead = async () => {
     try {
-      await api.post('/mitra/notifikasi/read-all');
+      await api.post('/notifikasi/mark-all-read');
       setNotifs(prev => prev.map(n => ({...n, is_read: true})));
       setUnread(0);
     } catch {}

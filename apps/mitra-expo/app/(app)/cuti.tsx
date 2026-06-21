@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal,
 import { useRouter } from 'expo-router';
 import { Calendar, Plus, Check, X, Clock, ArrowLeft } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../lib/theme-context';
+import { useTheme } from '../../lib/ThemeContext';
 import apiClient from '../../lib/api';
 
 export default function CutiScreen() {
