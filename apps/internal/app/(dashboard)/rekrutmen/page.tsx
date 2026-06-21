@@ -139,11 +139,17 @@ export default function RekrutmenPage() {
 
   // State untuk verifikasi
   const [priceRateInput, setPriceRateInput] = useState('');
+  const [jabatanInput, setJabatanInput] = useState('');
+  const [gajiBulananInput, setGajiBulananInput] = useState('');
+  const [gajiConfig, setGajiConfig] = useState<any[]>([]);
   const [totalBiayaInput, setTotalBiayaInput] = useState('');
   const [cicilanInput, setCicilanInput] = useState('');
   const [verifying, setVerifying] = useState(false);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); fetchGajiConfig(); }, []);
+  const fetchGajiConfig = async () => {
+    try { const res = await apiClient.get('/internal/rekrutmen/gaji-config'); setGajiConfig(res.data?.data || []); } catch {}
+  };
 
   const fetchData = () => {
     setLoading(true);
@@ -569,29 +575,65 @@ export default function RekrutmenPage() {
                 {/* Set Price Rate setelah lulus training */}
                 {showDetail.status_lulus === 'lulus' && (
                   <div style={{ marginTop:'12px', padding:'12px', background:'rgba(16,185,129,0.08)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'10px' }}>
-                    <p style={{ fontSize:'12px', fontWeight:700, color:'#10b981', marginBottom:'8px' }}>🏆 Mitra LULUS — Set Price Rate</p>
+                    <p style={{ fontSize:'12px', fontWeight:700, color:'#10b981', marginBottom:'8px' }}>🏆 Mitra LULUS — Set Jabatan & Gaji</p>
+
+                    {/* Dropdown Jabatan */}
+                    <label style={{ fontSize:'11px', color:'var(--text3)', display:'block', marginBottom:'4px' }}>Jabatan</label>
+                    <select
+                      value={jabatanInput}
+                      onChange={e => {
+                        const jb = e.target.value;
+                        setJabatanInput(jb);
+                        const cfg = gajiConfig.find((c:any) => c.jabatan === jb);
+                        if (cfg) {
+                          setGajiBulananInput(String(Number(cfg.gaji_default)));
+                          setPriceRateInput(String(Number(cfg.rate_harian_default)));
+                        }
+                      }}
+                      style={{ width:'100%', padding:'8px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', marginBottom:'8px' }}
+                    >
+                      <option value="">— Pilih Jabatan —</option>
+                      {gajiConfig.map((c:any) => (
+                        <option key={c.jabatan} value={c.jabatan}>{c.label}</option>
+                      ))}
+                    </select>
+
+                    {/* Input Gaji Bulanan */}
+                    <label style={{ fontSize:'11px', color:'var(--text3)', display:'block', marginBottom:'4px' }}>Gaji Bulanan (untuk layanan live-in/kontrak)</label>
+                    <input
+                      type="number"
+                      placeholder="Rp gaji bulanan"
+                      value={gajiBulananInput}
+                      onChange={e => setGajiBulananInput(e.target.value)}
+                      style={{ width:'100%', padding:'8px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', marginBottom:'8px', boxSizing:'border-box' }}
+                    />
+
+                    {/* Input Price Rate Harian */}
+                    <label style={{ fontSize:'11px', color:'var(--text3)', display:'block', marginBottom:'4px' }}>Tarif Harian (untuk layanan harian)</label>
                     <div style={{ display:'flex', gap:'8px' }}>
                       <input
                         type="number"
-                        placeholder="Rp per job"
+                        placeholder="Rp per hari"
                         value={priceRateInput}
                         onChange={e => setPriceRateInput(e.target.value)}
                         style={{ flex:1, padding:'8px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}
                       />
                       <button onClick={async () => {
-                        if (!priceRateInput || Number(priceRateInput) <= 0) { alert('Isi price rate dengan angka valid'); return; }
+                        if (!priceRateInput || Number(priceRateInput) <= 0) { alert('Isi tarif harian dengan angka valid'); return; }
                         try {
                           await apiClient.post(`/internal/rekrutmen/mitra/${showDetail.id}/price-rate`, {
                             price_rate: priceRateInput,
+                            jabatan: jabatanInput,
+                            gaji_bulanan: gajiBulananInput,
                           });
-                          alert('✅ Price rate berhasil di-set! Mitra siap menerima job.');
+                          alert('✅ Jabatan & gaji berhasil di-set! Mitra siap menerima job.');
                           fetchData();
                           setShowDetail(null);
                         } catch (e: any) {
                           alert('Error: ' + (e?.response?.data?.message || 'Gagal'));
                         }
-                      }} style={{ background:'#10b981', border:'none', borderRadius:'8px', padding:'8px 14px', color:'white', fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
-                        Set Rate
+                      }} style={{ background:'#10b981', border:'none', borderRadius:'8px', padding:'8px 14px', color:'white', fontWeight:700, fontSize:'12px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                        Set Gaji
                       </button>
                     </div>
                   </div>
