@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, Alert, RefreshControl, Image, KeyboardAvoidingView, Platform,
@@ -85,6 +86,7 @@ export default function ProfileScreen() {
   const [initialValues, setInitialValues] = useState<any>({});
 
   useEffect(() => { loadProfile(); }, []);
+  useFocusEffect(useCallback(() => { loadProfile(); }, []));
 
   const loadProfile = async () => {
     try {

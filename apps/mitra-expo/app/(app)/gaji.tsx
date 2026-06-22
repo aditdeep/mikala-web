@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   View, Text, ScrollView, TouchableOpacity, ActivityIndicator,
   RefreshControl, Alert, TextInput, Modal, StyleSheet,
@@ -32,6 +33,7 @@ export default function GajiScreen() {
   const [submitting, setSubmitting]           = useState(false);
 
   useEffect(() => { loadAll(); }, []);
+  useFocusEffect(useCallback(() => { loadAll(); }, []));
 
   const loadAll = async () => {
     try {

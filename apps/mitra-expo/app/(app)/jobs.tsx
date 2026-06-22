@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,6 +27,7 @@ export default function JobsScreen() {
   const grad: [string, string] = isDark ? ['#1a0f2e','#0f0f1a'] : ['#ede9fe','#f8f9fa'];
 
   useEffect(() => { loadJobs(); }, []);
+  useFocusEffect(useCallback(() => { loadJobs(); }, []));
 
   const loadJobs = async () => {
     try {
