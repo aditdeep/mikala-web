@@ -78,6 +78,8 @@ export default function AppLayout() {
       <Tabs.Screen name="pasien/[id]" options={{ href: null }} />
       <Tabs.Screen name="layanan/[id]" options={{ href: null }} />
       <Tabs.Screen name="notifikasi" options={{ href: null }} />
+      <Tabs.Screen name="syarat-ketentuan" options={{ href: null }} />
+      <Tabs.Screen name="privacy-policy" options={{ href: null }} />
     </Tabs>
   );
 }

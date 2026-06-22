@@ -186,6 +186,25 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* Link Legal */}
+        <TouchableOpacity onPress={() => router.push('/(app)/syarat-ketentuan')} activeOpacity={0.7}
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 14, padding: 15, marginBottom: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Ionicons name="document-text-outline" size={18} color={colors.text2} />
+            <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>Syarat & Ketentuan</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.text3} />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/(app)/privacy-policy')} activeOpacity={0.7}
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 14, padding: 15, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Ionicons name="shield-checkmark-outline" size={18} color={colors.text2} />
+            <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>Kebijakan Privasi</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.text3} />
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={handleLogout} activeOpacity={0.8}
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(239,68,68,0.08)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.25)', borderRadius: 16, padding: 16 }}>
           <Ionicons name="log-out-outline" size={18} color="#ef4444" />

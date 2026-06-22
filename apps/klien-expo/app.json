@@ -39,7 +39,9 @@
     "extra": {
       "apiUrl": "https://mikala-api.onrender.com/api",
       "router": {},
-      "eas": {}
+      "eas": {
+        "projectId": "969e0f83-e5c7-4516-89e0-4af9c4c20615"
+      }
     },
     "owner": "aditdeep"
   }
