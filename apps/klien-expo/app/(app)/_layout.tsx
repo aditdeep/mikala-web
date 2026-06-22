@@ -34,7 +34,7 @@ export default function AppLayout() {
         animation: 'shift',
         sceneStyle: { backgroundColor: isDark ? '#0f0f1a' : '#f8f9fa' },
         tabBarShowLabel: false,
-        tabBarActiveTintColor: '#7c3aed',
+        tabBarActiveTintColor: '#10b981',
         tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)',
         tabBarBackground: () => (
           <BlurView
@@ -55,7 +55,7 @@ export default function AppLayout() {
           borderWidth: StyleSheet.hairlineWidth,
           borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.06)',
           elevation: 20,
-          shadowColor: '#7c3aed',
+          shadowColor: '#10b981',
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.25,
           shadowRadius: 24,

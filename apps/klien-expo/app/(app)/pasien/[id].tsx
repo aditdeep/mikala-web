@@ -183,9 +183,9 @@ export default function DetailPasien() {
             </>
           ) : (
             <>
-              <Row icon="person-outline" label="Nama" value={pasien.kontak_darurat_nama} color="#7c3aed" />
-              <Row icon="call-outline" label="Nomor HP" value={pasien.kontak_darurat_phone} color="#7c3aed" />
-              <Row icon="people-outline" label="Relasi" value={pasien.kontak_darurat_relasi} color="#7c3aed" />
+              <Row icon="person-outline" label="Nama" value={pasien.kontak_darurat_nama} color="#10b981" />
+              <Row icon="call-outline" label="Nomor HP" value={pasien.kontak_darurat_phone} color="#10b981" />
+              <Row icon="people-outline" label="Relasi" value={pasien.kontak_darurat_relasi} color="#10b981" />
             </>
           )}
         </View>

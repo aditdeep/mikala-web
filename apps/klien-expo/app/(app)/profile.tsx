@@ -167,9 +167,9 @@ export default function ProfileScreen() {
             <Text style={{ fontWeight: '700', fontSize: 14, color: colors.text }}>Info Pembayaran</Text>
           </View>
           <View style={{ padding: 16 }}>
-            <Field label="Nama Bank" icon="card-outline" value={form.bank_name} editable iconColor="#7c3aed" iconBg="rgba(124,58,237,0.1)" onChangeText={(v: string) => form.bank_name = v} />
-            <Field label="No. Rekening" icon="card-outline" value={form.bank_account} editable iconColor="#7c3aed" iconBg="rgba(124,58,237,0.1)" onChangeText={(v: string) => form.bank_account = v} />
-            <Field label="Nama Rekening" icon="person-outline" value={form.bank_account_name} editable iconColor="#7c3aed" iconBg="rgba(124,58,237,0.1)" onChangeText={(v: string) => form.bank_account_name = v} />
+            <Field label="Nama Bank" icon="card-outline" value={form.bank_name} editable iconColor="#10b981" iconBg="rgba(16,185,129,0.1)" onChangeText={(v: string) => form.bank_name = v} />
+            <Field label="No. Rekening" icon="card-outline" value={form.bank_account} editable iconColor="#10b981" iconBg="rgba(16,185,129,0.1)" onChangeText={(v: string) => form.bank_account = v} />
+            <Field label="Nama Rekening" icon="person-outline" value={form.bank_account_name} editable iconColor="#10b981" iconBg="rgba(16,185,129,0.1)" onChangeText={(v: string) => form.bank_account_name = v} />
           </View>
         </View>
 
