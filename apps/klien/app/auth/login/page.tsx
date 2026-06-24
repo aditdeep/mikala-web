@@ -55,6 +55,9 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+            <div style={{ textAlign:"right", marginTop:"4px" }}>
+              <a href="/auth/forgot-password" style={{ color:"rgba(16,185,129,0.7)", fontSize:"12px", textDecoration:"none" }}>Lupa password?</a>
+            </div>
             <button type="submit" disabled={loading} style={{ marginTop:'8px', padding:'15px', background: loading ? 'rgba(16,185,129,0.5)' : 'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:700, cursor: loading ? 'not-allowed' : 'pointer', boxShadow:'0 4px 20px rgba(16,185,129,0.4)' }}>
               {loading ? 'Masuk...' : 'Masuk'}
             </button>
