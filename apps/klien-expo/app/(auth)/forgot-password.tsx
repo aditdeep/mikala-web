@@ -23,7 +23,7 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0f0c29', '#302b63', '#24243e']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#0a1f1a', '#0d2818', '#0a1f1a']} style={{ flex: 1 }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
           {/* Back */}
@@ -33,11 +33,11 @@ export default function ForgotPasswordScreen() {
 
           {/* Header */}
           <View style={{ alignItems: 'center', marginBottom: 32 }}>
-            <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: 'rgba(124,58,237,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 16, borderWidth: 1, borderColor: 'rgba(124,58,237,0.3)' }}>
-              <Ionicons name="lock-closed-outline" size={30} color="#7c3aed" />
+            <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: 'rgba(16,185,129,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 16, borderWidth: 1, borderColor: 'rgba(16,185,129,0.3)' }}>
+              <Ionicons name="lock-closed-outline" size={30} color="#10b981" />
             </View>
             <Text style={{ color: 'white', fontSize: 22, fontWeight: '800' }}>Lupa Password</Text>
-            <Text style={{ color: 'rgba(167,139,250,0.8)', fontSize: 13, marginTop: 6, textAlign: 'center' }}>
+            <Text style={{ color: 'rgba(110,231,183,0.8)', fontSize: 13, marginTop: 6, textAlign: 'center' }}>
               Masukkan email untuk menerima instruksi reset password
             </Text>
           </View>
@@ -50,7 +50,7 @@ export default function ForgotPasswordScreen() {
                 </View>
               )}
 
-              <Text style={{ color: 'rgba(167,139,250,0.8)', fontSize: 13, fontWeight: '500', marginBottom: 8 }}>Email</Text>
+              <Text style={{ color: 'rgba(110,231,183,0.8)', fontSize: 13, fontWeight: '500', marginBottom: 8 }}>Email</Text>
               <View style={{ position: 'relative', marginBottom: 20 }}>
                 <Ionicons name="mail-outline" size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: 14, top: 15, zIndex: 1 }} />
                 <TextInput
@@ -62,19 +62,19 @@ export default function ForgotPasswordScreen() {
               </View>
 
               <TouchableOpacity onPress={handleSubmit} disabled={loading} activeOpacity={0.85} style={{ borderRadius: 14, overflow: 'hidden' }}>
-                <LinearGradient colors={loading ? ['rgba(124,58,237,0.5)', 'rgba(5,150,105,0.5)'] : ['#7c3aed', '#4f46e5']} style={{ padding: 15, alignItems: 'center' }}>
+                <LinearGradient colors={loading ? ['rgba(16,185,129,0.5)', 'rgba(5,150,105,0.5)'] : ['#10b981', '#059669']} style={{ padding: 15, alignItems: 'center' }}>
                   {loading ? <ActivityIndicator color="white" /> : <Text style={{ color: 'white', fontWeight: '700', fontSize: 15 }}>Kirim Instruksi Reset</Text>}
                 </LinearGradient>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16, alignItems: 'center' }}>
-                <Text style={{ color: 'rgba(167,139,250,0.7)', fontSize: 13 }}>Kembali ke Login</Text>
+                <Text style={{ color: 'rgba(110,231,183,0.7)', fontSize: 13 }}>Kembali ke Login</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 24, padding: 24, alignItems: 'center' }}>
-              <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(124,58,237,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                <Ionicons name="checkmark-circle" size={32} color="#7c3aed" />
+              <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(16,185,129,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Ionicons name="checkmark-circle" size={32} color="#10b981" />
               </View>
               <Text style={{ color: 'white', fontSize: 17, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>
                 {result.email_sent ? 'Email Terkirim!' : 'Permintaan Diterima'}
@@ -94,7 +94,7 @@ export default function ForgotPasswordScreen() {
               )}
 
               <TouchableOpacity onPress={() => router.replace('/(auth)/login')} style={{ marginTop: 4 }}>
-                <Text style={{ color: 'rgba(167,139,250,0.8)', fontSize: 13, fontWeight: '600' }}>Kembali ke Login</Text>
+                <Text style={{ color: 'rgba(110,231,183,0.8)', fontSize: 13, fontWeight: '600' }}>Kembali ke Login</Text>
               </TouchableOpacity>
             </View>
           )}
