@@ -8,7 +8,9 @@ import api from '../../lib/api';
 import { authService } from '../../lib/auth';
 
 export default function HomeScreen() {
-  const { isDark, colors, toggleTheme } = useTheme();
+  const { isDark, colors, toggleTheme, themeVersion } = useTheme();
+  const [, _forceTick] = useState(0);
+  useEffect(() => { _forceTick(t => t + 1); }, [themeVersion]);
   const [user, setUser]       = useState<any>(null);
   const [rekrutmen, setRekrutmen] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -21,8 +23,9 @@ export default function HomeScreen() {
     try {
       const u = await authService.getUser();
       setUser(u);
-      const r = await api.get('/mitra/status-rekrutmen').catch(()=>null);
-      setRekrutmen(r?.data?.data);
+      let r = await api.get('/mitra/status-rekrutmen').catch(()=>null);
+      if (!r) { await new Promise(res=>setTimeout(res,1500)); r = await api.get('/mitra/status-rekrutmen').catch(()=>null); }
+      if (r?.data?.data) setRekrutmen(r.data.data);
       const n = await api.get('/mitra/notifikasi').catch(()=>null);
       setUnread(n?.data?.unread_count || 0);
     } catch {}
@@ -42,7 +45,7 @@ export default function HomeScreen() {
   if (loading) return <View style={{flex:1,backgroundColor:colors.bg,justifyContent:'center',alignItems:'center'}}><ActivityIndicator size="large" color={colors.primary}/></View>;
 
   return (
-    <ScrollView style={{flex:1,backgroundColor:colors.bg}}
+    <ScrollView key={themeVersion} style={{flex:1,backgroundColor:colors.bg}}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={()=>{setRefreshing(true);loadData();}} tintColor={colors.primary}/>}>
       <LinearGradient colors={isDark ? ['#1a0f2e','#0f0f1a'] : ['#ede9fe','#f8f9fa']} style={{padding:20,paddingTop:56}}>
         <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
@@ -74,7 +77,7 @@ export default function HomeScreen() {
           <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
             <Text style={{color:colors.text3,fontSize:12}}>Status Rekrutmen</Text>
             <View style={{backgroundColor:`${statusColor[rekrutmen?.status_rekrutmen]||colors.warning}20`,borderWidth:1,borderColor:`${statusColor[rekrutmen?.status_rekrutmen]||colors.warning}40`,borderRadius:8,paddingHorizontal:10,paddingVertical:4}}>
-              <Text style={{color:statusColor[rekrutmen?.status_rekrutmen]||colors.warning,fontSize:12,fontWeight:'600'}}>{statusLabel[rekrutmen?.status_rekrutmen]||'Pending'}</Text>
+              <Text style={{color:statusColor[rekrutmen?.status_rekrutmen]||colors.warning,fontSize:12,fontWeight:'600'}}>{rekrutmen ? (statusLabel[rekrutmen.status_rekrutmen]||rekrutmen.status_rekrutmen) : 'Memuat...'}</Text>
             </View>
           </View>
           {rekrutmen?.status_rekrutmen==='verified' && (
