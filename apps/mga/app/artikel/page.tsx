@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Informasi terbaru seputar program Kaigo Jepang, tips karir perawat, dan berita dari MGA.',
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://mikala-api.onrender.com/api';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 
 async function getArtikel() {
   try {

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Dokumentasi kegiatan pelatihan, keberangkatan alumni, dan momen berharga di Mikala Global Akademi.',
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://mikala-api.onrender.com/api';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 
 async function getGaleri() {
   try {

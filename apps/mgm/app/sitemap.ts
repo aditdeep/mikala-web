@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 const BASE = 'https://mikalaglobalmedika.com';
-const API  = process.env.NEXT_PUBLIC_API_URL || 'https://mikala-api.onrender.com/api';
+const API  = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages

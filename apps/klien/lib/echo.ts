@@ -27,7 +27,7 @@ export async function getEcho(token: string | null): Promise<any> {
     ]);
 
     window.Pusher = Pusher;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mikala-api.onrender.com';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com';
 
     echoInstance = new Echo({
       broadcaster: 'pusher',

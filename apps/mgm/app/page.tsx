@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Navbar from './(components)/Navbar';
 import Footer from './(components)/Footer';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://mikala-api.onrender.com/api';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#2d7a5e';
 const PINK = '#d63a7a';
 const WA = "https://wa.me/6281296998827";

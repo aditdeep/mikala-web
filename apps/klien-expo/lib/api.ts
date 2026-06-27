@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 const api = axios.create({
-  baseURL: 'https://mikala-api.onrender.com/api',
+  baseURL: 'https://api.mikalaglobalmedika.com/api',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
 });

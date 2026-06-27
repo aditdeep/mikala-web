@@ -3,7 +3,7 @@ import Navbar from '../../(components)/Navbar';
 import Footer from '../../(components)/Footer';
 import Link from 'next/link';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://mikala-api.onrender.com/api';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 
 async function getArtikel(slug: string) {
   try {
