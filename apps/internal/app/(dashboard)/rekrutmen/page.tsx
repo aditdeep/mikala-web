@@ -129,6 +129,8 @@ export default function RekrutmenPage() {
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('semua');
+  const [page, setPage] = useState(1);
+  const perPage = 20;
   const [errorMsg, setErrorMsg] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<any>(null);
   const [showKredensial, setShowKredensial] = useState<any>(null);
@@ -153,7 +155,7 @@ export default function RekrutmenPage() {
 
   const fetchData = () => {
     setLoading(true);
-    apiClient.get('/internal/rekrutmen/mitra')
+    apiClient.get('/internal/rekrutmen/mitra?per_page=1000')
       .then((res: any) => { setData(Array.isArray(res.data?.data) ? res.data.data : []); setLoading(false); })
       .catch(() => { setData([]); setLoading(false); });
   };
@@ -289,6 +291,9 @@ export default function RekrutmenPage() {
     const matchTab = activeTab === 'semua' || d.status === activeTab;
     return matchTab && JSON.stringify(d).toLowerCase().includes(search.toLowerCase());
   });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const paged = filtered.slice((page - 1) * perPage, page * perPage);
+  useEffect(() => { setPage(1); }, [activeTab, search]);
 
   const counts = {
     semua: data.length,
@@ -364,19 +369,20 @@ export default function RekrutmenPage() {
             <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'750px' }}>
               <thead>
                 <tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Nama','Email','Pendidikan','Kota','Status','Rekrutmen','Aksi'].map(h => (
+                  {['No','Nama','Email','Pendidikan','Kota','Status','Rekrutmen','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', whiteSpace:'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((item: any, i: number) => {
+                {paged.map((item: any, i: number) => {
                   const badge = statusBadge(item.status);
                   const rbadge = rekrutmenBadge(item.status_rekrutmen || 'pending');
                   const Icon = badge.icon;
                   const user = item.user || item;
                   return (
                     <tr key={item.id || i} style={{ borderBottom:'1px solid var(--border)' }}>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(page - 1) * perPage + i + 1}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                           <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--purple-light)', fontSize:'13px', fontWeight:700, flexShrink:0, overflow:'hidden' }}>
@@ -425,6 +431,15 @@ export default function RekrutmenPage() {
                 })}
               </tbody>
             </table>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', borderTop:'1px solid var(--border)', flexWrap:'wrap', gap:'10px' }}>
+            <span style={{ fontSize:'12px', color:'var(--text3)' }}>Hal {page} dari {totalPages} · {filtered.length} data</span>
+            <div style={{ display:'flex', gap:'8px' }}>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                style={{ padding:'6px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1 }}>‹ Prev</button>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                style={{ padding:'6px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', cursor: page === totalPages ? 'not-allowed' : 'pointer', opacity: page === totalPages ? 0.4 : 1 }}>Next ›</button>
+            </div>
+          </div>
           </div>
         ) : (
           <div style={{ textAlign:'center', padding:'48px 20px' }}>
