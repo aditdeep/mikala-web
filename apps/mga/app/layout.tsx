@@ -44,6 +44,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="google-translate-script" strategy="afterInteractive"
           src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
         />
+        {/* Qontak Webchat Widget */}
+        <Script id="qontak-chat" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            var s1 = document.createElement('script');
+            s1.src = 'https://webchat.qontak.com/js/app.js';
+            s1.async = true;
+            var s2 = document.createElement('script');
+            s2.src = 'https://webchat.qontak.com/qchatInitialize.js';
+            s2.async = true;
+            s2.onload = function() {
+              if (typeof qchatInitialize === 'function') {
+                qchatInitialize({ id: 'c5c85b2a-ec7a-4b01-92cc-ba866b327798', code: 'H0ieCJZfnBKbKQ1tHG-84w' });
+              }
+            };
+            document.head.appendChild(s1);
+            document.head.appendChild(s2);
+          })();
+        `}} />
       </head>
       <body>
         <LangProvider>{children}</LangProvider>
