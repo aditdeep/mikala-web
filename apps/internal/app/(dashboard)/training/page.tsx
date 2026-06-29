@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
+import { usePagination } from '@/lib/usePagination';
+import Pagination from '@/components/Pagination';
 import { GraduationCap, Search, Eye, X, CheckCircle, Clock, XCircle, TrendingUp, MessageSquare, DollarSign, BarChart2, Plus, Save, Users, Star, CheckCircle2, Circle, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
 
 const statusMap: any = {
@@ -65,10 +67,8 @@ const [tempRating, setTempRating] = useState(5);
 
   const handleCheckClick = (materiId: number, materiNama: string, checked: boolean) => {
     if (checked) {
-      // Sudah dicentang — langsung uncheck
       toggleCheck(materiId, checked, 0);
     } else {
-      // Belum dicentang — tampilkan popup rating
       setRatingPopup({ materiId, materiNama, isCheck: true });
       setTempRating(5);
     }
@@ -89,7 +89,6 @@ const [tempRating, setTempRating] = useState(5);
     try {
       await apiClient.post(`/internal/training/mitra/${selectedMitraId}/checklist/${materiId}`, {
         rating: rating,
-        
         tanggal_dapat: tgl, pengajar: pengajar || 'Trainer',
       });
       fetchChecklist(selectedMitraId);
@@ -105,8 +104,8 @@ const [tempRating, setTempRating] = useState(5);
 
   const fetchData = () => {
     setLoading(true);
-    apiClient.get('/internal/training/mitra')
-      .then((r: any) => { console.log('TRAINING API:', JSON.stringify(r.data)); setData(Array.isArray(r.data?.data) ? r.data.data : []); setLoading(false); })
+    apiClient.get('/internal/training/mitra?per_page=1000')
+      .then((r: any) => { setData(Array.isArray(r.data?.data) ? r.data.data : []); setLoading(false); })
       .catch(() => { setData([]); setLoading(false); });
   };
 
@@ -184,6 +183,8 @@ const [tempRating, setTempRating] = useState(5);
     completed: data.filter((d: any) => d.training_status === 'completed').length,
   };
 
+  const { page, perPage, totalPages, paged, setPage, total } = usePagination(filtered, 20, [filterStatus, search]);
+
   const TABS = [
     { key:'training',  label:'Training',  icon: GraduationCap },
     { key:'checklist', label:'Checklist', icon: ClipboardList },
@@ -237,16 +238,17 @@ const [tempRating, setTempRating] = useState(5);
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'500px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                    {['Nama Mitra','Pendidikan','Status','Skor','Aksi'].map(h => (
+                    {['No','Nama Mitra','Pendidikan','Status','Skor','Aksi'].map(h => (
                       <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
-                    {filtered.map((item: any, i: number) => {
+                    {paged.map((item: any, i: number) => {
                       const s = statusMap[item.training_status] || statusMap.pending;
                       const Icon = s.icon;
                       return (
                         <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(page - 1) * perPage + i + 1}</td>
                           <td style={{ padding:'12px 16px' }}>
                             <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                               <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'rgba(16,185,129,0.15)', display:'flex', alignItems:'center', justifyContent:'center', color:'#10b981', fontSize:'13px', fontWeight:700 }}>
@@ -275,6 +277,7 @@ const [tempRating, setTempRating] = useState(5);
                     })}
                   </tbody>
                 </table>
+                <Pagination page={page} totalPages={totalPages} total={total} onPageChange={setPage} label="mitra" />
               </div>
             ) : (
               <div style={{ textAlign:'center', padding:'48px 20px' }}>
