@@ -83,6 +83,9 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
         {artikel.thumbnail && (
           <div style={{ borderRadius:'16px', overflow:'hidden', marginBottom:'32px', boxShadow:'0 8px 30px rgba(0,0,0,0.1)' }}>
             <img src={artikel.thumbnail} alt={artikel.judul} style={{ width:'100%', maxHeight:'clamp(200px,50vw,440px)', objectFit:'cover' }} />
+            {artikel.thumbnail_caption && (
+              <p style={{ fontSize:'13px', color:'#6b7280', fontStyle:'italic', padding:'8px 14px', margin:0, background:'#f9fafb', textAlign:'center' }}>{artikel.thumbnail_caption}</p>
+            )}
           </div>
         )}
 
