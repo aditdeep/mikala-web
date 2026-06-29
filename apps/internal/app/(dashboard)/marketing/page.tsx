@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import { TrendingUp, Search, Eye, X, Plus, Users, Handshake, CheckCircle, Clock, XCircle, BarChart2 } from 'lucide-react';
+import { usePagination } from '@/lib/usePagination';
+import Pagination from '@/components/Pagination';
 
 const TABS = [
   { key:'leads',     label:'Leads',     icon: Users },
@@ -91,6 +93,11 @@ export default function MarketingPage() {
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal update status'); }
   };
 
+  const leadsFiltered = leads.filter((l:any) => JSON.stringify(l).toLowerCase().includes(search.toLowerCase()));
+  const kerjasamaFiltered = kerjasama.filter((k:any) => JSON.stringify(k).toLowerCase().includes(search.toLowerCase()));
+  const leadsPg = usePagination(leadsFiltered, 20, [search, activeTab]);
+  const kerjasamaPg = usePagination(kerjasamaFiltered, 20, [search, activeTab]);
+
   const inp = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
   const cardStyle = { background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' };
 
@@ -161,16 +168,17 @@ export default function MarketingPage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'550px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Nama','Email','Telepon','Sumber','Layanan','Status','Aksi'].map(h => (
+                  {['No','Nama','Email','Telepon','Sumber','Layanan','Status','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {leads.filter(l => JSON.stringify(l).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => {
+                  {leadsPg.paged.map((item: any, i: number) => {
                     const s = statusMap[item.status] || statusMap.new;
                     const Icon = s.icon;
                     return (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(leadsPg.page-1)*leadsPg.perPage+i+1}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama||item.name||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.email||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.phone||item.telepon||'-'}</td>
@@ -191,6 +199,7 @@ export default function MarketingPage() {
                   })}
                 </tbody>
               </table>
+              <Pagination page={leadsPg.page} totalPages={leadsPg.totalPages} total={leadsPg.total} onPageChange={leadsPg.setPage} label="lead" />
               {leads.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads</div>}
             </div>
           )}
@@ -204,13 +213,14 @@ export default function MarketingPage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'500px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Partner','Contact Person','Telepon','Email','Tipe','Aksi'].map(h => (
+                  {['No','Partner','Contact Person','Telepon','Email','Tipe','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {kerjasama.filter(k => JSON.stringify(k).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => (
+                  {kerjasamaPg.paged.map((item: any, i: number) => (
                     <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(kerjasamaPg.page-1)*kerjasamaPg.perPage+i+1}</td>
                       <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_partner||item.partner_name||'-'}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.contact_person||'-'}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.phone||item.telepon||'-'}</td>
@@ -225,6 +235,7 @@ export default function MarketingPage() {
                   ))}
                 </tbody>
               </table>
+              <Pagination page={kerjasamaPg.page} totalPages={kerjasamaPg.totalPages} total={kerjasamaPg.total} onPageChange={kerjasamaPg.setPage} label="kerjasama" />
               {kerjasama.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data kerjasama</div>}
             </div>
           )}
