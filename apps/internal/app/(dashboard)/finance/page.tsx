@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import { DollarSign, Search, Eye, X, Plus, TrendingUp, TrendingDown, FileText, BookOpen, BarChart2, ArrowUpCircle, ArrowDownCircle , Calendar, Settings as SettingsIcon, Check, AlertCircle } from "lucide-react";
+import { usePagination } from '@/lib/usePagination';
+import Pagination from '@/components/Pagination';
 
 const statusTagihan: any = {
   paid:      { label:'Lunas',       color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
@@ -271,6 +273,13 @@ export default function FinancePage() {
   const totalPaid    = tagihan.filter(t => t.status === 'paid').reduce((a, b) => a + (Number(b.total) || 0), 0);
   const totalPayroll = payroll.reduce((a, b) => a + (Number(b.total) || 0), 0);
 
+  const tagihanFiltered = tagihan.filter((t:any) => JSON.stringify(t).toLowerCase().includes(search.toLowerCase()));
+  const payrollFiltered = payroll.filter((p:any) => JSON.stringify(p).toLowerCase().includes(search.toLowerCase()));
+  const jurnalFiltered = jurnal.filter((j:any) => JSON.stringify(j).toLowerCase().includes(search.toLowerCase()));
+  const tagihanPg = usePagination(tagihanFiltered, 20, [search, activeTab]);
+  const payrollPg = usePagination(payrollFiltered, 20, [search, activeTab]);
+  const jurnalPg = usePagination(jurnalFiltered, 20, [search, activeTab]);
+
   const inp = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
   const cardStyle = { background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' };
 
@@ -353,15 +362,16 @@ export default function FinancePage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'500px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Invoice #','Klien','Jumlah','Jatuh Tempo','Status','Aksi'].map(h => (
+                  {['No','Invoice #','Klien','Jumlah','Jatuh Tempo','Status','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {tagihan.filter(t => JSON.stringify(t).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => {
+                  {tagihanPg.paged.map((item: any, i: number) => {
                     const s = statusTagihan[item.status] || statusTagihan.unpaid;
                     return (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(tagihanPg.page-1)*tagihanPg.perPage+i+1}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>#{item.id}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.klien?.nama_lengkap||item.klien?.user?.name||item.order?.klien?.nama_lengkap||item.order?.klien?.user?.name||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.total||0).toLocaleString('id')}</td>
@@ -379,6 +389,7 @@ export default function FinancePage() {
                   })}
                 </tbody>
               </table>
+              <Pagination page={tagihanPg.page} totalPages={tagihanPg.totalPages} total={tagihanPg.total} onPageChange={tagihanPg.setPage} label="tagihan" />
               {tagihan.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada tagihan</div>}
             </div>
           )}
@@ -405,15 +416,16 @@ export default function FinancePage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'400px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Payroll #','Mitra','Jumlah','Periode','Status','Aksi'].map(h => (
+                  {['No','Payroll #','Mitra','Jumlah','Periode','Status','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {payroll.filter(p => JSON.stringify(p).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => {
+                  {payrollPg.paged.map((item: any, i: number) => {
                     const s = statusTagihan[item.status] || statusTagihan.unpaid;
                     return (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(payrollPg.page-1)*payrollPg.perPage+i+1}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>#{item.id}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.total||0).toLocaleString('id')}</td>
@@ -431,6 +443,7 @@ export default function FinancePage() {
                   })}
                 </tbody>
               </table>
+              <Pagination page={payrollPg.page} totalPages={payrollPg.totalPages} total={payrollPg.total} onPageChange={payrollPg.setPage} label="payroll" />
               {payroll.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data payroll</div>}
             </div>
           )}
@@ -445,13 +458,14 @@ export default function FinancePage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'500px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Tanggal','Tipe','Kategori','Deskripsi','Jumlah'].map(h => (
+                  {['No','Tanggal','Tipe','Kategori','Deskripsi','Jumlah'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {jurnal.filter(j => JSON.stringify(j).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => (
+                  {jurnalPg.paged.map((item: any, i: number) => (
                     <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(jurnalPg.page-1)*jurnalPg.perPage+i+1}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID') : '-'}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background: item.tipe==='income'?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)', color: item.tipe==='income'?'#10b981':'#ef4444', border:'1px solid '+(item.tipe==='income'?'rgba(16,185,129,0.3)':'rgba(239,68,68,0.3)'), borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
@@ -468,6 +482,7 @@ export default function FinancePage() {
                   ))}
                 </tbody>
               </table>
+              <Pagination page={jurnalPg.page} totalPages={jurnalPg.totalPages} total={jurnalPg.total} onPageChange={jurnalPg.setPage} label="jurnal" />
               {jurnal.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data jurnal</div>}
             </div>
           )}
