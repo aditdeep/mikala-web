@@ -15,14 +15,14 @@ async function getGaleri() {
 }
 
 const defaultGaleri = [
-  { judul:'Tim Perawat Medis', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/1.jpg', kategori:'Tim' },
-  { judul:'Caregiver', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/caregiver_cover.jpg', kategori:'Layanan' },
-  { judul:'Babysitter', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/bunda-ini-panduan-memilih-dan-melatih-babysitter-untuk-si-kecil.jpg', kategori:'Layanan' },
-  { judul:'Medikal Evakuasi', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Medikal-evakuasi.jpg', kategori:'Layanan' },
-  { judul:'Fisioterapi', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Fisioterapi_ok.jpg', kategori:'Layanan' },
-  { judul:'Alat Medis', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Alat-Medis.jpg', kategori:'Peralatan' },
-  { judul:'Apotik', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Apotik_ok.jpg', kategori:'Peralatan' },
-  { judul:'Homecare MGM', url:'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/09/home-imag-MGM.jpg', kategori:'Tim' },
+  { judul:'Tim Perawat Medis', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/tim-perawat-medis.jpg', kategori:'Tim' },
+  { judul:'Caregiver', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/caregiver.jpg', kategori:'Layanan' },
+  { judul:'Babysitter', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/babysitter.jpg', kategori:'Layanan' },
+  { judul:'Medikal Evakuasi', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/medikal-evakuasi.jpg', kategori:'Layanan' },
+  { judul:'Fisioterapi', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/fisioterapi.jpg', kategori:'Layanan' },
+  { judul:'Alat Medis', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/alat-medis.jpg', kategori:'Peralatan' },
+  { judul:'Apotik', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/apotik.jpg', kategori:'Peralatan' },
+  { judul:'Homecare MGM', url:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/homecare-mgm.jpg', kategori:'Tim' },
 ];
 
 export default async function GaleriPage() {
