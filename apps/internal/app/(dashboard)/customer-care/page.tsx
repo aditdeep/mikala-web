@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import { Headphones, Search, Eye, X, Plus, CheckCircle, Clock, AlertCircle, Users, HeartPulse, MessageSquare, BarChart2, UserPlus, Check, Briefcase } from 'lucide-react';
+import { usePagination } from '@/lib/usePagination';
+import Pagination from '@/components/Pagination';
 
 const statusMap: any = {
   pending:     { label:'Pending',      color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)',  icon: Clock },
@@ -208,6 +210,13 @@ export default function CustomerCarePage() {
     } catch {}
   };
 
+  const layananFiltered = layanan.filter((l:any) => JSON.stringify(l).toLowerCase().includes(search.toLowerCase()));
+  const ordersFiltered = orders.filter((o:any) => JSON.stringify(o).toLowerCase().includes(search.toLowerCase()));
+  const klienFiltered = klien.filter((k:any) => JSON.stringify(k).toLowerCase().includes(search.toLowerCase()));
+  const layananPg = usePagination(layananFiltered, 20, [search, activeTab]);
+  const ordersPg = usePagination(ordersFiltered, 20, [search, activeTab]);
+  const klienPg = usePagination(klienFiltered, 20, [search, activeTab]);
+
   const inp = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
   const cardStyle = { background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' };
 
@@ -293,16 +302,17 @@ export default function CustomerCarePage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'500px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Tipe Layanan','Klien','Mitra','Status','Aksi'].map(h => (
+                  {['No','Tipe Layanan','Klien','Mitra','Status','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {layanan.filter(l => JSON.stringify(l).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => {
+                  {layananPg.paged.map((item: any, i: number) => {
                     const s = statusMap[item.status] || statusMap.pending;
                     const Icon = s.icon;
                     return (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(layananPg.page-1)*layananPg.perPage+i+1}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.tipe_layanan?.replace(/_/g,' ')||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.klien?.nama_lengkap||item.klien?.user?.name||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name||'-'}</td>
@@ -328,6 +338,7 @@ export default function CustomerCarePage() {
                   })}
                 </tbody>
               </table>
+              <Pagination page={layananPg.page} totalPages={layananPg.totalPages} total={layananPg.total} onPageChange={layananPg.setPage} label="layanan" />
               {layanan.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data layanan</div>}
             </div>
           )}
@@ -345,16 +356,17 @@ export default function CustomerCarePage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'600px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Order #','Klien','Mitra','Layanan','Tgl Mulai','Status','Aksi'].map(h => (
+                  {['No','Order #','Klien','Mitra','Layanan','Tgl Mulai','Status','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {orders.filter(o => JSON.stringify(o).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => {
+                  {ordersPg.paged.map((item: any, i: number) => {
                     const s = statusMap[item.status] || statusMap.pending;
                     const Icon = s.icon;
                     return (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(ordersPg.page-1)*ordersPg.perPage+i+1}</td>
                         <td style={{ padding:'12px 16px', fontWeight:600, fontSize:'13px', color:'var(--text)' }}>#{item.id}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.klien?.nama_lengkap||item.klien?.user?.name||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name||<span style={{color:'#f59e0b'}}>Belum assign</span>}</td>
@@ -382,6 +394,7 @@ export default function CustomerCarePage() {
                   })}
                 </tbody>
               </table>
+              <Pagination page={ordersPg.page} totalPages={ordersPg.totalPages} total={ordersPg.total} onPageChange={ordersPg.setPage} label="order" />
               {orders.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada order</div>}
             </div>
           </div>
@@ -397,13 +410,14 @@ export default function CustomerCarePage() {
             <div style={{ overflowX:'auto' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'400px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['Nama','Email','Telepon','Tipe','Status','Aksi'].map(h => (
+                  {['No','Nama','Email','Telepon','Tipe','Status','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {klien.filter(k => JSON.stringify(k).toLowerCase().includes(search.toLowerCase())).map((item: any, i: number) => (
+                  {klienPg.paged.map((item: any, i: number) => (
                     <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(klienPg.page-1)*klienPg.perPage+i+1}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                           <div style={{ width:'30px', height:'30px', borderRadius:'8px', background:'rgba(236,72,153,0.15)', display:'flex', alignItems:'center', justifyContent:'center', color:'#ec4899', fontSize:'12px', fontWeight:700 }}>
@@ -429,6 +443,7 @@ export default function CustomerCarePage() {
                   ))}
                 </tbody>
               </table>
+              <Pagination page={klienPg.page} totalPages={klienPg.totalPages} total={klienPg.total} onPageChange={klienPg.setPage} label="klien" />
               {klien.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data klien</div>}
             </div>
           )}
