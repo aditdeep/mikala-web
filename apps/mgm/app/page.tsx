@@ -29,12 +29,12 @@ export default async function HomePage() {
   const { settings, layanan, artikel, testimoni } = await getData();
 
   const defaultLayanan = [
-    { nama:'Perawat Medis', deskripsi:'Perawat profesional di rumah & RS', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-medis.jpg', icon:'🏥' },
-    { nama:'Perawat Jiwa', deskripsi:'Dukungan kesehatan mental profesional', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-jiwa.jpg', icon:'🧠' },
-    { nama:'Caregiver', deskripsi:'Pendamping lansia & pasien kronik', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/caregiver.jpg', icon:'👴' },
-    { nama:'Babysitter', deskripsi:'Perawat bayi & anak terlatih', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/babysitter.jpg', icon:'👶' },
-    { nama:'Dokter Visit', deskripsi:'Dokter terbaik ke rumah Anda', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/dokter-visit.jpg', icon:'👨‍⚕️' },
-    { nama:'Medikal Evakuasi', deskripsi:'Ambulan dengan peralatan lengkap', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/medikal-evakuasi.jpg', icon:'🚑' },
+    { nama:'Perawat Medis', deskripsi:'Perawat profesional di rumah & RS', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/tim-perawat-medis.jpg', icon:'🏥' },
+    { nama:'Perawat Jiwa', deskripsi:'Dukungan kesehatan mental profesional', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/homecare-mgm.jpg', icon:'🧠' },
+    { nama:'Caregiver', deskripsi:'Pendamping lansia & pasien kronik', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/caregiver.jpg', icon:'👴' },
+    { nama:'Babysitter', deskripsi:'Perawat bayi & anak terlatih', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/babysitter.jpg', icon:'👶' },
+    { nama:'Dokter Visit', deskripsi:'Dokter terbaik ke rumah Anda', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/fisioterapi.jpg', icon:'👨‍⚕️' },
+    { nama:'Medikal Evakuasi', deskripsi:'Ambulan dengan peralatan lengkap', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/medikal-evakuasi.jpg', icon:'🚑' },
   ];
 
   const defaultTestimoni = [
