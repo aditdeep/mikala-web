@@ -85,3 +85,17 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
 .article-content figcaption { text-align: center; font-size: 12px; color: #9ca3af; margin-top: 8px; }
 /* Drop cap clearfix */
 .article-content p:first-of-type::after { content: ''; display: table; clear: both; }
+
+/* Hide Google Translate banner & toolbox (custom toggle di Navbar) */
+#google_translate_element { display: none !important; }
+.goog-te-banner-frame { display: none !important; }
+.goog-te-balloon-frame { display: none !important; }
+.goog-tooltip { display: none !important; }
+.goog-tooltip:hover { display: none !important; }
+.goog-text-highlight { background: none !important; box-shadow: none !important; }
+iframe.goog-te-menu-frame { display: none !important; }
+.skiptranslate { display: none !important; }
+body { top: 0 !important; position: static !important; }
+body > .skiptranslate { display: none !important; }
+#goog-gt-tt { display: none !important; }
+.goog-te-spinner-pos { display: none !important; }
