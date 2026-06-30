@@ -68,8 +68,7 @@ export default async function HomePage() {
 
         {/* Hero image overlay */}
         <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'50%', overflow:'hidden' }} className="hide-mobile">
-          <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, #062914 0%, rgba(6,41,20,0.85) 30%, rgba(6,41,20,0.4) 70%, transparent 100%)', zIndex:1 }} />
-          <img src={settings.hero_image||'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png'} alt="Homecare" style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.55 }} />
+          <img src={settings.hero_image||'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png'} alt="Homecare" style={{ width:'100%', height:'100%', objectFit:'contain', objectPosition:'bottom right' }} />
         </div>
 
         <div style={{ position:'relative', zIndex:2, maxWidth:'1200px', margin:'0 auto', padding:'80px 20px' }} className="section-pad">

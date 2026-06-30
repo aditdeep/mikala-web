@@ -27,6 +27,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="id">
       <head>
+        {/* Google Translate — hidden widget, custom button di Navbar */}
+        <Script id="google-translate-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+          function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+              pageLanguage: 'id',
+              includedLanguages: 'en,id',
+              autoDisplay: false,
+            }, 'google_translate_element');
+          }
+        ` }} />
+        <Script id="google-translate-script" strategy="afterInteractive"
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+        />
         {/* Qontak Webchat Widget */}
         <Script id="qontak-chat" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
           var qchatInit = document.createElement('script');
