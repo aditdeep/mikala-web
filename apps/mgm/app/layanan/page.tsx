@@ -15,7 +15,7 @@ const WA    = 'https://wa.me/6281296998827';
 
 async function getLayanan() {
   try {
-    const res  = await fetch(`${API}/cms/layanan`, { next: { revalidate: 3600 } });
+    const res  = await fetch(`${API}/cms/layanan`, { next: { revalidate: 60 } });
     const data = await res.json();
     return data.data || [];
   } catch { return []; }

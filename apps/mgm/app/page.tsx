@@ -10,10 +10,10 @@ const WA = "https://wa.me/6281296998827";
 async function getData() {
   try {
     const [settingsRes, layananRes, artikelRes, testimoniRes] = await Promise.all([
-      fetch(`${API}/cms/settings`, { next:{ revalidate:3600 } }),
-      fetch(`${API}/cms/layanan`, { next:{ revalidate:3600 } }),
-      fetch(`${API}/cms/artikel?per_page=6`, { next:{ revalidate:1800 } }),
-      fetch(`${API}/cms/testimoni`, { next:{ revalidate:3600 } }),
+      fetch(`${API}/cms/settings`, { next:{ revalidate: 60 } }),
+      fetch(`${API}/cms/layanan`, { next:{ revalidate: 60 } }),
+      fetch(`${API}/cms/artikel?per_page=6`, { next:{ revalidate: 60 } }),
+      fetch(`${API}/cms/testimoni`, { next:{ revalidate: 60 } }),
     ]);
     const [s, l, a, t] = await Promise.all([settingsRes.json(), layananRes.json(), artikelRes.json(), testimoniRes.json()]);
     return {
