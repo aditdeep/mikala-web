@@ -53,8 +53,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           document.head.prepend(qchatInit);
           document.head.prepend(qchatWidget);
           qchatInit.onload = function() { qchatInitialize({
-            id: "c5c85b2a-ec7a-4b01-92cc-ba866b327798",
-            code: "H0ieCJZfnBKbKQ1tHG-84w"
+            id: "ea897efd-fc35-4370-a46e-e98ec6f724b0",
+            code: "sMRNnmO9xjsl441InNQiRQ"
           })};
         `}} />
       </head>
