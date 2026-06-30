@@ -184,7 +184,7 @@ export default async function HomePage() {
             </div>
             <div style={{ position:'relative' }}>
               <div style={{ borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(45,122,94,0.2)' }}>
-                <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
+                <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1782829518/about-us_perur5.jpg" alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
               </div>
               <div style={{ position:'absolute', bottom:'-16px', right:'-16px', background:'white', borderRadius:'16px', padding:'16px 20px', boxShadow:'0 8px 30px rgba(0,0,0,0.12)', display:'flex', alignItems:'center', gap:'10px' }}>
                 <div style={{ fontSize:'28px' }}>⭐</div>

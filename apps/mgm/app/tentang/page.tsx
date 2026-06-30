@@ -38,7 +38,7 @@ export default function TentangPage() {
             </div>
           </div>
           <div style={{ borderRadius:'20px', overflow:'hidden', boxShadow:'0 16px 50px rgba(45,122,94,0.15)' }}>
-            <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Tim Mikala" style={{ width:'100%', height:'clamp(250px,40vw,380px)', objectFit:'cover' }} />
+            <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1782829518/about-us_perur5.jpg" alt="Tim Mikala" style={{ width:'100%', height:'clamp(250px,40vw,380px)', objectFit:'cover' }} />
           </div>
         </div>
 
