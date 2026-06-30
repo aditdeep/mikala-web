@@ -121,7 +121,7 @@ export default async function HomePage() {
                 border: '1px solid rgba(255,255,255,0.12)', borderRadius: '28px', padding: '28px',
               }}>
                 <img
-                  src={settings.hero_image || "https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/Perawatan-khusus.png"}
+                  src={settings.hero_image || "https://res.cloudinary.com/djgtchmsx/image/upload/v1780153870/mga-hero_uwjeh1.webp"}
                   alt="Program Kaigo"
                   style={{ width: '100%', height: '260px', objectFit: 'cover', borderRadius: '18px', marginBottom: '20px' }}
                 />
