@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import { FileText, Image, Star, Settings, Plus, X, Edit2, Trash2, Eye, Upload, BarChart2, Globe } from 'lucide-react';
+import RichEditor from '../../../components/RichEditor';
 
 const TABS = [
   { key:'artikel',   label:'Artikel',   icon: FileText },
@@ -84,7 +85,7 @@ export default function WebsitePage() {
     setSaving(true);
     try {
       const slug = formArtikel.slug || formArtikel.judul.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-      const kontenFinal = /<[a-z][\s\S]*>/i.test(formArtikel.konten) ? formArtikel.konten : formArtikel.konten.split(/\n\n+/).map((p: string) => `<p>${p.trim().replace(/\n/g,'<br/>')}</p>`).join('\n'); const payload = { ...formArtikel, konten: kontenFinal, slug };
+      const payload = { ...formArtikel, slug };
       if (editItem) await apiClient.patch('/internal/cms/artikel/'+editItem.id, payload);
       else await apiClient.post('/internal/cms/artikel', payload);
       setShowForm(false); setEditItem(null);
@@ -467,8 +468,8 @@ export default function WebsitePage() {
                 <textarea value={formArtikel.excerpt} onChange={e => setFormArtikel(p => ({...p,excerpt:e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Ringkasan artikel..." />
               </div>
               <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Konten artikel</label>
-                <textarea required value={formArtikel.konten} onChange={e => setFormArtikel(p => ({...p,konten:e.target.value}))} style={{...inp, minHeight:'200px', resize:'vertical', fontFamily:'monospace', fontSize:'12px'}} placeholder="Tulis isi artikel di sini. Pisahkan antar paragraf dengan baris kosong (Enter 2x). Bisa juga pakai HTML." />
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Konten artikel (toolbar: bold, italic, heading, list, link)</label>
+                <RichEditor value={formArtikel.konten} onChange={(html) => setFormArtikel(p => ({...p,konten:html}))} />
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => { setShowForm(false); setEditItem(null); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
