@@ -30,7 +30,7 @@ export default function WebsitePage() {
   const PER_PAGE = 10;
 
   // Forms
-  const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', kategori:'Artikel', status:'published' });
+  const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published' });
   const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
@@ -84,11 +84,11 @@ export default function WebsitePage() {
     setSaving(true);
     try {
       const slug = formArtikel.slug || formArtikel.judul.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-      const payload = { ...formArtikel, slug };
+      const kontenFinal = /<[a-z][\s\S]*>/i.test(formArtikel.konten) ? formArtikel.konten : formArtikel.konten.split(/\n\n+/).map((p: string) => `<p>${p.trim().replace(/\n/g,'<br/>')}</p>`).join('\n'); const payload = { ...formArtikel, konten: kontenFinal, slug };
       if (editItem) await apiClient.patch('/internal/cms/artikel/'+editItem.id, payload);
       else await apiClient.post('/internal/cms/artikel', payload);
       setShowForm(false); setEditItem(null);
-      setFormArtikel({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', kategori:'Artikel', status:'published' });
+      setFormArtikel({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published' });
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
     setSaving(false);
@@ -216,7 +216,7 @@ export default function WebsitePage() {
                           style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', textDecoration:'none' }}>
                           <Eye size={12}/>
                         </a>
-                        <button onClick={() => { setEditItem(a); setFormArtikel({judul:a.judul,slug:a.slug,excerpt:a.excerpt||'',konten:a.konten||'',thumbnail:a.thumbnail||'',kategori:a.kategori||'Artikel',status:a.status||'published'}); setShowForm(true); }}
+                        <button onClick={() => { setEditItem(a); setFormArtikel({judul:a.judul,slug:a.slug,excerpt:a.excerpt||'',konten:a.konten||'',thumbnail:a.thumbnail||'',thumbnail_caption:a.thumbnail_caption||'',kategori:a.kategori||'Artikel',status:a.status||'published'}); setShowForm(true); }}
                           style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Edit2 size={12}/>
                         </button>
@@ -443,6 +443,10 @@ export default function WebsitePage() {
                 </div>
                 {formArtikel.thumbnail && <img src={formArtikel.thumbnail} alt="" style={{ width:'80px', height:'50px', objectFit:'cover', borderRadius:'8px', marginTop:'6px' }} />}
               </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Caption Gambar (sumber foto, opsional)</label>
+                <input value={formArtikel.thumbnail_caption} onChange={e => setFormArtikel(p => ({...p,thumbnail_caption:e.target.value}))} style={inp} placeholder="Foto: dok. MGM" />
+              </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Kategori</label>
@@ -463,8 +467,8 @@ export default function WebsitePage() {
                 <textarea value={formArtikel.excerpt} onChange={e => setFormArtikel(p => ({...p,excerpt:e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Ringkasan artikel..." />
               </div>
               <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Konten (HTML)</label>
-                <textarea required value={formArtikel.konten} onChange={e => setFormArtikel(p => ({...p,konten:e.target.value}))} style={{...inp, minHeight:'200px', resize:'vertical', fontFamily:'monospace', fontSize:'12px'}} placeholder="<p>Isi artikel...</p>" />
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Konten artikel</label>
+                <textarea required value={formArtikel.konten} onChange={e => setFormArtikel(p => ({...p,konten:e.target.value}))} style={{...inp, minHeight:'200px', resize:'vertical', fontFamily:'monospace', fontSize:'12px'}} placeholder="Tulis isi artikel di sini. Pisahkan antar paragraf dengan baris kosong (Enter 2x). Bisa juga pakai HTML." />
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => { setShowForm(false); setEditItem(null); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
