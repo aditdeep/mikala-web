@@ -204,7 +204,7 @@ export default function WebsiteMgaPage() {
                         <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text2)' }}>{item.author}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', background: item.status === 'published' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', color: item.status === 'published' ? '#10b981' : '#f59e0b' }}>
-                            {item.status === 'published' ? '✓ Published' : '⏳ Draft'}
+                            {item.status === 'published' ? '✓ Published' : item.status === 'scheduled' ? '📅 Jadwal' : '⏳ Draft'}
                           </span>
                         </td>
                       </>}
@@ -297,6 +297,11 @@ export default function WebsiteMgaPage() {
                         <option value="published">Published</option>
                       </select>
                     </div>
+                  </div>
+                  <div>
+                    <label style={lbl}>Tanggal Publish (jadwal)</label>
+                    <input type="datetime-local" value={form.published_at ? String(form.published_at).slice(0,16).replace(' ','T') : ''} onChange={e=>s('published_at',e.target.value)} style={inp} />
+                    <p style={{ color:'var(--text3)', fontSize:'11px', margin:'4px 0 0' }}>Kosongkan = publish sekarang. Isi tanggal ke depan = dijadwalkan (auto-publish). Backdate juga bisa.</p>
                   </div>
                   <div><label style={lbl}>URL Gambar</label><input value={form.gambar||''} onChange={e=>s('gambar',e.target.value)} style={inp} placeholder="https://res.cloudinary.com/..."/></div>
                   <div><label style={lbl}>Author</label><input value={form.author||''} onChange={e=>s('author',e.target.value)} style={inp} placeholder="Nama penulis"/></div>

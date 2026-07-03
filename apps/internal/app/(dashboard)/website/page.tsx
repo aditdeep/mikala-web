@@ -31,7 +31,7 @@ export default function WebsitePage() {
   const PER_PAGE = 10;
 
   // Forms
-  const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published' });
+  const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
   const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
@@ -89,7 +89,7 @@ export default function WebsitePage() {
       if (editItem) await apiClient.patch('/internal/cms/artikel/'+editItem.id, payload);
       else await apiClient.post('/internal/cms/artikel', payload);
       setShowForm(false); setEditItem(null);
-      setFormArtikel({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published' });
+      setFormArtikel({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
     setSaving(false);
@@ -207,8 +207,8 @@ export default function WebsitePage() {
                     <td style={{ padding:'10px 16px', fontSize:'12px', color:'var(--text2)' }}>{a.kategori||'-'}</td>
                     <td style={{ padding:'10px 16px', fontSize:'12px', color:'var(--text2)' }}>{a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID') : '-'}</td>
                     <td style={{ padding:'10px 16px' }}>
-                      <span style={{ background: a.status==='published'?'rgba(16,185,129,0.15)':'rgba(245,158,11,0.15)', color: a.status==='published'?'#10b981':'#f59e0b', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
-                        {a.status==='published'?'Publish':'Draft'}
+                      <span style={{ background: a.status==='published'?'rgba(16,185,129,0.15)':a.status==='scheduled'?'rgba(59,130,246,0.15)':'rgba(245,158,11,0.15)', color: a.status==='published'?'#10b981':a.status==='scheduled'?'#3b82f6':'#f59e0b', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
+                        {a.status==='published'?'Publish':a.status==='scheduled'?'📅 Jadwal':'Draft'}
                       </span>
                     </td>
                     <td style={{ padding:'10px 16px' }}>
@@ -217,7 +217,7 @@ export default function WebsitePage() {
                           style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', textDecoration:'none' }}>
                           <Eye size={12}/>
                         </a>
-                        <button onClick={() => { setEditItem(a); setFormArtikel({judul:a.judul,slug:a.slug,excerpt:a.excerpt||'',konten:a.konten||'',thumbnail:a.thumbnail||'',thumbnail_caption:a.thumbnail_caption||'',kategori:a.kategori||'Artikel',status:a.status||'published'}); setShowForm(true); }}
+                        <button onClick={() => { setEditItem(a); setFormArtikel({judul:a.judul,slug:a.slug,excerpt:a.excerpt||'',konten:a.konten||'',thumbnail:a.thumbnail||'',thumbnail_caption:a.thumbnail_caption||'',kategori:a.kategori||'Artikel',status:a.status||'published',published_at:a.published_at?String(a.published_at).slice(0,16).replace(' ','T'):''}); setShowForm(true); }}
                           style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Edit2 size={12}/>
                         </button>
@@ -462,6 +462,11 @@ export default function WebsitePage() {
                     <option value="draft">Draft</option>
                   </select>
                 </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tanggal Publish (jadwal)</label>
+                <input type="datetime-local" value={formArtikel.published_at} onChange={e => setFormArtikel(p => ({...p,published_at:e.target.value}))} style={inp} />
+                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'4px 0 0' }}>Kosongkan = publish sekarang. Isi tanggal ke depan = dijadwalkan (auto-publish saat waktunya). Backdate juga bisa.</p>
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Excerpt/Ringkasan</label>
