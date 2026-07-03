@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const LOGO        = 'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153869/logo-mga-web_digdlz.png';
-const MITRA_DAFTAR = 'https://mikala-web-mitra.vercel.app/auth/register';
+const MITRA_DAFTAR = 'https://mitra.mikalaglobalmedika.com/auth/register';
 
 export default function Navbar({ active = '/' }: { active?: string }) {
   const NAV = [

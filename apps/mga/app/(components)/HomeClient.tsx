@@ -3,7 +3,7 @@ import { useLang } from '../../lib/LangContext';
 import { translations } from '../../lib/i18n';
 import Link from 'next/link';
 
-const MITRA_DAFTAR = 'https://mikala-web-mitra.vercel.app/auth/register';
+const MITRA_DAFTAR = 'https://mitra.mikalaglobalmedika.com/auth/register';
 
 const PROGRAMS = [
   {

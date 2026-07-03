@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'LPK Mikala Global Akademi berpengalaman lebih dari 10 tahun mempersiapkan tenaga perawat Indonesia untuk bekerja di Jepang.',
 };
 
-const MITRA_DAFTAR = 'https://mikala-web-mitra.vercel.app/auth/register';
+const MITRA_DAFTAR = 'https://mitra.mikalaglobalmedika.com/auth/register';
 
 const VALUES = [
   { icon: '🎯', title: 'Profesional', desc: 'Standar kurikulum internasional sesuai regulasi Jepang' },

@@ -4,7 +4,7 @@ import Footer from './(components)/Footer';
 import Link from 'next/link';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
-const MITRA_DAFTAR = 'https://mikala-web-mitra.vercel.app/auth/register';
+const MITRA_DAFTAR = 'https://mitra.mikalaglobalmedika.com/auth/register';
 
 async function getArtikel() {
   try {

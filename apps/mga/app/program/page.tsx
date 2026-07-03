@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Program pelatihan Kaigo (perawat lansia) untuk bekerja di Jepang. EPA, SSW, dan sertifikasi BNSP.',
 };
 
-const MITRA_DAFTAR = 'https://mikala-web-mitra.vercel.app/auth/register';
+const MITRA_DAFTAR = 'https://mitra.mikalaglobalmedika.com/auth/register';
 
 const PROGRAMS_DETAIL = [
   {
