@@ -26,7 +26,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <head>
+      <body style={{ margin:0, padding:0, fontFamily:"'Segoe UI', Arial, sans-serif" }}>
+        {children}
         {/* Google Translate — hidden widget, custom button di Navbar */}
         <Script id="google-translate-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
           function googleTranslateElementInit() {
@@ -53,9 +54,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             code: "H0ieCJZfnBKbKQ1tHG-84w"
           })};
         `}} />
-      </head>
-      <body style={{ margin:0, padding:0, fontFamily:"'Segoe UI', Arial, sans-serif" }}>
-        {children}
       </body>
     </html>
   );
