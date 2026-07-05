@@ -52,6 +52,31 @@ async function getRelated(slug: string) {
   } catch { return []; }
 }
 
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const artikel = await getArtikel(params.slug);
+  if (!artikel) return { title: 'Artikel - Mikala Global Medika' };
+  const img = artikel.thumbnail || 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png';
+  const desc = artikel.excerpt || (artikel.konten ? artikel.konten.replace(/<[^>]+>/g,'').slice(0,160) : artikel.judul);
+  const url = `https://mikalaglobalmedika.com/artikel/${params.slug}`;
+  return {
+    title: `${artikel.judul} - Mikala Global Medika`,
+    description: desc,
+    openGraph: {
+      title: artikel.judul,
+      description: desc,
+      url,
+      type: 'article',
+      images: [{ url: img, width: 1200, height: 630, alt: artikel.judul }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: artikel.judul,
+      description: desc,
+      images: [img],
+    },
+  };
+}
+
 export default async function ArtikelDetailPage({ params }: { params: { slug: string } }) {
   const [artikel, related] = await Promise.all([getArtikel(params.slug), getRelated(params.slug)]);
   if (!artikel) notFound();

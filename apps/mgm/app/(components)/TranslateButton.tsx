@@ -14,15 +14,24 @@ export default function TranslateButton({ scrolled = false }: { scrolled?: boole
     setLang(to);
     localStorage.setItem('mgm-translate-lang', to);
 
+    // hapus cookie googtrans di SEMUA scope dulu (biar bersih)
+    const host = window.location.hostname;
+    const rootDomain = '.' + host.split('.').slice(-2).join('.'); // .mikalaglobalmedika.com
+    const clearCookie = (domain?: string) => {
+      const d = domain ? `; domain=${domain}` : '';
+      document.cookie = `googtrans=; path=/${d}; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+    };
+    clearCookie();
+    clearCookie(host);
+    clearCookie(rootDomain);
+
     if (to === 'en') {
-      // Set cookie googtrans untuk English
-      document.cookie = `googtrans=/id/en; path=/; domain=${window.location.hostname}`;
+      // set cookie English di semua scope
       document.cookie = `googtrans=/id/en; path=/`;
-    } else {
-      // Reset ke Indonesia
-      document.cookie = `googtrans=; path=/; domain=${window.location.hostname}; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
-      document.cookie = `googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+      document.cookie = `googtrans=/id/en; path=/; domain=${host}`;
+      document.cookie = `googtrans=/id/en; path=/; domain=${rootDomain}`;
     }
+    // kalau to === 'id', cukup hapus (udah di atas) → balik default Indonesia
     window.location.reload();
   };
 

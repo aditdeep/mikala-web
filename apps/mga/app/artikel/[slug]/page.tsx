@@ -12,6 +12,31 @@ async function getArtikel(slug: string) {
   } catch { return null; }
 }
 
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const artikel = await getArtikel(params.slug);
+  if (!artikel) return { title: 'Artikel - Mikala Global Akademi' };
+  const img = artikel.gambar || 'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153870/mga-hero_uwjeh1.webp';
+  const desc = artikel.ringkasan || (artikel.konten ? artikel.konten.replace(/<[^>]+>/g,'').slice(0,160) : artikel.judul);
+  const url = `https://mikalaglobalakademi.co.id/artikel/${params.slug}`;
+  return {
+    title: `${artikel.judul} - Mikala Global Akademi`,
+    description: desc,
+    openGraph: {
+      title: artikel.judul,
+      description: desc,
+      url,
+      type: 'article',
+      images: [{ url: img, width: 1200, height: 630, alt: artikel.judul }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: artikel.judul,
+      description: desc,
+      images: [img],
+    },
+  };
+}
+
 export default async function ArtikelDetailPage({ params }: { params: { slug: string } }) {
   const artikel = await getArtikel(params.slug);
 
