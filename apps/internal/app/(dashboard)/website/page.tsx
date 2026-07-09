@@ -82,7 +82,11 @@ export default function WebsitePage() {
       formData.append('folder', 'mgm/cms');
       const res: any = await apiClient.post('/internal/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       if (res.data?.success) setter(res.data.url);
-    } catch(e: any) { alert('Upload gagal'); }
+      else alert('Upload gagal: ' + (res.data?.message || 'unknown response'));
+    } catch(e: any) {
+      console.error('Upload error', e);
+      alert('Upload gagal: ' + (e.response?.data?.message || e.response?.status || e.message || 'unknown error'));
+    }
   };
 
   const handleSaveArtikel = async (e: React.FormEvent) => {
