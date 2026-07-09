@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Navbar from './(components)/Navbar';
 import Footer from './(components)/Footer';
+import HeroSlider from './(components)/HeroSlider';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#2d7a5e';
@@ -46,6 +47,13 @@ export default async function HomePage() {
 
   const layananData = layanan.length > 0 ? layanan : defaultLayanan;
   const testimoniData = testimoni.length > 0 ? testimoni : defaultTestimoni;
+
+  let heroSlides: { image: string; title?: string; subtitle?: string }[] = [];
+  try {
+    const raw = settings.hero_slides;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed)) heroSlides = parsed;
+  } catch { heroSlides = []; }
   const stats = [
     { value:(settings.stats_customer||'500')+'+', label:'Customer', icon:'👥' },
     { value:(settings.stats_nakes||'100')+'+', label:'Tenaga Kesehatan', icon:'👨‍⚕️' },
@@ -58,63 +66,28 @@ export default async function HomePage() {
       <Navbar active="/" />
 
       {/* ═══ HERO ═══ */}
-      <section style={{ position:'relative', minHeight:'100svh', display:'flex', alignItems:'center', overflow:'hidden', background:`linear-gradient(135deg, #062914 0%, #0d4a2a 35%, #1a6b45 65%, #8b1a4a 100%)` }}>
-        {/* Orbs */}
-        <div style={{ position:'absolute', inset:0, pointerEvents:'none', overflow:'hidden' }}>
-          <div style={{ position:'absolute', top:'-20%', right:'-10%', width:'600px', height:'600px', borderRadius:'50%', background:'rgba(214,58,122,0.12)', filter:'blur(80px)' }} />
-          <div style={{ position:'absolute', bottom:'-10%', left:'-5%', width:'500px', height:'500px', borderRadius:'50%', background:'rgba(45,122,94,0.15)', filter:'blur(60px)' }} />
-          <div style={{ position:'absolute', top:'40%', left:'40%', width:'300px', height:'300px', borderRadius:'50%', background:'rgba(255,255,255,0.03)', filter:'blur(40px)' }} />
-        </div>
+      <HeroSlider
+        slides={heroSlides}
+        fallbackTitle={settings.hero_title || 'Melayani Kebutuhan Kesehatan Anda'}
+        fallbackSubtitle={settings.hero_subtitle || 'Penyedia layanan homecare terpercaya dengan tim medis profesional yang berkomitmen memberikan pelayanan terbaik untuk Anda dan keluarga.'}
+      />
 
-        {/* Hero image overlay */}
-        <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'50%', overflow:'hidden' }} className="hide-mobile">
-          <img src={settings.hero_image||'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png'} alt="Homecare" style={{ width:'100%', height:'100%', objectFit:'contain', objectPosition:'bottom right' }} />
-        </div>
-
-        <div style={{ position:'relative', zIndex:2, maxWidth:'1200px', margin:'0 auto', padding:'80px 20px' }} className="section-pad">
-          <div style={{ maxWidth:'620px' }}>
-            {/* Badge */}
-            <div style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:'rgba(255,255,255,0.1)', backdropFilter:'blur(12px)', borderRadius:'30px', padding:'8px 18px', marginBottom:'28px', border:'1px solid rgba(255,255,255,0.15)' }}>
-              <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#4ade80', boxShadow:'0 0 10px #4ade80', flexShrink:0 }} />
-              <span style={{ color:'rgba(255,255,255,0.9)', fontSize:'13px', fontWeight:500 }}>Layanan Homecare 24 Jam Tersedia</span>
+      {/* ═══ STATS (overlap card) ═══ */}
+      <div style={{ position:'relative', zIndex:5, maxWidth:'1000px', margin:'-40px auto 0', padding:'0 20px' }} className="section-pad">
+        <div style={{ background:'rgba(255,255,255,0.9)', backdropFilter:'blur(20px)', borderRadius:'24px', padding:'28px 20px', boxShadow:'0 20px 50px rgba(0,0,0,0.12)', border:'1px solid rgba(45,122,94,0.1)', display:'flex', justifyContent:'space-around', flexWrap:'wrap', gap:'20px' }}>
+          {stats.map(s => (
+            <div key={s.label} style={{ textAlign:'center', minWidth:'100px' }}>
+              <div style={{ fontSize:'clamp(22px,3vw,30px)', fontWeight:900, color:'#1a2e25', lineHeight:1 }}>{s.value}</div>
+              <div style={{ fontSize:'12px', color:'#6b7280', marginTop:'4px' }}>{s.label}</div>
             </div>
-
-            <h1 style={{ fontSize:'clamp(32px,5vw,58px)', fontWeight:900, color:'white', lineHeight:1.1, marginBottom:'20px', letterSpacing:'-0.5px' }} className="hero-text">
-              {settings.hero_title || 'Melayani Kebutuhan\nKesehatan Anda'}
-            </h1>
-
-            <p style={{ fontSize:'clamp(15px,2vw,18px)', color:'rgba(255,255,255,0.75)', lineHeight:1.7, marginBottom:'36px', maxWidth:'520px' }}>
-              {settings.hero_subtitle || 'Penyedia layanan homecare terpercaya dengan tim medis profesional yang berkomitmen memberikan pelayanan terbaik untuk Anda dan keluarga.'}
-            </p>
-
-            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
-              <a href={WA} target="_blank" rel="noreferrer"
-                style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:`linear-gradient(135deg, ${GREEN}, #3a9e78)`, color:'white', padding:'14px 28px', borderRadius:'30px', fontSize:'15px', fontWeight:700, textDecoration:'none', boxShadow:`0 8px 24px rgba(45,122,94,0.4)` }}>
-                💬 Konsultasi Gratis
-              </a>
-              <Link href="/layanan"
-                style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:'rgba(255,255,255,0.12)', backdropFilter:'blur(10px)', color:'white', padding:'14px 28px', borderRadius:'30px', fontSize:'15px', fontWeight:600, textDecoration:'none', border:'1px solid rgba(255,255,255,0.25)' }}>
-                Lihat Layanan →
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div style={{ display:'flex', gap:'28px', marginTop:'52px', flexWrap:'wrap' }}>
-              {stats.map(s => (
-                <div key={s.label} style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:'30px', fontWeight:900, color:'white', lineHeight:1 }}>{s.value}</div>
-                  <div style={{ fontSize:'12px', color:'rgba(255,255,255,0.6)', marginTop:'4px' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
+      </div>
 
-        {/* Wave */}
-        <svg viewBox="0 0 1440 60" style={{ position:'absolute', bottom:0, left:0, right:0, display:'block' }} preserveAspectRatio="none">
-          <path d="M0,30 Q360,60 720,30 Q1080,0 1440,30 L1440,60 L0,60 Z" fill="#f0faf5" />
-        </svg>
-      </section>
+      {/* Wave */}
+      <svg viewBox="0 0 1440 60" style={{ display:'block' }} preserveAspectRatio="none">
+        <path d="M0,30 Q360,60 720,30 Q1080,0 1440,30 L1440,60 L0,60 Z" fill="#f0faf5" />
+      </svg>
 
       {/* ═══ LAYANAN ═══ */}
       <section style={{ padding:'80px 20px', background:'#f0faf5' }} className="section-pad">

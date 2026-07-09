@@ -35,6 +35,7 @@ export default function WebsitePage() {
   const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
+  const [heroSlides, setHeroSlides] = useState<{ image:string; title:string; subtitle:string }[]>([]);
 
   useEffect(() => { fetchData(); }, [activeTab, artikelPage]);
 
@@ -65,6 +66,10 @@ export default function WebsitePage() {
         const s = r.data?.data || {};
         setSettings(s);
         setFormSettings(s);
+        try {
+          const parsed = typeof s.hero_slides === 'string' ? JSON.parse(s.hero_slides) : s.hero_slides;
+          setHeroSlides(Array.isArray(parsed) ? parsed : []);
+        } catch { setHeroSlides([]); }
       }
     } catch {}
     setLoading(false);
@@ -124,12 +129,25 @@ export default function WebsitePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await apiClient.post('/internal/cms/settings', formSettings);
+      const payload = { ...formSettings, hero_slides: JSON.stringify(heroSlides) };
+      await apiClient.post('/internal/cms/settings', payload);
       alert('Settings tersimpan!');
       fetchData();
     } catch(e: any) { alert('Gagal'); }
     setSaving(false);
   };
+
+  const addHeroSlide = () => setHeroSlides(p => [...p, { image:'', title:'', subtitle:'' }]);
+  const removeHeroSlide = (i: number) => setHeroSlides(p => p.filter((_, idx) => idx !== i));
+  const updateHeroSlide = (i: number, patch: Partial<{ image:string; title:string; subtitle:string }>) =>
+    setHeroSlides(p => p.map((s, idx) => idx === i ? { ...s, ...patch } : s));
+  const moveHeroSlide = (i: number, dir: -1 | 1) => setHeroSlides(p => {
+    const j = i + dir;
+    if (j < 0 || j >= p.length) return p;
+    const copy = [...p];
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+    return copy;
+  });
 
   const handleDelete = async (type: string, id: number) => {
     if (!confirm('Hapus item ini?')) return;
@@ -410,6 +428,41 @@ export default function WebsitePage() {
             <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Hero Subtitle</label>
             <textarea value={formSettings.hero_subtitle||''} onChange={e => setFormSettings((p: any) => ({...p,hero_subtitle:e.target.value}))} style={{...inp, minHeight:'80px', resize:'vertical'}} />
           </div>
+
+          {/* Hero Slides */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
+              <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700 }}>Hero Slider ({heroSlides.length} slide)</label>
+              <button type="button" onClick={addHeroSlide} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                <Plus size={14} /> Tambah Slide
+              </button>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              {heroSlides.map((s, i) => (
+                <div key={i} style={{ display:'flex', gap:'12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', alignItems:'flex-start' }}>
+                  <label style={{ width:'110px', height:'70px', flexShrink:0, borderRadius:'8px', overflow:'hidden', background:'var(--bg2)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', position:'relative' }}>
+                    {s.image ? <img src={s.image} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <Upload size={18} color="var(--text2)" />}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updateHeroSlide(i, { image:url })); }} />
+                  </label>
+                  <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'8px' }}>
+                    <input placeholder="Judul slide" value={s.title} onChange={e => updateHeroSlide(i, { title:e.target.value })} style={inp} />
+                    <input placeholder="Subtitle slide" value={s.subtitle} onChange={e => updateHeroSlide(i, { subtitle:e.target.value })} style={inp} />
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                    <button type="button" onClick={() => moveHeroSlide(i, -1)} disabled={i===0} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'6px', width:'28px', height:'28px', cursor:'pointer', color:'var(--text)', opacity:i===0?0.4:1 }}>↑</button>
+                    <button type="button" onClick={() => moveHeroSlide(i, 1)} disabled={i===heroSlides.length-1} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'6px', width:'28px', height:'28px', cursor:'pointer', color:'var(--text)', opacity:i===heroSlides.length-1?0.4:1 }}>↓</button>
+                    <button type="button" onClick={() => removeHeroSlide(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'28px', height:'28px', cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {heroSlides.length === 0 && (
+                <p style={{ color:'var(--text2)', fontSize:'12px', margin:0 }}>Belum ada slide. Jika kosong, hero akan pakai Hero Title/Subtitle/Image di atas sebagai fallback.</p>
+              )}
+            </div>
+          </div>
+
           <button type="submit" disabled={saving} style={{ padding:'12px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer', width:'fit-content', minWidth:'150px' }}>
             {saving ? 'Menyimpan...' : '💾 Simpan Settings'}
           </button>
