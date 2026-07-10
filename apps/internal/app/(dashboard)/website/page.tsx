@@ -7,6 +7,7 @@ import RichEditor from '../../../components/RichEditor';
 const TABS = [
   { key:'artikel',   label:'Artikel',   icon: FileText },
   { key:'layanan',   label:'Layanan',   icon: Globe },
+  { key:'penunjang', label:'Penunjang Kesehatan', icon: BarChart2 },
   { key:'galeri',    label:'Galeri',    icon: Image },
   { key:'testimoni', label:'Testimoni', icon: Star },
   { key:'settings',  label:'Settings',  icon: Settings },
@@ -18,6 +19,7 @@ export default function WebsitePage() {
   const [activeTab, setActiveTab] = useState('artikel');
   const [artikel, setArtikel] = useState<any[]>([]);
   const [layanan, setLayanan] = useState<any[]>([]);
+  const [penunjang, setPenunjang] = useState<any[]>([]);
   const [galeri, setGaleri] = useState<any[]>([]);
   const [testimoni, setTestimoni] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({});
@@ -33,6 +35,7 @@ export default function WebsitePage() {
   // Forms
   const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
   const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
+  const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
   const [heroSlides, setHeroSlides] = useState<{ image:string; title:string; subtitle:string }[]>([]);
@@ -55,6 +58,9 @@ export default function WebsitePage() {
       } else if (activeTab === 'layanan') {
         const r: any = await apiClient.get('/internal/cms/layanan');
         setLayanan(Array.isArray(r.data?.data) ? r.data.data : []);
+      } else if (activeTab === 'penunjang') {
+        const r: any = await apiClient.get('/internal/cms/penunjang');
+        setPenunjang(Array.isArray(r.data?.data) ? r.data.data : []);
       } else if (activeTab === 'galeri') {
         const r: any = await apiClient.get('/internal/cms/galeri');
         setGaleri(Array.isArray(r.data?.data) ? r.data.data : []);
@@ -112,6 +118,19 @@ export default function WebsitePage() {
       else await apiClient.post('/internal/cms/layanan', formLayanan);
       setShowForm(false); setEditItem(null);
       setFormLayanan({ nama:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
+      fetchData();
+    } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
+    setSaving(false);
+  };
+
+  const handleSavePenunjang = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      if (editItem) await apiClient.patch('/internal/cms/penunjang/'+editItem.id, formPenunjang);
+      else await apiClient.post('/internal/cms/penunjang', formPenunjang);
+      setShowForm(false); setEditItem(null);
+      setFormPenunjang({ nama:'', tipe:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
     setSaving(false);
@@ -182,10 +201,10 @@ export default function WebsitePage() {
             style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontSize:'13px', textDecoration:'none' }}>
             <Eye size={14}/>Preview Website
           </a>
-          {['artikel','layanan','galeri'].includes(activeTab) && (
+          {['artikel','layanan','penunjang','galeri'].includes(activeTab) && (
             <button onClick={() => { setShowForm(true); setEditItem(null); }}
               style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-              <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : 'Foto'}
+              <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : activeTab === 'penunjang' ? 'Penunjang' : 'Foto'}
             </button>
           )}
         </div>
@@ -314,6 +333,54 @@ export default function WebsitePage() {
                           <Edit2 size={12}/>
                         </button>
                         <button onClick={() => handleDelete('layanan', l.id)}
+                          style={{ padding:'5px 8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', cursor:'pointer', display:'flex', alignItems:'center' }}>
+                          <Trash2 size={12}/>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB PENUNJANG KESEHATAN */}
+      {activeTab === 'penunjang' && (
+        <div style={cardStyle}>
+          <div style={{ overflowX:'auto' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'560px' }}>
+              <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                {['Gambar','Nama','Tipe','Urutan','Status','Aksi'].map(h => (
+                  <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                ))}
+              </tr></thead>
+              <tbody>
+                {loading ? <tr><td colSpan={6} style={{ padding:'40px', textAlign:'center', color:'var(--text3)' }}>Memuat...</td></tr> :
+                penunjang.length === 0 ? <tr><td colSpan={6} style={{ padding:'40px', textAlign:'center', color:'var(--text3)' }}>Belum ada data</td></tr> :
+                penunjang.map((p: any) => (
+                  <tr key={p.id} style={{ borderBottom:'1px solid var(--border)' }}>
+                    <td style={{ padding:'10px 16px' }}>
+                      {p.gambar ? <img src={p.gambar} alt="" style={{ width:'60px', height:'40px', objectFit:'cover', borderRadius:'8px' }} /> : <div style={{ width:'60px', height:'40px', background:'var(--glass)', borderRadius:'8px' }} />}
+                    </td>
+                    <td style={{ padding:'10px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{p.nama}</td>
+                    <td style={{ padding:'10px 16px' }}>
+                      {p.tipe ? <span style={{ background:'rgba(45,122,94,0.1)', color:'#2d7a5e', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{p.tipe}</span> : <span style={{ color:'var(--text3)', fontSize:'12px' }}>-</span>}
+                    </td>
+                    <td style={{ padding:'10px 16px', fontSize:'12px', color:'var(--text2)' }}>{p.urutan}</td>
+                    <td style={{ padding:'10px 16px' }}>
+                      <span style={{ background: p.is_active?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)', color: p.is_active?'#10b981':'#ef4444', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
+                        {p.is_active?'Aktif':'Nonaktif'}
+                      </span>
+                    </td>
+                    <td style={{ padding:'10px 16px' }}>
+                      <div style={{ display:'flex', gap:'6px' }}>
+                        <button onClick={() => { setEditItem(p); setFormPenunjang({nama:p.nama,tipe:p.tipe||'',deskripsi:p.deskripsi||'',gambar:p.gambar||'',wa_link:p.wa_link||'',urutan:String(p.urutan||1),is_active:p.is_active}); setShowForm(true); }}
+                          style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', cursor:'pointer', display:'flex', alignItems:'center' }}>
+                          <Edit2 size={12}/>
+                        </button>
+                        <button onClick={() => handleDelete('penunjang', p.id)}
                           style={{ padding:'5px 8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Trash2 size={12}/>
                         </button>
@@ -569,6 +636,47 @@ export default function WebsitePage() {
                 <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Urutan</label><input type="number" value={formLayanan.urutan} onChange={e => setFormLayanan(p => ({...p,urutan:e.target.value}))} style={inp} /></div>
                 <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Status</label>
                   <select value={formLayanan.is_active?'1':'0'} onChange={e => setFormLayanan(p => ({...p,is_active:e.target.value==='1'}))} style={inp}>
+                    <option value="1">Aktif</option><option value="0">Nonaktif</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => { setShowForm(false); setEditItem(null); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={saving} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {saving ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Form Penunjang Kesehatan */}
+      {showForm && activeTab === 'penunjang' && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'480px', padding:'24px', maxHeight:'90vh', overflowY:'auto' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>{editItem?'Edit':'Tambah'} Penunjang Kesehatan</h2>
+              <button onClick={() => { setShowForm(false); setEditItem(null); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <form onSubmit={handleSavePenunjang} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama *</label><input required value={formPenunjang.nama} onChange={e => setFormPenunjang(p => ({...p,nama:e.target.value}))} style={inp} placeholder="mis. Ambulan Standby" /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tipe</label><input value={formPenunjang.tipe} onChange={e => setFormPenunjang(p => ({...p,tipe:e.target.value}))} style={inp} placeholder="mis. Transportasi Medis" /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi</label><textarea value={formPenunjang.deskripsi} onChange={e => setFormPenunjang(p => ({...p,deskripsi:e.target.value}))} style={{...inp, minHeight:'80px', resize:'vertical'}} /></div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Gambar URL</label>
+                <div style={{ display:'flex', gap:'8px' }}>
+                  <input value={formPenunjang.gambar} onChange={e => setFormPenunjang(p => ({...p,gambar:e.target.value}))} style={inp} placeholder="https://..." />
+                  <label style={{ padding:'9px 14px', background:'rgba(45,122,94,0.1)', border:'1px solid rgba(45,122,94,0.2)', borderRadius:'10px', color:'#2d7a5e', fontSize:'12px', cursor:'pointer', fontWeight:600, display:'flex', alignItems:'center', gap:'4px' }}>
+                    <Upload size={13}/>
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0], (url) => setFormPenunjang(p => ({...p,gambar:url}))); }} />
+                  </label>
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Urutan</label><input type="number" value={formPenunjang.urutan} onChange={e => setFormPenunjang(p => ({...p,urutan:e.target.value}))} style={inp} /></div>
+                <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Status</label>
+                  <select value={formPenunjang.is_active?'1':'0'} onChange={e => setFormPenunjang(p => ({...p,is_active:e.target.value==='1'}))} style={inp}>
                     <option value="1">Aktif</option><option value="0">Nonaktif</option>
                   </select>
                 </div>

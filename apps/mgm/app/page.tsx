@@ -10,24 +10,26 @@ const WA = "https://wa.me/6281296998827";
 
 async function getData() {
   try {
-    const [settingsRes, layananRes, artikelRes, testimoniRes] = await Promise.all([
+    const [settingsRes, layananRes, penunjangRes, artikelRes, testimoniRes] = await Promise.all([
       fetch(`${API}/cms/settings`, { next:{ revalidate: 60 } }),
       fetch(`${API}/cms/layanan`, { next:{ revalidate: 60 } }),
+      fetch(`${API}/cms/penunjang`, { next:{ revalidate: 60 } }),
       fetch(`${API}/cms/artikel?per_page=6`, { next:{ revalidate: 60 } }),
       fetch(`${API}/cms/testimoni`, { next:{ revalidate: 60 } }),
     ]);
-    const [s, l, a, t] = await Promise.all([settingsRes.json(), layananRes.json(), artikelRes.json(), testimoniRes.json()]);
+    const [s, l, pn, a, t] = await Promise.all([settingsRes.json(), layananRes.json(), penunjangRes.json(), artikelRes.json(), testimoniRes.json()]);
     return {
       settings: s.data || {},
       layanan: l.data || [],
+      penunjang: pn.data || [],
       artikel: Array.isArray(a.data?.data) ? a.data.data : Array.isArray(a.data) ? a.data : [],
       testimoni: t.data || [],
     };
-  } catch { return { settings:{}, layanan:[], artikel:[], testimoni:[] }; }
+  } catch { return { settings:{}, layanan:[], penunjang:[], artikel:[], testimoni:[] }; }
 }
 
 export default async function HomePage() {
-  const { settings, layanan, artikel, testimoni } = await getData();
+  const { settings, layanan, penunjang, artikel, testimoni } = await getData();
 
   const defaultLayanan = [
     { nama:'Perawat Medis', deskripsi:'Perawat profesional di rumah & RS', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/tim-perawat-medis.jpg', icon:'🏥' },
@@ -47,6 +49,7 @@ export default async function HomePage() {
 
   const layananData = layanan.length > 0 ? layanan : defaultLayanan;
   const testimoniData = testimoni.length > 0 ? testimoni : defaultTestimoni;
+  const penunjangData = (penunjang || []).filter((p: any) => p.is_active !== false).sort((a: any, b: any) => (a.urutan||0)-(b.urutan||0));
 
   let heroSlides: { image: string; title?: string; subtitle?: string }[] = [];
   try {
@@ -126,6 +129,41 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ═══ PENUNJANG KESEHATAN ═══ */}
+      {penunjangData.length > 0 && (
+        <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
+          <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+            <div style={{ textAlign:'center', marginBottom:'48px' }}>
+              <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Penunjang Kesehatan</span>
+              <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>Fasilitas Penunjang Siap Membantu</h2>
+              <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Sarana dan prasarana pendukung layanan kesehatan Anda</p>
+            </div>
+
+            <div className="card-grid card-grid-mobile-scroll">
+              {penunjangData.slice(0,6).map((p: any, i: number) => (
+                <div key={p.id||i} style={{ background:'rgba(255,255,255,0.8)', backdropFilter:'blur(20px)', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(45,122,94,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                  <div style={{ height:'160px', overflow:'hidden', position:'relative' }}>
+                    {p.gambar ? (
+                      <img src={p.gambar} alt={p.nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    ) : (
+                      <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🩺</div>
+                    )}
+                    {p.tipe && (
+                      <span style={{ position:'absolute', top:'12px', left:'12px', background:'rgba(255,255,255,0.92)', color:GREEN, borderRadius:'20px', padding:'4px 12px', fontSize:'11px', fontWeight:700 }}>{p.tipe}</span>
+                    )}
+                  </div>
+                  <div style={{ padding:'18px' }}>
+                    <h3 style={{ fontSize:'16px', fontWeight:700, color:'#1a2e25', margin:'0 0 6px' }}>{p.nama}</h3>
+                    {p.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:'0 0 14px' }}>{p.deskripsi}</p>}
+                    <a href={p.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:GREEN, fontSize:'13px', fontWeight:600, textDecoration:'none' }}>Konsultasi →</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══ WHY US ═══ */}
       <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
