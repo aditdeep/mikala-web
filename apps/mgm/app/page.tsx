@@ -51,6 +51,15 @@ export default async function HomePage() {
   const testimoniData = testimoni.length > 0 ? testimoni : defaultTestimoni;
   const penunjangData = (penunjang || []).filter((p: any) => p.is_active !== false).sort((a: any, b: any) => (a.urutan||0)-(b.urutan||0));
 
+  let profileImages: string[] = [];
+  try {
+    const raw = settings.profile_images;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed)) profileImages = parsed;
+  } catch { profileImages = []; }
+  const profileImage = profileImages[0] || 'https://res.cloudinary.com/djgtchmsx/image/upload/v1782829518/about-us_perur5.jpg';
+  const profileText = settings.profile_text || 'Kami senantiasa mendengarkan keluhan Anda dan memberikan solusi kesehatan terbaik dengan penuh kasih.';
+
   let heroSlides: { image: string; title?: string; subtitle?: string }[] = [];
   try {
     const raw = settings.hero_slides;
@@ -173,7 +182,7 @@ export default async function HomePage() {
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'16px' }}>Mengapa Kami</span>
               <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
               <p style={{ color:'#6b7280', fontSize:'16px', lineHeight:1.8, marginBottom:'28px' }}>
-                Kami senantiasa mendengarkan keluhan Anda dan memberikan solusi kesehatan terbaik dengan penuh kasih.
+                {profileText}
               </p>
               {[
                 { icon:'🏆', t:'Tim Medis Berkualitas', d:'Tenaga profesional berpengalaman & bersertifikat' },
@@ -195,8 +204,17 @@ export default async function HomePage() {
             </div>
             <div style={{ position:'relative' }}>
               <div style={{ borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(45,122,94,0.2)' }}>
-                <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1782829518/about-us_perur5.jpg" alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
+                <img src={profileImage} alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
               </div>
+              {profileImages.length > 1 && (
+                <div style={{ display:'flex', gap:'10px', marginTop:'12px' }}>
+                  {profileImages.slice(1, 4).map((img, i) => (
+                    <div key={i} style={{ flex:1, height:'70px', borderRadius:'12px', overflow:'hidden', boxShadow:'0 4px 15px rgba(0,0,0,0.1)' }}>
+                      <img src={img} alt={`Mikala ${i+2}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    </div>
+                  ))}
+                </div>
+              )}
               <div style={{ position:'absolute', bottom:'-16px', right:'-16px', background:'white', borderRadius:'16px', padding:'16px 20px', boxShadow:'0 8px 30px rgba(0,0,0,0.12)', display:'flex', alignItems:'center', gap:'10px' }}>
                 <div style={{ fontSize:'28px' }}>⭐</div>
                 <div>

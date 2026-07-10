@@ -39,6 +39,7 @@ export default function WebsitePage() {
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
   const [heroSlides, setHeroSlides] = useState<{ image:string; title:string; subtitle:string }[]>([]);
+  const [profileImages, setProfileImages] = useState<string[]>([]);
 
   useEffect(() => { fetchData(); }, [activeTab, artikelPage]);
 
@@ -76,6 +77,10 @@ export default function WebsitePage() {
           const parsed = typeof s.hero_slides === 'string' ? JSON.parse(s.hero_slides) : s.hero_slides;
           setHeroSlides(Array.isArray(parsed) ? parsed : []);
         } catch { setHeroSlides([]); }
+        try {
+          const parsedImg = typeof s.profile_images === 'string' ? JSON.parse(s.profile_images) : s.profile_images;
+          setProfileImages(Array.isArray(parsedImg) ? parsedImg : []);
+        } catch { setProfileImages([]); }
       }
     } catch {}
     setLoading(false);
@@ -152,7 +157,7 @@ export default function WebsitePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = { ...formSettings, hero_slides: JSON.stringify(heroSlides) };
+      const payload = { ...formSettings, hero_slides: JSON.stringify(heroSlides), profile_images: JSON.stringify(profileImages) };
       await apiClient.post('/internal/cms/settings', payload);
       alert('Settings tersimpan!');
       fetchData();
@@ -171,6 +176,10 @@ export default function WebsitePage() {
     [copy[i], copy[j]] = [copy[j], copy[i]];
     return copy;
   });
+
+  const addProfileImage = () => setProfileImages(p => [...p, '']);
+  const removeProfileImage = (i: number) => setProfileImages(p => p.filter((_, idx) => idx !== i));
+  const updateProfileImage = (i: number, url: string) => setProfileImages(p => p.map((s, idx) => idx === i ? url : s));
 
   const handleDelete = async (type: string, id: number) => {
     if (!confirm('Hapus item ini?')) return;
@@ -530,6 +539,37 @@ export default function WebsitePage() {
               ))}
               {heroSlides.length === 0 && (
                 <p style={{ color:'var(--text2)', fontSize:'12px', margin:0 }}>Belum ada slide. Jika kosong, hero akan pakai Hero Title/Subtitle/Image di atas sebagai fallback.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Short Profile */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700, display:'block', marginBottom:'12px' }}>Profil Singkat (section "Mengapa Kami")</label>
+            <div style={{ marginBottom:'14px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Teks Profil</label>
+              <textarea value={formSettings.profile_text||''} onChange={e => setFormSettings((p: any) => ({...p,profile_text:e.target.value}))} style={{...inp, minHeight:'80px', resize:'vertical'}} placeholder="Kami senantiasa mendengarkan keluhan Anda..." />
+            </div>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Foto Profil ({profileImages.length})</label>
+              <button type="button" onClick={addProfileImage} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                <Plus size={14} /> Tambah Foto
+              </button>
+            </div>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
+              {profileImages.map((img, i) => (
+                <div key={i} style={{ position:'relative' }}>
+                  <label style={{ width:'100px', height:'70px', borderRadius:'8px', overflow:'hidden', background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                    {img ? <img src={img} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <Upload size={16} color="var(--text2)" />}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updateProfileImage(i, url)); }} />
+                  </label>
+                  <button type="button" onClick={() => removeProfileImage(i)} style={{ position:'absolute', top:'-6px', right:'-6px', background:'#dc2626', border:'none', borderRadius:'50%', width:'20px', height:'20px', cursor:'pointer', color:'white', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              {profileImages.length === 0 && (
+                <p style={{ color:'var(--text2)', fontSize:'12px', margin:0 }}>Belum ada foto. Foto pertama jadi gambar utama, sisanya jadi thumbnail kecil di bawahnya.</p>
               )}
             </div>
           </div>
