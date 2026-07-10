@@ -52,6 +52,12 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
   .two-col { grid-template-columns: 1fr !important; }
   .hero-text { font-size: 32px !important; }
   .section-pad { padding: 48px 16px !important; }
+  .artikel-split { grid-template-columns: 1fr !important; }
+}
+
+.hide-desktop { display: none; }
+@media (max-width: 768px) {
+  .hide-desktop { display: flex !important; }
 }
 
 /* Animations */

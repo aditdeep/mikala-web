@@ -341,7 +341,7 @@ export default async function HomePage() {
       {artikel.length > 0 && (
         <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'40px', flexWrap:'wrap', gap:'16px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'32px', flexWrap:'wrap', gap:'16px' }}>
               <div>
                 <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'10px' }}>Artikel Terbaru</span>
                 <h2 style={{ fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Tips & Info Kesehatan</h2>
@@ -350,20 +350,59 @@ export default async function HomePage() {
                 Lihat Semua →
               </Link>
             </div>
-            <div className="card-grid card-grid-mobile-scroll">
-              {artikel.slice(0,3).map((a: any, i: number) => (
-                <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
-                  <div style={{ background:'rgba(255,255,255,0.9)', borderRadius:'20px', overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', border:'1px solid rgba(45,122,94,0.08)' }}>
-                    <div style={{ height:'190px', overflow:'hidden' }}>
-                      {a.thumbnail ? <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>📰</div>}
+
+            {/* ── DESKTOP: list kiri + featured besar kanan ── */}
+            <div className="artikel-split hide-mobile" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'32px', alignItems:'stretch', background:'rgba(240,250,245,0.6)', backdropFilter:'blur(10px)', borderRadius:'28px', border:'1px solid rgba(45,122,94,0.08)', padding:'24px', boxShadow:'0 4px 24px rgba(0,0,0,0.04)' }}>
+              {/* List */}
+              <div style={{ display:'flex', flexDirection:'column' }}>
+                {artikel.slice(1,4).map((a: any, i: number) => (
+                  <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
+                    <div style={{ display:'flex', gap:'16px', alignItems:'center', padding:'16px 8px', borderBottom: i < 2 ? '1px solid rgba(45,122,94,0.12)' : 'none' }}>
+                      <div style={{ width:'90px', height:'70px', flexShrink:0, borderRadius:'14px', overflow:'hidden' }}>
+                        {a.thumbnail ? <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px' }}>📰</div>}
+                      </div>
+                      <div style={{ minWidth:0 }}>
+                        <div style={{ display:'flex', gap:'8px', marginBottom:'4px', alignItems:'center' }}>
+                          <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'10px', padding:'2px 8px', fontSize:'10px', fontWeight:700, textTransform:'uppercase' }}>{a.kategori||'Artikel'}</span>
+                          <span style={{ color:'#9ca3af', fontSize:'11px' }}>{a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : ''}</span>
+                        </div>
+                        <h3 style={{ fontSize:'14px', fontWeight:700, color:'#1a2e25', margin:0, lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{a.judul}</h3>
+                      </div>
                     </div>
-                    <div style={{ padding:'18px' }}>
-                      <div style={{ display:'flex', gap:'8px', marginBottom:'8px', alignItems:'center' }}>
-                        <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'10px', padding:'2px 8px', fontSize:'11px', fontWeight:600 }}>{a.kategori||'Artikel'}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Featured */}
+              {artikel[0] && (
+                <Link href={`/artikel/${artikel[0].slug}`} style={{ textDecoration:'none' }}>
+                  <div style={{ position:'relative', borderRadius:'22px', overflow:'hidden', height:'100%', minHeight:'380px' }}>
+                    {artikel[0].thumbnail ? <img src={artikel[0].thumbnail} alt={artikel[0].judul} style={{ width:'100%', height:'100%', objectFit:'cover', position:'absolute', inset:0 }} /> : <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})` }} />}
+                    <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(6,41,20,0.88) 0%, rgba(6,41,20,0.25) 55%, rgba(6,41,20,0.05) 100%)' }} />
+                    <span style={{ position:'absolute', top:'18px', left:'18px', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(10px)', color:'white', border:'1px solid rgba(255,255,255,0.3)', borderRadius:'20px', padding:'6px 16px', fontSize:'12px', fontWeight:700 }}>{artikel[0].kategori||'Artikel'}</span>
+                    <div style={{ position:'absolute', bottom:'24px', left:'24px', right:'24px' }}>
+                      <span style={{ color:'rgba(255,255,255,0.75)', fontSize:'12px' }}>{artikel[0].created_at ? new Date(artikel[0].created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
+                      <h3 style={{ fontSize:'22px', fontWeight:800, color:'white', margin:'6px 0 0', lineHeight:1.3 }}>{artikel[0].judul}</h3>
+                    </div>
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {/* ── MOBILE: list dengan thumbnail kiri ── */}
+            <div className="hide-desktop" style={{ flexDirection:'column', gap:'0' }}>
+              {artikel.slice(0,4).map((a: any, i: number) => (
+                <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
+                  <div style={{ display:'flex', gap:'14px', alignItems:'center', padding:'14px 4px', borderBottom: i < Math.min(artikel.length,4)-1 ? '1px solid rgba(45,122,94,0.12)' : 'none' }}>
+                    <div style={{ width:'88px', height:'88px', flexShrink:0, borderRadius:'16px', overflow:'hidden' }}>
+                      {a.thumbnail ? <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px' }}>📰</div>}
+                    </div>
+                    <div style={{ minWidth:0, flex:1 }}>
+                      <div style={{ display:'flex', gap:'8px', marginBottom:'4px', alignItems:'center' }}>
+                        <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'10px', padding:'2px 8px', fontSize:'10px', fontWeight:700, textTransform:'uppercase' }}>{a.kategori||'Artikel'}</span>
                         <span style={{ color:'#9ca3af', fontSize:'11px' }}>{a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : ''}</span>
                       </div>
-                      <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 6px', lineHeight:1.4 }}>{a.judul}</h3>
-                      <p style={{ fontSize:'12px', color:'#6b7280', margin:0, lineHeight:1.5 }}>{(a.excerpt||'').slice(0,90)}...</p>
+                      <h3 style={{ fontSize:'14px', fontWeight:700, color:'#1a2e25', margin:0, lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{a.judul}</h3>
                     </div>
                   </div>
                 </Link>
