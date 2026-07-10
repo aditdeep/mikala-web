@@ -73,6 +73,44 @@ export default async function HomePage() {
     { value:'24/7', label:'Standby', icon:'⏰' },
   ];
 
+  const videoUrl = settings.video_url || '';
+  const videoTitle = settings.video_title || 'Kenali Lebih Dekat Mikala Global Medika';
+  const getYoutubeEmbed = (url: string) => {
+    if (!url) return '';
+    try {
+      const u = new URL(url);
+      let id = '';
+      if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
+      else if (u.searchParams.get('v')) id = u.searchParams.get('v')!;
+      else if (u.pathname.includes('/embed/')) id = u.pathname.split('/embed/')[1];
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    } catch { return ''; }
+  };
+  const videoEmbed = getYoutubeEmbed(videoUrl);
+
+  let alasanList: { icon?: string; judul: string; deskripsi?: string }[] = [];
+  try {
+    const raw = settings.alasan_list;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed)) alasanList = parsed;
+  } catch { alasanList = []; }
+  const defaultAlasan = [
+    { icon:'🏥', judul:'Tenaga Profesional', deskripsi:'Perawat & tenaga medis bersertifikat' },
+    { icon:'⏰', judul:'Standby 24/7', deskripsi:'Siap melayani kapan saja Anda butuhkan' },
+    { icon:'💰', judul:'Harga Transparan', deskripsi:'Tanpa biaya tersembunyi' },
+    { icon:'🏆', judul:'Berpengalaman', deskripsi:'Dipercaya ratusan keluarga' },
+    { icon:'📍', judul:'Jangkauan Luas', deskripsi:'Melayani Bekasi & sekitarnya' },
+    { icon:'❤️', judul:'Pelayanan Ramah', deskripsi:'Sepenuh hati untuk Anda & keluarga' },
+  ];
+  const alasanData = alasanList.length > 0 ? alasanList : defaultAlasan;
+
+  let sertifikatImages: string[] = [];
+  try {
+    const raw = settings.sertifikat_images;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed)) sertifikatImages = parsed;
+  } catch { sertifikatImages = []; }
+
   return (
     <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
       <Navbar active="/" />
@@ -255,6 +293,64 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ═══ VIDEO ═══ */}
+      {videoEmbed && (
+        <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
+          <div style={{ maxWidth:'900px', margin:'0 auto', textAlign:'center' }}>
+            <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Video Profil</span>
+            <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 32px' }}>{videoTitle}</h2>
+            <div style={{ position:'relative', paddingBottom:'56.25%', height:0, borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(45,122,94,0.2)' }}>
+              <iframe
+                src={videoEmbed}
+                title={videoTitle}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', border:0 }}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ 6 ALASAN ═══ */}
+      <section style={{ padding:'80px 20px', background:'#f0faf5' }} className="section-pad">
+        <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+          <div style={{ textAlign:'center', marginBottom:'48px' }}>
+            <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Kenapa Pilih Kami</span>
+            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>6 Alasan Memilih Mikala</h2>
+            <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
+          </div>
+          <div className="card-grid card-grid-mobile-scroll">
+            {alasanData.slice(0,6).map((al, i) => (
+              <div key={i} style={{ background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(45,122,94,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
+                <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', margin:'0 auto 16px' }}>{al.icon||'✅'}</div>
+                <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px' }}>{al.judul}</h3>
+                {al.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:0 }}>{al.deskripsi}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SERTIFIKAT ═══ */}
+      {sertifikatImages.length > 0 && (
+        <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
+          <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+            <div style={{ textAlign:'center', marginBottom:'40px' }}>
+              <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Legalitas & Sertifikasi</span>
+              <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Sertifikat & Izin Resmi Kami</h2>
+            </div>
+            <div style={{ display:'flex', gap:'20px', overflowX:'auto', paddingBottom:'12px', scrollSnapType:'x mandatory' }}>
+              {sertifikatImages.map((img, i) => (
+                <div key={i} style={{ flex:'0 0 auto', width:'220px', scrollSnapAlign:'start', background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'16px', overflow:'hidden', border:'1px solid rgba(45,122,94,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                  <img src={img} alt={`Sertifikat ${i+1}`} style={{ width:'100%', height:'280px', objectFit:'cover' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══ ARTIKEL ═══ */}
       {artikel.length > 0 && (
