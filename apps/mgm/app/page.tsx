@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Navbar from './(components)/Navbar';
 import Footer from './(components)/Footer';
 import HeroSlider from './(components)/HeroSlider';
+import VideoSection from './(components)/VideoSection';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#2d7a5e';
@@ -75,7 +76,7 @@ export default async function HomePage() {
 
   const videoUrl = settings.video_url || '';
   const videoTitle = settings.video_title || 'Kenali Lebih Dekat Mikala Global Medika';
-  const getYoutubeEmbed = (url: string) => {
+  const getYoutubeId = (url: string) => {
     if (!url) return '';
     try {
       const u = new URL(url);
@@ -83,10 +84,10 @@ export default async function HomePage() {
       if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
       else if (u.searchParams.get('v')) id = u.searchParams.get('v')!;
       else if (u.pathname.includes('/embed/')) id = u.pathname.split('/embed/')[1];
-      return id ? `https://www.youtube.com/embed/${id}` : '';
+      return id;
     } catch { return ''; }
   };
-  const videoEmbed = getYoutubeEmbed(videoUrl);
+  const videoId = getYoutubeId(videoUrl);
 
   let alasanList: { icon?: string; judul: string; deskripsi?: string }[] = [];
   try {
@@ -295,23 +296,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══ VIDEO ═══ */}
-      {videoEmbed && (
-        <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
-          <div style={{ maxWidth:'900px', margin:'0 auto', textAlign:'center' }}>
-            <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Video Profil</span>
-            <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 32px' }}>{videoTitle}</h2>
-            <div style={{ position:'relative', paddingBottom:'56.25%', height:0, borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(45,122,94,0.2)' }}>
-              <iframe
-                src={videoEmbed}
-                title={videoTitle}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', border:0 }}
-              />
-            </div>
-          </div>
-        </section>
-      )}
+      {videoId && <VideoSection videoId={videoId} title={videoTitle} />}
 
       {/* ═══ 6 ALASAN ═══ */}
       <section style={{ padding:'80px 20px', background:'#f0faf5' }} className="section-pad">
