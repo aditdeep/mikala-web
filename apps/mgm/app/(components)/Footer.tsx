@@ -40,7 +40,7 @@ export default function Footer() {
           </div>
           <div>
             <h4 style={{ fontWeight:700, fontSize:'14px', marginBottom:'16px', color:'white' }}>Navigasi</h4>
-            {[{l:'Beranda',h:'/'},{l:'Tentang Kami',h:'/tentang'},{l:'Artikel',h:'/artikel'},{l:'Galeri',h:'/galeri'},{l:'Kontak',h:'/kontak'}].map(n => (
+            {[{l:'Beranda',h:'/'},{l:'Perusahaan',h:'/perusahaan'},{l:'Artikel',h:'/artikel'},{l:'Galeri',h:'/galeri'},{l:'Kontak',h:'/kontak'}].map(n => (
               <div key={n.l} style={{ marginBottom:'8px' }}>
                 <Link href={n.h} style={{ color:'rgba(255,255,255,0.55)', fontSize:'13px', textDecoration:'none' }}>{n.l}</Link>
               </div>

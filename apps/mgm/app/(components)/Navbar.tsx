@@ -11,7 +11,7 @@ const WA = "https://wa.me/6281296998827";
 
 const NAV_LINKS = [
   { href:'/', l:'Beranda' },
-  { href:'/tentang', l:'Tentang' },
+  { href:'/perusahaan', l:'Perusahaan' },
   { href:'/layanan', l:'Layanan' },
   { href:'/artikel', l:'Artikel' },
   { href:'/galeri', l:'Galeri' },

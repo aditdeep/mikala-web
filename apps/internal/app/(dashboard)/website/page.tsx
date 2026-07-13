@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { FileText, Image, Star, Settings, Plus, X, Edit2, Trash2, Eye, Upload, BarChart2, Globe } from 'lucide-react';
+import { FileText, Image, Star, Settings, Plus, X, Edit2, Trash2, Eye, Upload, BarChart2, Globe, Building2 } from 'lucide-react';
 import RichEditor from '../../../components/RichEditor';
 
 const TABS = [
@@ -10,6 +10,7 @@ const TABS = [
   { key:'penunjang', label:'Penunjang Kesehatan', icon: BarChart2 },
   { key:'galeri',    label:'Galeri',    icon: Image },
   { key:'testimoni', label:'Testimoni', icon: Star },
+  { key:'perusahaan', label:'Perusahaan', icon: Building2 },
   { key:'settings',  label:'Settings',  icon: Settings },
 ];
 
@@ -42,6 +43,11 @@ export default function WebsitePage() {
   const [profileImages, setProfileImages] = useState<string[]>([]);
   const [alasanList, setAlasanList] = useState<{ icon:string; judul:string; deskripsi:string }[]>([]);
   const [sertifikatImages, setSertifikatImages] = useState<string[]>([]);
+  const [prshHeroImages, setPrshHeroImages] = useState<string[]>([]);
+  const [prshMisiList, setPrshMisiList] = useState<string[]>([]);
+  const [prshLegalitasImages, setPrshLegalitasImages] = useState<string[]>([]);
+  const [prshChecklist, setPrshChecklist] = useState<string[]>([]);
+  const [prshMgaImages, setPrshMgaImages] = useState<string[]>([]);
 
   useEffect(() => { fetchData(); }, [activeTab, artikelPage]);
 
@@ -70,27 +76,26 @@ export default function WebsitePage() {
       } else if (activeTab === 'testimoni') {
         const r: any = await apiClient.get('/internal/cms/testimoni');
         setTestimoni(Array.isArray(r.data?.data) ? r.data.data : []);
-      } else if (activeTab === 'settings') {
+      } else if (activeTab === 'settings' || activeTab === 'perusahaan') {
         const r: any = await apiClient.get('/internal/cms/settings');
         const s = r.data?.data || {};
         setSettings(s);
         setFormSettings(s);
-        try {
-          const parsed = typeof s.hero_slides === 'string' ? JSON.parse(s.hero_slides) : s.hero_slides;
-          setHeroSlides(Array.isArray(parsed) ? parsed : []);
-        } catch { setHeroSlides([]); }
-        try {
-          const parsedImg = typeof s.profile_images === 'string' ? JSON.parse(s.profile_images) : s.profile_images;
-          setProfileImages(Array.isArray(parsedImg) ? parsedImg : []);
-        } catch { setProfileImages([]); }
-        try {
-          const parsedAlasan = typeof s.alasan_list === 'string' ? JSON.parse(s.alasan_list) : s.alasan_list;
-          setAlasanList(Array.isArray(parsedAlasan) ? parsedAlasan : []);
-        } catch { setAlasanList([]); }
-        try {
-          const parsedSert = typeof s.sertifikat_images === 'string' ? JSON.parse(s.sertifikat_images) : s.sertifikat_images;
-          setSertifikatImages(Array.isArray(parsedSert) ? parsedSert : []);
-        } catch { setSertifikatImages([]); }
+        const parseArr = (raw: any): any[] => {
+          try {
+            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+            return Array.isArray(parsed) ? parsed : [];
+          } catch { return []; }
+        };
+        setHeroSlides(parseArr(s.hero_slides));
+        setProfileImages(parseArr(s.profile_images));
+        setAlasanList(parseArr(s.alasan_list));
+        setSertifikatImages(parseArr(s.sertifikat_images));
+        setPrshHeroImages(parseArr(s.prsh_hero_images));
+        setPrshMisiList(parseArr(s.prsh_misi_list));
+        setPrshLegalitasImages(parseArr(s.prsh_legalitas_images));
+        setPrshChecklist(parseArr(s.prsh_checklist_list));
+        setPrshMgaImages(parseArr(s.prsh_mga_images));
       }
     } catch {}
     setLoading(false);
@@ -167,7 +172,18 @@ export default function WebsitePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = { ...formSettings, hero_slides: JSON.stringify(heroSlides), profile_images: JSON.stringify(profileImages), alasan_list: JSON.stringify(alasanList), sertifikat_images: JSON.stringify(sertifikatImages) };
+      const payload = {
+        ...formSettings,
+        hero_slides: JSON.stringify(heroSlides),
+        profile_images: JSON.stringify(profileImages),
+        alasan_list: JSON.stringify(alasanList),
+        sertifikat_images: JSON.stringify(sertifikatImages),
+        prsh_hero_images: JSON.stringify(prshHeroImages),
+        prsh_misi_list: JSON.stringify(prshMisiList),
+        prsh_legalitas_images: JSON.stringify(prshLegalitasImages),
+        prsh_checklist_list: JSON.stringify(prshChecklist),
+        prsh_mga_images: JSON.stringify(prshMgaImages),
+      };
       await apiClient.post('/internal/cms/settings', payload);
       alert('Settings tersimpan!');
       fetchData();
@@ -206,6 +222,26 @@ export default function WebsitePage() {
   const addSertifikatImage = () => setSertifikatImages(p => [...p, '']);
   const removeSertifikatImage = (i: number) => setSertifikatImages(p => p.filter((_, idx) => idx !== i));
   const updateSertifikatImage = (i: number, url: string) => setSertifikatImages(p => p.map((s, idx) => idx === i ? url : s));
+
+  const addPrshHeroImage = () => setPrshHeroImages(p => [...p, '']);
+  const removePrshHeroImage = (i: number) => setPrshHeroImages(p => p.filter((_, idx) => idx !== i));
+  const updatePrshHeroImage = (i: number, url: string) => setPrshHeroImages(p => p.map((s, idx) => idx === i ? url : s));
+
+  const addPrshMisi = () => setPrshMisiList(p => [...p, '']);
+  const removePrshMisi = (i: number) => setPrshMisiList(p => p.filter((_, idx) => idx !== i));
+  const updatePrshMisi = (i: number, val: string) => setPrshMisiList(p => p.map((s, idx) => idx === i ? val : s));
+
+  const addPrshLegalitasImage = () => setPrshLegalitasImages(p => [...p, '']);
+  const removePrshLegalitasImage = (i: number) => setPrshLegalitasImages(p => p.filter((_, idx) => idx !== i));
+  const updatePrshLegalitasImage = (i: number, url: string) => setPrshLegalitasImages(p => p.map((s, idx) => idx === i ? url : s));
+
+  const addPrshChecklist = () => setPrshChecklist(p => [...p, '']);
+  const removePrshChecklist = (i: number) => setPrshChecklist(p => p.filter((_, idx) => idx !== i));
+  const updatePrshChecklist = (i: number, val: string) => setPrshChecklist(p => p.map((s, idx) => idx === i ? val : s));
+
+  const addPrshMgaImage = () => setPrshMgaImages(p => [...p, '']);
+  const removePrshMgaImage = (i: number) => setPrshMgaImages(p => p.filter((_, idx) => idx !== i));
+  const updatePrshMgaImage = (i: number, url: string) => setPrshMgaImages(p => p.map((s, idx) => idx === i ? url : s));
 
   const handleDelete = async (type: string, id: number) => {
     if (!confirm('Hapus item ini?')) return;
@@ -661,6 +697,167 @@ export default function WebsitePage() {
 
           <button type="submit" disabled={saving} style={{ padding:'12px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer', width:'fit-content', minWidth:'150px' }}>
             {saving ? 'Menyimpan...' : '💾 Simpan Settings'}
+          </button>
+        </form>
+      )}
+
+      {/* TAB PERUSAHAAN */}
+      {activeTab === 'perusahaan' && (
+        <form onSubmit={handleSaveSettings} style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
+          <p style={{ color:'var(--text3)', fontSize:'12px', margin:0 }}>Kelola konten halaman /perusahaan (Tentang Kami). Galeri "Fasilitas dan Kegiatan" ambil otomatis dari tab Galeri dengan kategori "Fasilitas".</p>
+
+          {/* Hero */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700, display:'block', marginBottom:'12px' }}>Hero</label>
+            <div style={{ marginBottom:'12px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Judul Hero</label>
+              <input value={formSettings.prsh_hero_title||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_hero_title:e.target.value}))} style={inp} placeholder="Layanan Kesehatan di Rumah yang Komprehensif..." />
+            </div>
+            <div style={{ marginBottom:'14px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Teks Hero</label>
+              <textarea value={formSettings.prsh_hero_text||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_hero_text:e.target.value}))} style={{...inp, minHeight:'70px', resize:'vertical'}} />
+            </div>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Foto Slide Hero ({prshHeroImages.length})</label>
+              <button type="button" onClick={addPrshHeroImage} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah Foto</button>
+            </div>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
+              {prshHeroImages.map((img, i) => (
+                <div key={i} style={{ position:'relative' }}>
+                  <label style={{ width:'100px', height:'70px', borderRadius:'8px', overflow:'hidden', background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                    {img ? <img src={img} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <Upload size={16} color="var(--text2)" />}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updatePrshHeroImage(i, url)); }} />
+                  </label>
+                  <button type="button" onClick={() => removePrshHeroImage(i)} style={{ position:'absolute', top:'-6px', right:'-6px', background:'#dc2626', border:'none', borderRadius:'50%', width:'20px', height:'20px', cursor:'pointer', color:'white', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={12} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Direktur / Pra-Kata */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700, display:'block', marginBottom:'12px' }}>Pra-Kata Direktur</label>
+            <div style={{ display:'flex', gap:'16px', alignItems:'flex-start', marginBottom:'14px', flexWrap:'wrap' }}>
+              <label style={{ width:'90px', height:'90px', flexShrink:0, borderRadius:'50%', overflow:'hidden', background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                {formSettings.prsh_direktur_foto ? <img src={formSettings.prsh_direktur_foto} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <Upload size={16} color="var(--text2)" />}
+                <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => setFormSettings((p: any) => ({...p,prsh_direktur_foto:url}))); }} />
+              </label>
+              <div style={{ flex:1, minWidth:'200px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                <input placeholder="Nama Direktur" value={formSettings.prsh_direktur_nama||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_direktur_nama:e.target.value}))} style={inp} />
+                <input placeholder="Jabatan" value={formSettings.prsh_direktur_jabatan||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_direktur_jabatan:e.target.value}))} style={inp} />
+              </div>
+            </div>
+            <div style={{ marginBottom:'12px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Sambutan Singkat (tampil di halaman utama)</label>
+              <textarea value={formSettings.prsh_direktur_sambutan||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_direktur_sambutan:e.target.value}))} style={{...inp, minHeight:'70px', resize:'vertical'}} />
+            </div>
+            <div>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Sambutan Lengkap (halaman /perusahaan/prakata, pisahkan paragraf dengan baris baru)</label>
+              <textarea value={formSettings.prsh_direktur_sambutan_lengkap||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_direktur_sambutan_lengkap:e.target.value}))} style={{...inp, minHeight:'140px', resize:'vertical'}} />
+            </div>
+          </div>
+
+          {/* Visi Misi */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700, display:'block', marginBottom:'12px' }}>Visi & Misi</label>
+            <div style={{ marginBottom:'14px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Visi</label>
+              <textarea value={formSettings.prsh_visi||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_visi:e.target.value}))} style={{...inp, minHeight:'70px', resize:'vertical'}} />
+            </div>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Misi ({prshMisiList.length})</label>
+              <button type="button" onClick={addPrshMisi} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah Misi</button>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+              {prshMisiList.map((m, i) => (
+                <div key={i} style={{ display:'flex', gap:'8px', alignItems:'flex-start' }}>
+                  <textarea value={m} onChange={e => updatePrshMisi(i, e.target.value)} style={{...inp, minHeight:'50px', resize:'vertical', flex:1}} placeholder={`Poin misi ${i+1}`} />
+                  <button type="button" onClick={() => removePrshMisi(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'30px', height:'30px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legalitas */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700, display:'block', marginBottom:'12px' }}>Legalitas Perusahaan</label>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px,1fr))', gap:'10px', marginBottom:'14px' }}>
+              <div><label style={{ color:'var(--text2)', fontSize:'11px', fontWeight:500, display:'block', marginBottom:'4px' }}>SK. Kemenkumham</label><input value={formSettings.prsh_legalitas_sk||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_legalitas_sk:e.target.value}))} style={inp} /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'11px', fontWeight:500, display:'block', marginBottom:'4px' }}>NIB</label><input value={formSettings.prsh_legalitas_nib||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_legalitas_nib:e.target.value}))} style={inp} /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'11px', fontWeight:500, display:'block', marginBottom:'4px' }}>Izin LPPRT</label><input value={formSettings.prsh_legalitas_izin||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_legalitas_izin:e.target.value}))} style={inp} /></div>
+            </div>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Foto Dokumen Legalitas ({prshLegalitasImages.length})</label>
+              <button type="button" onClick={addPrshLegalitasImage} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah Foto</button>
+            </div>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
+              {prshLegalitasImages.map((img, i) => (
+                <div key={i} style={{ position:'relative' }}>
+                  <label style={{ width:'100px', height:'130px', borderRadius:'8px', overflow:'hidden', background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                    {img ? <img src={img} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <Upload size={16} color="var(--text2)" />}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updatePrshLegalitasImage(i, url)); }} />
+                  </label>
+                  <button type="button" onClick={() => removePrshLegalitasImage(i)} style={{ position:'absolute', top:'-6px', right:'-6px', background:'#dc2626', border:'none', borderRadius:'50%', width:'20px', height:'20px', cursor:'pointer', color:'white', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={12} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Checklist "Ada Apa dengan MGM" */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
+              <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700 }}>Ada Apa dengan MGM (checklist, {prshChecklist.length})</label>
+              <button type="button" onClick={addPrshChecklist} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah</button>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+              {prshChecklist.map((c, i) => (
+                <div key={i} style={{ display:'flex', gap:'8px' }}>
+                  <input value={c} onChange={e => updatePrshChecklist(i, e.target.value)} style={inp} placeholder={`Poin ${i+1}`} />
+                  <button type="button" onClick={() => removePrshChecklist(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'36px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* MGA & Loker */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700, display:'block', marginBottom:'12px' }}>Mikala Global Akademi & Loker</label>
+            <div style={{ marginBottom:'12px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Teks Promo MGA</label>
+              <textarea value={formSettings.prsh_mga_text||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_mga_text:e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} />
+            </div>
+            <div style={{ marginBottom:'14px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Link "Baca Selengkapnya" (URL web MGA)</label>
+              <input value={formSettings.prsh_mga_url||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_mga_url:e.target.value}))} style={inp} placeholder="https://mikalaglobalakademi.com" />
+            </div>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Foto MGA ({prshMgaImages.length})</label>
+              <button type="button" onClick={addPrshMgaImage} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah Foto</button>
+            </div>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginBottom:'16px' }}>
+              {prshMgaImages.map((img, i) => (
+                <div key={i} style={{ position:'relative' }}>
+                  <label style={{ width:'100px', height:'70px', borderRadius:'8px', overflow:'hidden', background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                    {img ? <img src={img} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <Upload size={16} color="var(--text2)" />}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updatePrshMgaImage(i, url)); }} />
+                  </label>
+                  <button type="button" onClick={() => removePrshMgaImage(i)} style={{ position:'absolute', top:'-6px', right:'-6px', background:'#dc2626', border:'none', borderRadius:'50%', width:'20px', height:'20px', cursor:'pointer', color:'white', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={12} /></button>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginBottom:'12px' }}>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Teks Ajakan Loker</label>
+              <input value={formSettings.prsh_loker_text||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_loker_text:e.target.value}))} style={inp} placeholder="Minat bergabung? Stop Pengangguran!" />
+            </div>
+            <div>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Link "Klik Daftar" (URL loker)</label>
+              <input value={formSettings.prsh_loker_url||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_loker_url:e.target.value}))} style={inp} placeholder="https://wa.me/6281296998827" />
+            </div>
+          </div>
+
+          <button type="submit" disabled={saving} style={{ padding:'12px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer', width:'fit-content', minWidth:'150px' }}>
+            {saving ? 'Menyimpan...' : '💾 Simpan Perusahaan'}
           </button>
         </form>
       )}
