@@ -1,15 +1,15 @@
 'use client';
 import { useState } from 'react';
 
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 
 export default function VideoSection({ videoId, title }: { videoId: string; title: string }) {
   const [playing, setPlaying] = useState(false);
   const thumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
   return (
-    <section style={{ position: 'relative', padding: '90px 0', overflow: 'hidden', background: `linear-gradient(180deg, #f0faf5 0%, #eafaf3 50%, #f0faf5 100%)` }}>
+    <section style={{ position: 'relative', padding: '90px 0', overflow: 'hidden', background: `linear-gradient(180deg, #eef8fa 0%, #f2eef6 50%, #eef8fa 100%)` }}>
       {/* decorative glass blobs */}
       <div style={{ position: 'absolute', top: '-120px', left: '-100px', width: '380px', height: '380px', borderRadius: '50%', background: `radial-gradient(circle, ${GREEN}30, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '-140px', right: '-100px', width: '420px', height: '420px', borderRadius: '50%', background: `radial-gradient(circle, ${PINK}30, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
@@ -24,10 +24,10 @@ export default function VideoSection({ videoId, title }: { videoId: string; titl
         <div style={{
           position: 'relative', borderRadius: '32px', overflow: 'hidden',
           background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(20px) saturate(160%)', WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-          border: '1px solid rgba(255,255,255,0.5)', boxShadow: `0 30px 80px rgba(45,122,94,0.25), 0 0 0 1px rgba(255,255,255,0.4) inset`,
+          border: '1px solid rgba(255,255,255,0.5)', boxShadow: `0 30px 80px rgba(14,146,179,0.25), 0 0 0 1px rgba(255,255,255,0.4) inset`,
           padding: 'clamp(8px,1.5vw,16px)',
         }}>
-          <div style={{ position: 'relative', paddingBottom: '52%', height: 0, borderRadius: '24px', overflow: 'hidden', background: '#0d2b1c' }}>
+          <div style={{ position: 'relative', paddingBottom: '52%', height: 0, borderRadius: '24px', overflow: 'hidden', background: '#0d2933' }}>
             {playing ? (
               <iframe
                 src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
@@ -44,7 +44,7 @@ export default function VideoSection({ videoId, title }: { videoId: string; titl
               >
                 <img src={thumb} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }} />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(6,41,20,0.45), rgba(139,26,74,0.35))' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(4,35,43,0.45), rgba(61,28,55,0.35))' }} />
                 <span style={{
                   position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
                   width: 'clamp(64px,8vw,96px)', height: 'clamp(64px,8vw,96px)', borderRadius: '50%',

@@ -2,8 +2,8 @@ import Navbar from '../(components)/Navbar';
 import Footer from '../(components)/Footer';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 const WA = "https://wa.me/6281296998827";
 
 async function getGaleri() {
@@ -30,7 +30,7 @@ export default async function GaleriPage() {
   const data = galeri.length > 0 ? galeri : defaultGaleri;
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
+    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/galeri" />
 
       <div style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, padding:'clamp(40px,8vw,70px) 20px', textAlign:'center' }}>
@@ -41,11 +41,11 @@ export default async function GaleriPage() {
       <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'clamp(32px,6vw,60px) 16px' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%,260px), 1fr))', gap:'16px' }}>
           {data.map((g: any, i: number) => (
-            <div key={i} style={{ background:'rgba(255,255,255,0.85)', backdropFilter:'blur(10px)', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 16px rgba(0,0,0,0.07)', border:'1px solid rgba(45,122,94,0.08)' }}>
+            <div key={i} style={{ background:'rgba(255,255,255,0.85)', backdropFilter:'blur(10px)', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 16px rgba(0,0,0,0.07)', border:'1px solid rgba(14,146,179,0.08)' }}>
               <div style={{ height:'clamp(160px,25vw,220px)', overflow:'hidden', position:'relative' }}>
                 <img src={g.url||g.thumbnail} alt={g.judul||`Galeri ${i+1}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                 {g.kategori && (
-                  <div style={{ position:'absolute', top:'10px', left:'10px', background:'rgba(45,122,94,0.88)', backdropFilter:'blur(8px)', color:'white', padding:'3px 10px', borderRadius:'20px', fontSize:'11px', fontWeight:600 }}>
+                  <div style={{ position:'absolute', top:'10px', left:'10px', background:'rgba(14,146,179,0.88)', backdropFilter:'blur(8px)', color:'white', padding:'3px 10px', borderRadius:'20px', fontSize:'11px', fontWeight:600 }}>
                     {g.kategori}
                   </div>
                 )}

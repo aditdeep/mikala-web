@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 type Slide = { image: string; title?: string; subtitle?: string };
 
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 const WA = 'https://wa.me/6281296998827';
 
 export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: {
@@ -29,14 +29,14 @@ export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: 
   }, [n]);
 
   return (
-    <section style={{ position: 'relative', minHeight: '100svh', overflow: 'hidden', background: `linear-gradient(135deg, #062914 0%, #0d4a2a 35%, #1a6b45 65%, #8b1a4a 100%)` }}>
+    <section style={{ position: 'relative', minHeight: '100svh', overflow: 'hidden', background: `linear-gradient(135deg, #04232b 0%, #0a5568 35%, #0e92b3 65%, #9c488b 100%)` }}>
       {list.map((s, i) => (
         <div key={i} style={{
           position: 'absolute', inset: 0, opacity: i === idx ? 1 : 0,
           transition: 'opacity 1s ease', zIndex: i === idx ? 1 : 0,
         }}>
           <img src={s.image} alt={s.title || 'Mikala'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,41,20,0.85) 0%, rgba(6,41,20,0.45) 45%, rgba(6,41,20,0.25) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(4,35,43,0.85) 0%, rgba(4,35,43,0.45) 45%, rgba(4,35,43,0.25) 100%)' }} />
         </div>
       ))}
 
@@ -58,7 +58,7 @@ export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: 
             <a href={WA} target="_blank" rel="noreferrer" style={{
               background: `linear-gradient(135deg, ${GREEN}, ${PINK})`, color: 'white',
               padding: '14px 32px', borderRadius: '30px', fontSize: '15px', fontWeight: 700,
-              textDecoration: 'none', boxShadow: '0 8px 24px rgba(45,122,94,0.4)',
+              textDecoration: 'none', boxShadow: '0 8px 24px rgba(14,146,179,0.4)',
             }}>Konsultasi Gratis</a>
             <a href="/layanan" style={{
               background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)',

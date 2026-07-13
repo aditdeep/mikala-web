@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Navbar from '../(components)/Navbar';
 import Footer from '../(components)/Footer';
 
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 const WA = "https://wa.me/6281296998827";
 
 export default function KontakPage() {
@@ -22,7 +22,7 @@ export default function KontakPage() {
   const inp = { width:'100%', padding:'11px 14px', borderRadius:'12px', border:'1px solid #e5e7eb', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, fontFamily:'inherit', background:'white' };
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
+    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/kontak" />
 
       <div style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, padding:'clamp(40px,8vw,70px) 20px', textAlign:'center' }}>

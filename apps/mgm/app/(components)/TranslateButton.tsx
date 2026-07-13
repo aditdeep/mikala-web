@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 
+const GREEN = '#0e92b3';
+
 export default function TranslateButton({ scrolled = false }: { scrolled?: boolean }) {
   const [lang, setLang] = useState<'id'|'en'>('id');
 
@@ -36,13 +38,13 @@ export default function TranslateButton({ scrolled = false }: { scrolled?: boole
   };
 
   return (
-    <div style={{ display: 'flex', gap: '2px', background: scrolled ? 'rgba(26,46,40,0.08)' : 'rgba(255,255,255,0.12)', borderRadius: '10px', padding: '3px', border: `1px solid ${scrolled ? 'rgba(26,46,40,0.15)' : 'rgba(255,255,255,0.2)'}` }}>
+    <div style={{ display: 'flex', gap: '2px', background: scrolled ? 'rgba(14,146,179,0.08)' : 'rgba(255,255,255,0.14)', borderRadius: '10px', padding: '3px', border: `1px solid ${scrolled ? 'rgba(14,146,179,0.15)' : 'rgba(255,255,255,0.25)'}` }}>
       <button onClick={() => translate('id')}
         style={{
           padding: '5px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 700,
           cursor: 'pointer', border: 'none', transition: 'all 0.2s',
-          background: lang === 'id' ? (scrolled ? 'var(--green)' : 'white') : 'transparent',
-          color: lang === 'id' ? (scrolled ? 'white' : 'var(--green)') : (scrolled ? 'var(--text3)' : 'rgba(255,255,255,0.6)'),
+          background: lang === 'id' ? (scrolled ? GREEN : 'white') : 'transparent',
+          color: lang === 'id' ? (scrolled ? 'white' : GREEN) : (scrolled ? '#6b7280' : 'rgba(255,255,255,0.65)'),
         }}>
         🇮🇩 ID
       </button>
@@ -50,8 +52,8 @@ export default function TranslateButton({ scrolled = false }: { scrolled?: boole
         style={{
           padding: '5px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 700,
           cursor: 'pointer', border: 'none', transition: 'all 0.2s',
-          background: lang === 'en' ? (scrolled ? 'var(--green)' : 'white') : 'transparent',
-          color: lang === 'en' ? (scrolled ? 'white' : 'var(--green)') : (scrolled ? 'var(--text3)' : 'rgba(255,255,255,0.6)'),
+          background: lang === 'en' ? (scrolled ? GREEN : 'white') : 'transparent',
+          color: lang === 'en' ? (scrolled ? 'white' : GREEN) : (scrolled ? '#6b7280' : 'rgba(255,255,255,0.65)'),
         }}>
         🇬🇧 EN
       </button>

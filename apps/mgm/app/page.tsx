@@ -5,8 +5,8 @@ import HeroSlider from './(components)/HeroSlider';
 import VideoSection from './(components)/VideoSection';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 const WA = "https://wa.me/6281296998827";
 
 async function getData() {
@@ -113,7 +113,7 @@ export default async function HomePage() {
   } catch { sertifikatImages = []; }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
+    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/" />
 
       {/* ═══ HERO ═══ */}
@@ -125,7 +125,7 @@ export default async function HomePage() {
 
       {/* ═══ STATS (overlap card) ═══ */}
       <div style={{ position:'relative', zIndex:5, maxWidth:'1000px', margin:'-40px auto 0', padding:'0 20px' }} className="section-pad">
-        <div style={{ background:'rgba(255,255,255,0.9)', backdropFilter:'blur(20px)', borderRadius:'24px', padding:'28px 20px', boxShadow:'0 20px 50px rgba(0,0,0,0.12)', border:'1px solid rgba(45,122,94,0.1)', display:'flex', justifyContent:'space-around', flexWrap:'wrap', gap:'20px' }}>
+        <div style={{ background:'rgba(255,255,255,0.9)', backdropFilter:'blur(20px)', borderRadius:'24px', padding:'28px 20px', boxShadow:'0 20px 50px rgba(0,0,0,0.12)', border:'1px solid rgba(14,146,179,0.1)', display:'flex', justifyContent:'space-around', flexWrap:'wrap', gap:'20px' }}>
           {stats.map(s => (
             <div key={s.label} style={{ textAlign:'center', minWidth:'100px' }}>
               <div style={{ fontSize:'clamp(22px,3vw,30px)', fontWeight:900, color:'#1a2e25', lineHeight:1 }}>{s.value}</div>
@@ -137,11 +137,11 @@ export default async function HomePage() {
 
       {/* Wave */}
       <svg viewBox="0 0 1440 60" style={{ display:'block' }} preserveAspectRatio="none">
-        <path d="M0,30 Q360,60 720,30 Q1080,0 1440,30 L1440,60 L0,60 Z" fill="#f0faf5" />
+        <path d="M0,30 Q360,60 720,30 Q1080,0 1440,30 L1440,60 L0,60 Z" fill="#eef8fa" />
       </svg>
 
       {/* ═══ LAYANAN ═══ */}
-      <section style={{ padding:'80px 20px', background:'#f0faf5' }} className="section-pad">
+      <section style={{ padding:'80px 20px', background:'#eef8fa' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Layanan Kami</span>
@@ -152,7 +152,7 @@ export default async function HomePage() {
           {/* Desktop grid / Mobile horizontal scroll */}
           <div className="card-grid card-grid-mobile-scroll">
             {layananData.slice(0,6).map((l: any, i: number) => (
-              <div key={i} style={{ background:'rgba(255,255,255,0.8)', backdropFilter:'blur(20px)', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(45,122,94,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+              <div key={i} style={{ background:'rgba(255,255,255,0.8)', backdropFilter:'blur(20px)', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
                 <div style={{ height:'180px', overflow:'hidden', position:'relative' }}>
                   {l.gambar ? (
                     <img src={l.gambar} alt={l.nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
@@ -190,7 +190,7 @@ export default async function HomePage() {
 
             <div className="card-grid card-grid-mobile-scroll">
               {penunjangData.slice(0,6).map((p: any, i: number) => (
-                <div key={p.id||i} style={{ background:'rgba(255,255,255,0.8)', backdropFilter:'blur(20px)', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(45,122,94,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                <div key={p.id||i} style={{ background:'rgba(255,255,255,0.8)', backdropFilter:'blur(20px)', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
                   <div style={{ height:'160px', overflow:'hidden', position:'relative' }}>
                     {p.gambar ? (
                       <img src={p.gambar} alt={p.nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
@@ -242,7 +242,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div style={{ position:'relative' }}>
-              <div style={{ borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(45,122,94,0.2)' }}>
+              <div style={{ borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(14,146,179,0.2)' }}>
                 <img src={profileImage} alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
               </div>
               {profileImages.length > 1 && (
@@ -267,7 +267,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══ TESTIMONI ═══ */}
-      <section style={{ padding:'80px 20px', background:'#f0faf5' }} className="section-pad">
+      <section style={{ padding:'80px 20px', background:'#eef8fa' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Testimoni</span>
@@ -299,7 +299,7 @@ export default async function HomePage() {
       {videoId && <VideoSection videoId={videoId} title={videoTitle} />}
 
       {/* ═══ 6 ALASAN ═══ */}
-      <section style={{ padding:'80px 20px', background:'#f0faf5' }} className="section-pad">
+      <section style={{ padding:'80px 20px', background:'#eef8fa' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Kenapa Pilih Kami</span>
@@ -308,7 +308,7 @@ export default async function HomePage() {
           </div>
           <div className="card-grid card-grid-mobile-scroll">
             {alasanData.slice(0,6).map((al, i) => (
-              <div key={i} style={{ background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(45,122,94,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
+              <div key={i} style={{ background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
                 <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', margin:'0 auto 16px' }}>{al.icon||'✅'}</div>
                 <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px' }}>{al.judul}</h3>
                 {al.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:0 }}>{al.deskripsi}</p>}
@@ -328,7 +328,7 @@ export default async function HomePage() {
             </div>
             <div style={{ display:'flex', gap:'20px', overflowX:'auto', paddingBottom:'12px', scrollSnapType:'x mandatory' }}>
               {sertifikatImages.map((img, i) => (
-                <div key={i} style={{ flex:'0 0 auto', width:'220px', scrollSnapAlign:'start', background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'16px', overflow:'hidden', border:'1px solid rgba(45,122,94,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                <div key={i} style={{ flex:'0 0 auto', width:'220px', scrollSnapAlign:'start', background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'16px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
                   <img src={img} alt={`Sertifikat ${i+1}`} style={{ width:'100%', height:'280px', objectFit:'cover' }} />
                 </div>
               ))}
@@ -352,12 +352,12 @@ export default async function HomePage() {
             </div>
 
             {/* ── DESKTOP: list kiri + featured besar kanan ── */}
-            <div className="artikel-split hide-mobile" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'32px', alignItems:'stretch', background:'rgba(240,250,245,0.6)', backdropFilter:'blur(10px)', borderRadius:'28px', border:'1px solid rgba(45,122,94,0.08)', padding:'24px', boxShadow:'0 4px 24px rgba(0,0,0,0.04)' }}>
+            <div className="artikel-split hide-mobile" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'32px', alignItems:'stretch', background:'rgba(240,250,245,0.6)', backdropFilter:'blur(10px)', borderRadius:'28px', border:'1px solid rgba(14,146,179,0.08)', padding:'24px', boxShadow:'0 4px 24px rgba(0,0,0,0.04)' }}>
               {/* List */}
               <div style={{ display:'flex', flexDirection:'column' }}>
                 {artikel.slice(1,4).map((a: any, i: number) => (
                   <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
-                    <div style={{ display:'flex', gap:'16px', alignItems:'center', padding:'16px 8px', borderBottom: i < 2 ? '1px solid rgba(45,122,94,0.12)' : 'none' }}>
+                    <div style={{ display:'flex', gap:'16px', alignItems:'center', padding:'16px 8px', borderBottom: i < 2 ? '1px solid rgba(14,146,179,0.12)' : 'none' }}>
                       <div style={{ width:'90px', height:'70px', flexShrink:0, borderRadius:'14px', overflow:'hidden' }}>
                         {a.thumbnail ? <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px' }}>📰</div>}
                       </div>
@@ -378,7 +378,7 @@ export default async function HomePage() {
                 <Link href={`/artikel/${artikel[0].slug}`} style={{ textDecoration:'none' }}>
                   <div style={{ position:'relative', borderRadius:'22px', overflow:'hidden', height:'100%', minHeight:'380px' }}>
                     {artikel[0].thumbnail ? <img src={artikel[0].thumbnail} alt={artikel[0].judul} style={{ width:'100%', height:'100%', objectFit:'cover', position:'absolute', inset:0 }} /> : <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})` }} />}
-                    <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(6,41,20,0.88) 0%, rgba(6,41,20,0.25) 55%, rgba(6,41,20,0.05) 100%)' }} />
+                    <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(4,35,43,0.88) 0%, rgba(4,35,43,0.25) 55%, rgba(4,35,43,0.05) 100%)' }} />
                     <span style={{ position:'absolute', top:'18px', left:'18px', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(10px)', color:'white', border:'1px solid rgba(255,255,255,0.3)', borderRadius:'20px', padding:'6px 16px', fontSize:'12px', fontWeight:700 }}>{artikel[0].kategori||'Artikel'}</span>
                     <div style={{ position:'absolute', bottom:'24px', left:'24px', right:'24px' }}>
                       <span style={{ color:'rgba(255,255,255,0.75)', fontSize:'12px' }}>{artikel[0].created_at ? new Date(artikel[0].created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
@@ -393,7 +393,7 @@ export default async function HomePage() {
             <div className="hide-desktop" style={{ flexDirection:'column', gap:'0' }}>
               {artikel.slice(0,4).map((a: any, i: number) => (
                 <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
-                  <div style={{ display:'flex', gap:'14px', alignItems:'center', padding:'14px 4px', borderBottom: i < Math.min(artikel.length,4)-1 ? '1px solid rgba(45,122,94,0.12)' : 'none' }}>
+                  <div style={{ display:'flex', gap:'14px', alignItems:'center', padding:'14px 4px', borderBottom: i < Math.min(artikel.length,4)-1 ? '1px solid rgba(14,146,179,0.12)' : 'none' }}>
                     <div style={{ width:'88px', height:'88px', flexShrink:0, borderRadius:'16px', overflow:'hidden' }}>
                       {a.thumbnail ? <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px' }}>📰</div>}
                     </div>

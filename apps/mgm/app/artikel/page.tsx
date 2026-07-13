@@ -4,15 +4,17 @@ import Navbar from '../(components)/Navbar';
 import Footer from '../(components)/Footer';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 const PER_PAGE = 12;
 
-async function getArtikel(page = 1) {
+async function getArtikel(page = 1, search = '') {
   try {
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(`${API}/cms/artikel?per_page=${PER_PAGE}&page=${page}`, { next: { revalidate: 1800 } });
+    const qs = new URLSearchParams({ per_page: String(PER_PAGE), page: String(page) });
+    if (search) qs.set('search', search);
+    const res = await fetch(`${API}/cms/artikel?${qs.toString()}`, { next: { revalidate: search ? 0 : 1800 } });
     const data = await res.json();
     const d = data.data;
     if (d?.data) return { items: d.data, total: d.total || 0, lastPage: d.last_page || 1, currentPage: d.current_page || 1 };
@@ -21,20 +23,21 @@ async function getArtikel(page = 1) {
   } catch { return { items: [], total: 0, lastPage: 1, currentPage: 1 }; }
 }
 
-export default async function ArtikelPage({ searchParams }: { searchParams: { page?: string } }) {
+export default async function ArtikelPage({ searchParams }: { searchParams: { page?: string; q?: string } }) {
   const page = parseInt(searchParams.page || '1');
-  const { items: artikel, total, lastPage, currentPage } = await getArtikel(page);
+  const search = searchParams.q || '';
+  const { items: artikel, total, lastPage, currentPage } = await getArtikel(page, search);
 
   const pages = Array.from({ length: lastPage }, (_, i) => i + 1);
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
+    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/artikel" />
 
       <div style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, padding:'clamp(40px,8vw,70px) 20px', textAlign:'center' }}>
-        <h1 style={{ fontSize:'clamp(26px,5vw,42px)', fontWeight:800, color:'white', margin:'0 0 10px' }}>Artikel & Blog</h1>
+        <h1 style={{ fontSize:'clamp(26px,5vw,42px)', fontWeight:800, color:'white', margin:'0 0 10px' }}>{search ? `Hasil untuk "${search}"` : 'Artikel & Blog'}</h1>
         <p style={{ color:'rgba(255,255,255,0.85)', fontSize:'clamp(13px,2vw,16px)', margin:0 }}>
-          {total > 0 ? `${total} artikel tersedia` : 'Tips kesehatan, informasi medis, dan cerita inspiratif'}
+          {total > 0 ? `${total} artikel ditemukan` : search ? 'Tidak ada artikel yang cocok' : 'Tips kesehatan, informasi medis, dan cerita inspiratif'}
         </p>
       </div>
 
@@ -46,14 +49,14 @@ export default async function ArtikelPage({ searchParams }: { searchParams: { pa
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap:'20px', marginBottom:'48px' }}>
               {artikel.map((a: any, i: number) => (
                 <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
-                  <div style={{ background:'rgba(255,255,255,0.9)', backdropFilter:'blur(10px)', borderRadius:'20px', overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', border:'1px solid rgba(45,122,94,0.08)', height:'100%', display:'flex', flexDirection:'column' }}>
+                  <div style={{ background:'rgba(255,255,255,0.9)', backdropFilter:'blur(10px)', borderRadius:'20px', overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', border:'1px solid rgba(14,146,179,0.08)', height:'100%', display:'flex', flexDirection:'column' }}>
                     <div style={{ height:'190px', overflow:'hidden', flexShrink:0, position:'relative' }}>
                       {a.thumbnail
                         ? <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                         : <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>📰</div>
                       }
                       <div style={{ position:'absolute', top:'10px', left:'10px' }}>
-                        <span style={{ background:'rgba(45,122,94,0.88)', backdropFilter:'blur(8px)', color:'white', borderRadius:'10px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{a.kategori||'Artikel'}</span>
+                        <span style={{ background:'rgba(14,146,179,0.88)', backdropFilter:'blur(8px)', color:'white', borderRadius:'10px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{a.kategori||'Artikel'}</span>
                       </div>
                     </div>
                     <div style={{ padding:'16px 18px 18px', display:'flex', flexDirection:'column', flex:1 }}>
@@ -73,13 +76,13 @@ export default async function ArtikelPage({ searchParams }: { searchParams: { pa
             {lastPage > 1 && (
               <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
                 {currentPage > 1 && (
-                  <Link href={`/artikel?page=${currentPage-1}`}
+                  <Link href={`/artikel?page=${currentPage-1}${search?`&q=${encodeURIComponent(search)}`:''}`}
                     style={{ padding:'8px 16px', background:'rgba(255,255,255,0.9)', border:`1px solid ${GREEN}30`, borderRadius:'10px', color:GREEN, fontWeight:600, fontSize:'13px', textDecoration:'none' }}>
                     ← Prev
                   </Link>
                 )}
                 {pages.map(p => (
-                  <Link key={p} href={`/artikel?page=${p}`}
+                  <Link key={p} href={`/artikel?page=${p}${search?`&q=${encodeURIComponent(search)}`:''}`}
                     style={{ width:'38px', height:'38px', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:'10px', fontSize:'13px', fontWeight:600, textDecoration:'none',
                       background: p===currentPage ? `linear-gradient(135deg, ${GREEN}, ${PINK})` : 'rgba(255,255,255,0.9)',
                       color: p===currentPage ? 'white' : '#374151',
@@ -89,7 +92,7 @@ export default async function ArtikelPage({ searchParams }: { searchParams: { pa
                   </Link>
                 ))}
                 {currentPage < lastPage && (
-                  <Link href={`/artikel?page=${currentPage+1}`}
+                  <Link href={`/artikel?page=${currentPage+1}${search?`&q=${encodeURIComponent(search)}`:''}`}
                     style={{ padding:'8px 16px', background:'rgba(255,255,255,0.9)', border:`1px solid ${GREEN}30`, borderRadius:'10px', color:GREEN, fontWeight:600, fontSize:'13px', textDecoration:'none' }}>
                     Next →
                   </Link>

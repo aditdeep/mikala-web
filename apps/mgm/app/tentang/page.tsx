@@ -2,13 +2,13 @@ import Link from 'next/link';
 import Navbar from '../(components)/Navbar';
 import Footer from '../(components)/Footer';
 
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 const WA = "https://wa.me/6281296998827";
 
 export default function TentangPage() {
   return (
-    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
+    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/tentang" />
 
       <div style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, padding:'clamp(40px,8vw,70px) 20px', textAlign:'center' }}>
@@ -37,7 +37,7 @@ export default function TentangPage() {
               ))}
             </div>
           </div>
-          <div style={{ borderRadius:'20px', overflow:'hidden', boxShadow:'0 16px 50px rgba(45,122,94,0.15)' }}>
+          <div style={{ borderRadius:'20px', overflow:'hidden', boxShadow:'0 16px 50px rgba(14,146,179,0.15)' }}>
             <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1782829518/about-us_perur5.jpg" alt="Tim Mikala" style={{ width:'100%', height:'clamp(250px,40vw,380px)', objectFit:'cover' }} />
           </div>
         </div>

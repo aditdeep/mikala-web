@@ -5,8 +5,8 @@ import Navbar from '../../(components)/Navbar';
 import Footer from '../../(components)/Footer';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
-const GREEN = '#2d7a5e';
-const PINK = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK = '#9c488b';
 const WA = "https://wa.me/6281296998827";
 
 function cleanContent(html: string): string {
@@ -25,7 +25,7 @@ function addDropCap(html: string): string {
   return html.replace(
     /(<p[^>]*>)\s*([a-zA-Z])/,
     (_match: string, tag: string, letter: string) =>
-      `${tag}<span style="float:left;font-size:3.8em;line-height:0.85;font-weight:900;color:#2d7a5e;margin:4px 10px 0 0;">${letter.toUpperCase()}</span>`
+      `${tag}<span style="float:left;font-size:3.8em;line-height:0.85;font-weight:900;color:#0e92b3;margin:4px 10px 0 0;">${letter.toUpperCase()}</span>`
   );
 }
 
@@ -84,7 +84,7 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
   const kontenHtml = addDropCap(cleanContent(artikel.konten || `<p>${artikel.excerpt || ''}</p>`));
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
+    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/artikel" />
 
       <div style={{ maxWidth:'820px', margin:'0 auto', padding:'clamp(24px,5vw,48px) 16px' }}>
@@ -150,7 +150,7 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(min(100%,260px), 1fr))', gap:'16px' }}>
               {related.map((a: any, i: number) => (
                 <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
-                  <div style={{ background:'#f0faf5', borderRadius:'16px', overflow:'hidden', border:`1px solid ${GREEN}10` }}>
+                  <div style={{ background:'#eef8fa', borderRadius:'16px', overflow:'hidden', border:`1px solid ${GREEN}10` }}>
                     {a.thumbnail && <img src={a.thumbnail} alt={a.judul} style={{ width:'100%', height:'150px', objectFit:'cover' }} />}
                     <div style={{ padding:'14px' }}>
                       <h4 style={{ fontSize:'14px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px', lineHeight:1.4 }}>{a.judul}</h4>

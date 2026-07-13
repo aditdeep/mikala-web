@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 };
 
 const API   = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
-const GREEN = '#2d7a5e';
-const PINK  = '#d63a7a';
+const GREEN = '#0e92b3';
+const PINK  = '#9c488b';
 const WA    = 'https://wa.me/6281296998827';
 
 async function getLayanan() {
@@ -94,7 +94,7 @@ export default async function LayananPage() {
   const data    = layanan.length > 0 ? layanan : defaultLayanan;
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f0faf5' }}>
+    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/layanan"/>
 
       {/* Hero */}
@@ -117,7 +117,7 @@ export default async function LayananPage() {
             <div key={i} style={{
               display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
               background:'white', borderRadius:'24px', overflow:'hidden',
-              boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:`1px solid rgba(45,122,94,0.08)`,
+              boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:`1px solid rgba(14,146,179,0.08)`,
             }}>
               {/* Gambar */}
               <div style={{ minHeight:'240px', overflow:'hidden', order: i%2===0 ? 0 : 1, position:'relative' }}>
