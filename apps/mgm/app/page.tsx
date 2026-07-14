@@ -152,19 +152,17 @@ export default async function HomePage() {
           {/* Desktop grid / Mobile horizontal scroll */}
           <div className="card-grid card-grid-mobile-scroll">
             {layananData.slice(0,6).map((l: any, i: number) => (
-              <div key={i} style={{ background:'rgba(255,255,255,0.8)', backdropFilter:'blur(20px)', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
-                <div style={{ height:'180px', overflow:'hidden', position:'relative' }}>
-                  {l.gambar ? (
-                    <img src={l.gambar} alt={l.nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                  ) : (
-                    <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'48px' }}>{l.icon||'🏥'}</div>
-                  )}
-                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.35), transparent)' }} />
-                </div>
-                <div style={{ padding:'18px', background:`linear-gradient(180deg, ${GREEN}18 0%, white 65%)` }}>
-                  <h3 style={{ fontSize:'16px', fontWeight:700, color:'#1a2e25', margin:'0 0 6px' }}>{l.nama}</h3>
-                  <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:'0 0 14px' }}>{l.deskripsi}</p>
-                  <a href={l.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:GREEN, fontSize:'13px', fontWeight:600, textDecoration:'none' }}>Konsultasi →</a>
+              <div key={i} style={{ position:'relative', height:'320px', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                {l.gambar ? (
+                  <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                ) : (
+                  <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'48px' }}>{l.icon||'🏥'}</div>
+                )}
+                <div style={{ position:'absolute', inset:0, background:`linear-gradient(to top, rgba(4,35,43,0.92) 0%, ${GREEN}66 45%, rgba(4,35,43,0.05) 85%)` }} />
+                <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'20px' }}>
+                  <h3 style={{ fontSize:'17px', fontWeight:800, color:'white', margin:'0 0 6px' }}>{l.nama}</h3>
+                  <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.85)', lineHeight:1.6, margin:'0 0 14px' }}>{l.deskripsi}</p>
+                  <a href={l.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'4px' }}>Konsultasi →</a>
                 </div>
               </div>
             ))}
@@ -190,21 +188,20 @@ export default async function HomePage() {
 
             <div className="card-grid card-grid-mobile-scroll">
               {penunjangData.slice(0,6).map((p: any, i: number) => (
-                <div key={p.id||i} style={{ background:'rgba(255,255,255,0.8)', backdropFilter:'blur(20px)', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
-                  <div style={{ height:'160px', overflow:'hidden', position:'relative' }}>
-                    {p.gambar ? (
-                      <img src={p.gambar} alt={p.nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                    ) : (
-                      <div style={{ width:'100%', height:'100%', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🩺</div>
-                    )}
-                    {p.tipe && (
-                      <span style={{ position:'absolute', top:'12px', left:'12px', background:'rgba(255,255,255,0.92)', color:GREEN, borderRadius:'20px', padding:'4px 12px', fontSize:'11px', fontWeight:700 }}>{p.tipe}</span>
-                    )}
-                  </div>
-                  <div style={{ padding:'18px', background:`linear-gradient(180deg, ${GREEN}18 0%, white 65%)` }}>
-                    <h3 style={{ fontSize:'16px', fontWeight:700, color:'#1a2e25', margin:'0 0 6px' }}>{p.nama}</h3>
-                    {p.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:'0 0 14px' }}>{p.deskripsi}</p>}
-                    <a href={p.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:GREEN, fontSize:'13px', fontWeight:600, textDecoration:'none' }}>Konsultasi →</a>
+                <div key={p.id||i} style={{ position:'relative', height:'300px', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                  {p.gambar ? (
+                    <img src={p.gambar} alt={p.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                  ) : (
+                    <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🩺</div>
+                  )}
+                  <div style={{ position:'absolute', inset:0, background:`linear-gradient(to top, rgba(4,35,43,0.92) 0%, ${GREEN}66 45%, rgba(4,35,43,0.05) 85%)` }} />
+                  {p.tipe && (
+                    <span style={{ position:'absolute', top:'12px', left:'12px', background:'rgba(255,255,255,0.92)', color:GREEN, borderRadius:'20px', padding:'4px 12px', fontSize:'11px', fontWeight:700 }}>{p.tipe}</span>
+                  )}
+                  <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'18px' }}>
+                    <h3 style={{ fontSize:'16px', fontWeight:800, color:'white', margin:'0 0 6px' }}>{p.nama}</h3>
+                    {p.deskripsi && <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.85)', lineHeight:1.6, margin:'0 0 14px' }}>{p.deskripsi}</p>}
+                    <a href={p.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none' }}>Konsultasi →</a>
                   </div>
                 </div>
               ))}
