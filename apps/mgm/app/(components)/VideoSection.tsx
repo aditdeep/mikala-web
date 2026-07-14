@@ -9,14 +9,18 @@ export default function VideoSection({ videoId, title }: { videoId: string; titl
   const thumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
   return (
-    <section style={{ position: 'relative', padding: '90px 0', overflow: 'hidden', background: `linear-gradient(180deg, #eef8fa 0%, #f2eef6 50%, #eef8fa 100%)` }}>
+    <section className="video-parallax-bg" style={{
+      position: 'relative', padding: '110px 0', overflow: 'hidden',
+      backgroundImage: `linear-gradient(180deg, rgba(4,35,43,0.82), rgba(61,28,55,0.82)), url(${thumb})`,
+      backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed',
+    }}>
       {/* decorative glass blobs */}
-      <div style={{ position: 'absolute', top: '-120px', left: '-100px', width: '380px', height: '380px', borderRadius: '50%', background: `radial-gradient(circle, ${GREEN}30, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-140px', right: '-100px', width: '420px', height: '420px', borderRadius: '50%', background: `radial-gradient(circle, ${PINK}30, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-120px', left: '-100px', width: '380px', height: '380px', borderRadius: '50%', background: `radial-gradient(circle, ${GREEN}40, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-140px', right: '-100px', width: '420px', height: '420px', borderRadius: '50%', background: `radial-gradient(circle, ${PINK}40, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
 
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', marginBottom: '40px', padding: '0 20px' }}>
-        <span style={{ display: 'inline-block', background: `linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color: GREEN, borderRadius: '30px', padding: '6px 18px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Video Profil</span>
-        <h2 style={{ fontSize: 'clamp(24px,4vw,38px)', fontWeight: 800, color: '#1a2e25', margin: 0 }}>{title}</h2>
+        <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '30px', padding: '6px 18px', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Video Profil</span>
+        <h2 style={{ fontSize: 'clamp(24px,4vw,38px)', fontWeight: 800, color: 'white', margin: 0, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>{title}</h2>
       </div>
 
       {/* full-width glass frame */}
@@ -69,6 +73,9 @@ export default function VideoSection({ videoId, title }: { videoId: string; titl
         @keyframes video-pulse {
           0%, 100% { box-shadow: 0 0 0 10px rgba(255,255,255,0.15), 0 12px 40px rgba(0,0,0,0.35); }
           50% { box-shadow: 0 0 0 18px rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.35); }
+        }
+        @media (max-width: 768px) {
+          .video-parallax-bg { background-attachment: scroll !important; }
         }
       `}</style>
     </section>

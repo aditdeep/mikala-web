@@ -7,7 +7,7 @@ const WA = "https://wa.me/6281296998827";
 
 export default function Footer() {
   return (
-    <footer style={{ background:'#0a1f14', color:'white', padding:'60px 20px 24px' }}>
+    <footer style={{ background:'linear-gradient(160deg, #06333f 0%, #04232b 100%)', color:'white', padding:'60px 20px 24px' }}>
       <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:'40px', marginBottom:'40px' }}>
           <div>

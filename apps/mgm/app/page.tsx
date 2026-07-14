@@ -161,7 +161,7 @@ export default async function HomePage() {
                   )}
                   <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.35), transparent)' }} />
                 </div>
-                <div style={{ padding:'18px' }}>
+                <div style={{ padding:'18px', background:`linear-gradient(180deg, ${GREEN}18 0%, white 65%)` }}>
                   <h3 style={{ fontSize:'16px', fontWeight:700, color:'#1a2e25', margin:'0 0 6px' }}>{l.nama}</h3>
                   <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:'0 0 14px' }}>{l.deskripsi}</p>
                   <a href={l.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:GREEN, fontSize:'13px', fontWeight:600, textDecoration:'none' }}>Konsultasi →</a>
@@ -201,7 +201,7 @@ export default async function HomePage() {
                       <span style={{ position:'absolute', top:'12px', left:'12px', background:'rgba(255,255,255,0.92)', color:GREEN, borderRadius:'20px', padding:'4px 12px', fontSize:'11px', fontWeight:700 }}>{p.tipe}</span>
                     )}
                   </div>
-                  <div style={{ padding:'18px' }}>
+                  <div style={{ padding:'18px', background:`linear-gradient(180deg, ${GREEN}18 0%, white 65%)` }}>
                     <h3 style={{ fontSize:'16px', fontWeight:700, color:'#1a2e25', margin:'0 0 6px' }}>{p.nama}</h3>
                     {p.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:'0 0 14px' }}>{p.deskripsi}</p>}
                     <a href={p.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:GREEN, fontSize:'13px', fontWeight:600, textDecoration:'none' }}>Konsultasi →</a>
@@ -216,7 +216,7 @@ export default async function HomePage() {
       {/* ═══ WHY US ═══ */}
       <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
         <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center' }} className="two-col">
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:`linear-gradient(135deg, ${PINK}0f, ${PINK}05)`, border:`1px solid ${PINK}18`, borderRadius:'32px', padding:'clamp(24px,4vw,48px)' }} className="two-col">
             <div>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'16px' }}>Mengapa Kami</span>
               <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
@@ -267,23 +267,27 @@ export default async function HomePage() {
       </section>
 
       {/* ═══ TESTIMONI ═══ */}
-      <section style={{ padding:'80px 20px', background:'#eef8fa' }} className="section-pad">
-        <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:'48px' }}>
-            <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Testimoni</span>
-            <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Kata Mereka tentang Kami</h2>
-          </div>
-          <div className="card-grid card-grid-mobile-scroll">
-            {testimoniData.slice(0,4).map((t: any, i: number) => (
-              <div key={i} style={{ background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'20px', padding:'24px', border:`1px solid ${GREEN}15`, boxShadow:'0 4px 15px rgba(0,0,0,0.05)' }}>
+      <section style={{ padding:'80px 0', background:'#eef8fa', overflow:'hidden' }} className="section-pad">
+        <div style={{ textAlign:'center', marginBottom:'48px', padding:'0 20px' }}>
+          <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Testimoni</span>
+          <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Kata Mereka tentang Kami</h2>
+        </div>
+        <div className="testi-marquee-track">
+          <div className="testi-marquee-content">
+            {[...testimoniData, ...testimoniData].map((t: any, i: number) => (
+              <div key={i} style={{ width:'300px', flex:'0 0 auto', background:`linear-gradient(180deg, ${GREEN}14 0%, rgba(255,255,255,0.92) 45%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding:'24px', border:`1px solid ${GREEN}15`, boxShadow:'0 4px 15px rgba(0,0,0,0.05)' }}>
                 <div style={{ display:'flex', gap:'3px', marginBottom:'14px' }}>
                   {[1,2,3,4,5].map(s => <span key={s} style={{ color:s<=(t.rating||5)?'#f59e0b':'#e5e7eb', fontSize:'16px' }}>★</span>)}
                 </div>
                 <p style={{ color:'#374151', lineHeight:1.7, fontSize:'14px', marginBottom:'18px', fontStyle:'italic' }}>"{t.komentar}"</p>
                 <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                  <div style={{ width:'38px', height:'38px', borderRadius:'50%', background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'15px', flexShrink:0 }}>
-                    {t.nama?.[0]?.toUpperCase()||'U'}
-                  </div>
+                  {t.foto ? (
+                    <img src={t.foto} alt={t.nama} style={{ width:'42px', height:'42px', borderRadius:'50%', objectFit:'cover', flexShrink:0, border:`2px solid ${GREEN}30` }} />
+                  ) : (
+                    <div style={{ width:'42px', height:'42px', borderRadius:'50%', background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'15px', flexShrink:0 }}>
+                      {t.nama?.[0]?.toUpperCase()||'U'}
+                    </div>
+                  )}
                   <div>
                     <div style={{ fontWeight:600, color:'#1a2e25', fontSize:'14px' }}>{t.nama}</div>
                     <div style={{ color:'#9ca3af', fontSize:'12px' }}>{t.layanan||'Pelanggan'}</div>
@@ -308,7 +312,7 @@ export default async function HomePage() {
           </div>
           <div className="card-grid card-grid-mobile-scroll">
             {alasanData.slice(0,6).map((al, i) => (
-              <div key={i} style={{ background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
+              <div key={i} style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
                 <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', margin:'0 auto 16px' }}>{al.icon||'✅'}</div>
                 <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px' }}>{al.judul}</h3>
                 {al.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:0 }}>{al.deskripsi}</p>}
@@ -435,6 +439,12 @@ export default async function HomePage() {
       </section>
 
       <Footer />
+
+      <style>{`
+        .testi-marquee-content { display:flex; gap:20px; width:max-content; animation: mgm-testi-marquee 38s linear infinite; }
+        .testi-marquee-track:hover .testi-marquee-content { animation-play-state: paused; }
+        @keyframes mgm-testi-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+      `}</style>
     </div>
   );
 }
