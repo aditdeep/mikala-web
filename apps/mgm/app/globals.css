@@ -60,6 +60,12 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
   .hide-desktop { display: flex !important; }
 }
 
+/* Elegant fixed diagonal gradient page background (MGM tone) */
+.mgm-page-bg { background-attachment: fixed; background-size: cover; }
+@media (max-width: 768px) {
+  .mgm-page-bg { background-attachment: scroll; }
+}
+
 /* Animations */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }

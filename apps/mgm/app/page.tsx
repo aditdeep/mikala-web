@@ -113,7 +113,7 @@ export default async function HomePage() {
   } catch { sertifikatImages = []; }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
+    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(135deg, #fbf0fa 0%, #f3edf8 30%, #eaf2f8 60%, #e6f6fb 100%)` }}>
       <Navbar active="/" />
 
       {/* ═══ HERO ═══ */}
@@ -135,13 +135,8 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Wave */}
-      <svg viewBox="0 0 1440 60" style={{ display:'block' }} preserveAspectRatio="none">
-        <path d="M0,30 Q360,60 720,30 Q1080,0 1440,30 L1440,60 L0,60 Z" fill="#eef8fa" />
-      </svg>
-
       {/* ═══ LAYANAN ═══ */}
-      <section style={{ padding:'80px 20px', background:'#eef8fa' }} className="section-pad">
+      <section style={{ padding:'96px 20px 80px', background:'transparent' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Layanan Kami</span>
@@ -178,7 +173,7 @@ export default async function HomePage() {
 
       {/* ═══ PENUNJANG KESEHATAN ═══ */}
       {penunjangData.length > 0 && (
-        <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
+        <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'48px' }}>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Penunjang Kesehatan</span>
@@ -211,9 +206,9 @@ export default async function HomePage() {
       )}
 
       {/* ═══ WHY US ═══ */}
-      <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
+      <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
         <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:`linear-gradient(135deg, ${PINK}0f, ${PINK}05)`, border:`1px solid ${PINK}18`, borderRadius:'32px', padding:'clamp(24px,4vw,48px)' }} className="two-col">
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:`linear-gradient(135deg, ${PINK}1c, ${PINK}08)`, backdropFilter:'blur(10px)', border:`1px solid ${PINK}22`, borderRadius:'32px', padding:'clamp(24px,4vw,48px)', boxShadow:`0 20px 50px ${PINK}12` }} className="two-col">
             <div>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'16px' }}>Mengapa Kami</span>
               <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
@@ -264,7 +259,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══ TESTIMONI ═══ */}
-      <section style={{ padding:'80px 0', background:'#eef8fa', overflow:'hidden' }} className="section-pad">
+      <section style={{ padding:'80px 0', background:'transparent', overflow:'hidden' }} className="section-pad">
         <div style={{ textAlign:'center', marginBottom:'48px', padding:'0 20px' }}>
           <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Testimoni</span>
           <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Kata Mereka tentang Kami</h2>
@@ -300,7 +295,7 @@ export default async function HomePage() {
       {videoId && <VideoSection videoId={videoId} title={videoTitle} />}
 
       {/* ═══ 6 ALASAN ═══ */}
-      <section style={{ padding:'80px 20px', background:'#eef8fa' }} className="section-pad">
+      <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Kenapa Pilih Kami</span>
@@ -321,7 +316,7 @@ export default async function HomePage() {
 
       {/* ═══ SERTIFIKAT ═══ */}
       {sertifikatImages.length > 0 && (
-        <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
+        <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'40px' }}>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Legalitas & Sertifikasi</span>
@@ -340,7 +335,7 @@ export default async function HomePage() {
 
       {/* ═══ ARTIKEL ═══ */}
       {artikel.length > 0 && (
-        <section style={{ padding:'80px 20px', background:'white' }} className="section-pad">
+        <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'32px', flexWrap:'wrap', gap:'16px' }}>
               <div>
@@ -353,7 +348,7 @@ export default async function HomePage() {
             </div>
 
             {/* ── DESKTOP: list kiri + featured besar kanan ── */}
-            <div className="artikel-split hide-mobile" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'32px', alignItems:'stretch', background:'rgba(240,250,245,0.6)', backdropFilter:'blur(10px)', borderRadius:'28px', border:'1px solid rgba(14,146,179,0.08)', padding:'24px', boxShadow:'0 4px 24px rgba(0,0,0,0.04)' }}>
+            <div className="artikel-split hide-mobile" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'32px', alignItems:'stretch', background:'rgba(255,255,255,0.55)', backdropFilter:'blur(14px)', borderRadius:'28px', border:'1px solid rgba(14,146,179,0.1)', padding:'24px', boxShadow:'0 4px 24px rgba(0,0,0,0.05)' }}>
               {/* List */}
               <div style={{ display:'flex', flexDirection:'column' }}>
                 {artikel.slice(1,4).map((a: any, i: number) => (
