@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { slugify } from '@/lib/slug';
 
 const BASE = 'https://mikalaglobalmedika.com';
 const API  = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
@@ -29,5 +30,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch {}
 
-  return [...staticPages, ...artikelPages];
+  // Dynamic layanan detail pages
+  let layananPages: MetadataRoute.Sitemap = [];
+  try {
+    const res  = await fetch(`${API}/cms/layanan`, { next: { revalidate: 3600 } });
+    const data = await res.json();
+    const items = data.data || [];
+    layananPages = items.map((l: any) => ({
+      url:             `${BASE}/layanan/${slugify(l.nama)}`,
+      lastModified:    new Date(l.updated_at || l.created_at || Date.now()),
+      changeFrequency: 'monthly' as const,
+      priority:        0.6,
+    }));
+  } catch {}
+
+  return [...staticPages, ...artikelPages, ...layananPages];
 }

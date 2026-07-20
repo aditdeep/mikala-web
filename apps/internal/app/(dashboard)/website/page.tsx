@@ -35,7 +35,8 @@ export default function WebsitePage() {
 
   // Forms
   const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
-  const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
+  const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+  const [layananManfaat, setLayananManfaat] = useState<string[]>([]);
   const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
@@ -48,6 +49,7 @@ export default function WebsitePage() {
   const [prshLegalitasImages, setPrshLegalitasImages] = useState<string[]>([]);
   const [prshChecklist, setPrshChecklist] = useState<string[]>([]);
   const [prshMgaImages, setPrshMgaImages] = useState<string[]>([]);
+  const [layananHeroImages, setLayananHeroImages] = useState<string[]>([]);
 
   useEffect(() => { fetchData(); }, [activeTab, artikelPage]);
 
@@ -96,6 +98,7 @@ export default function WebsitePage() {
         setPrshLegalitasImages(parseArr(s.prsh_legalitas_images));
         setPrshChecklist(parseArr(s.prsh_checklist_list));
         setPrshMgaImages(parseArr(s.prsh_mga_images));
+        setLayananHeroImages(parseArr(s.layanan_hero_images));
       }
     } catch {}
     setLoading(false);
@@ -134,14 +137,20 @@ export default function WebsitePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      if (editItem) await apiClient.patch('/internal/cms/layanan/'+editItem.id, formLayanan);
-      else await apiClient.post('/internal/cms/layanan', formLayanan);
+      const payload = { ...formLayanan, manfaat: JSON.stringify(layananManfaat) };
+      if (editItem) await apiClient.patch('/internal/cms/layanan/'+editItem.id, payload);
+      else await apiClient.post('/internal/cms/layanan', payload);
       setShowForm(false); setEditItem(null);
-      setFormLayanan({ nama:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
+      setFormLayanan({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+      setLayananManfaat([]);
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
     setSaving(false);
   };
+
+  const addLayananManfaat = () => setLayananManfaat(p => [...p, '']);
+  const removeLayananManfaat = (i: number) => setLayananManfaat(p => p.filter((_, idx) => idx !== i));
+  const updateLayananManfaat = (i: number, val: string) => setLayananManfaat(p => p.map((s, idx) => idx === i ? val : s));
 
   const handleSavePenunjang = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,6 +192,7 @@ export default function WebsitePage() {
         prsh_legalitas_images: JSON.stringify(prshLegalitasImages),
         prsh_checklist_list: JSON.stringify(prshChecklist),
         prsh_mga_images: JSON.stringify(prshMgaImages),
+        layanan_hero_images: JSON.stringify(layananHeroImages),
       };
       await apiClient.post('/internal/cms/settings', payload);
       alert('Settings tersimpan!');
@@ -243,6 +253,10 @@ export default function WebsitePage() {
   const removePrshMgaImage = (i: number) => setPrshMgaImages(p => p.filter((_, idx) => idx !== i));
   const updatePrshMgaImage = (i: number, url: string) => setPrshMgaImages(p => p.map((s, idx) => idx === i ? url : s));
 
+  const addLayananHeroImage = () => setLayananHeroImages(p => [...p, '']);
+  const removeLayananHeroImage = (i: number) => setLayananHeroImages(p => p.filter((_, idx) => idx !== i));
+  const updateLayananHeroImage = (i: number, url: string) => setLayananHeroImages(p => p.map((s, idx) => idx === i ? url : s));
+
   const handleDelete = async (type: string, id: number) => {
     if (!confirm('Hapus item ini?')) return;
     try {
@@ -273,7 +287,7 @@ export default function WebsitePage() {
             <Eye size={14}/>Preview Website
           </a>
           {['artikel','layanan','penunjang','galeri'].includes(activeTab) && (
-            <button onClick={() => { setShowForm(true); setEditItem(null); }}
+            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); } }}
               style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
               <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : activeTab === 'penunjang' ? 'Penunjang' : 'Foto'}
             </button>
@@ -399,7 +413,7 @@ export default function WebsitePage() {
                     </td>
                     <td style={{ padding:'10px 16px' }}>
                       <div style={{ display:'flex', gap:'6px' }}>
-                        <button onClick={() => { setEditItem(l); setFormLayanan({nama:l.nama,deskripsi:l.deskripsi||'',gambar:l.gambar||'',wa_link:l.wa_link||'',urutan:String(l.urutan||1),is_active:l.is_active}); setShowForm(true); }}
+                        <button onClick={() => { setEditItem(l); setFormLayanan({nama:l.nama,deskripsi:l.deskripsi||'',deskripsi_panjang:l.deskripsi_panjang||'',gambar:l.gambar||'',icon:l.icon||'',wa_link:l.wa_link||'',urutan:String(l.urutan||1),is_active:l.is_active,meta_title:l.meta_title||'',meta_description:l.meta_description||''}); setLayananManfaat((() => { try { const p = typeof l.manfaat==='string'?JSON.parse(l.manfaat):l.manfaat; return Array.isArray(p)?p:[]; } catch { return []; } })()); setShowForm(true); }}
                           style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Edit2 size={12}/>
                         </button>
@@ -695,6 +709,28 @@ export default function WebsitePage() {
             </div>
           </div>
 
+          {/* Hero Halaman Layanan */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+              <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700 }}>Hero Halaman Layanan ({layananHeroImages.length})</label>
+              <button type="button" onClick={addLayananHeroImage} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah Foto</button>
+            </div>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
+              {layananHeroImages.map((img, i) => (
+                <div key={i} style={{ position:'relative' }}>
+                  <label style={{ width:'100px', height:'70px', borderRadius:'8px', overflow:'hidden', background:'var(--bg)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                    {img ? <img src={img} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <Upload size={16} color="var(--text2)" />}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updateLayananHeroImage(i, url)); }} />
+                  </label>
+                  <button type="button" onClick={() => removeLayananHeroImage(i)} style={{ position:'absolute', top:'-6px', right:'-6px', background:'#dc2626', border:'none', borderRadius:'50%', width:'20px', height:'20px', cursor:'pointer', color:'white', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={12} /></button>
+                </div>
+              ))}
+              {layananHeroImages.length === 0 && (
+                <p style={{ color:'var(--text2)', fontSize:'12px', margin:0 }}>Belum ada foto. Kalau kosong, otomatis pakai foto layanan pertama.</p>
+              )}
+            </div>
+          </div>
+
           <button type="submit" disabled={saving} style={{ padding:'12px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'14px', cursor:'pointer', width:'fit-content', minWidth:'150px' }}>
             {saving ? 'Menyimpan...' : '💾 Simpan Settings'}
           </button>
@@ -943,7 +979,9 @@ export default function WebsitePage() {
             </div>
             <form onSubmit={handleSaveLayanan} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Layanan *</label><input required value={formLayanan.nama} onChange={e => setFormLayanan(p => ({...p,nama:e.target.value}))} style={inp} /></div>
-              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi</label><textarea value={formLayanan.deskripsi} onChange={e => setFormLayanan(p => ({...p,deskripsi:e.target.value}))} style={{...inp, minHeight:'80px', resize:'vertical'}} /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Icon (emoji)</label><input value={formLayanan.icon} onChange={e => setFormLayanan(p => ({...p,icon:e.target.value}))} style={inp} placeholder="🏥" /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi Singkat (tampil di list & card)</label><textarea value={formLayanan.deskripsi} onChange={e => setFormLayanan(p => ({...p,deskripsi:e.target.value}))} style={{...inp, minHeight:'70px', resize:'vertical'}} /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi Lengkap (halaman detail, pisahkan paragraf dengan baris baru)</label><textarea value={formLayanan.deskripsi_panjang} onChange={e => setFormLayanan(p => ({...p,deskripsi_panjang:e.target.value}))} style={{...inp, minHeight:'110px', resize:'vertical'}} /></div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Gambar URL</label>
                 <div style={{ display:'flex', gap:'8px' }}>
@@ -954,6 +992,25 @@ export default function WebsitePage() {
                   </label>
                 </div>
               </div>
+
+              {/* Manfaat */}
+              <div>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'8px' }}>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Manfaat Layanan ({layananManfaat.length})</label>
+                  <button type="button" onClick={addLayananManfaat} style={{ display:'flex', alignItems:'center', gap:'4px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'4px 10px', color:'var(--text)', fontSize:'11px', fontWeight:600, cursor:'pointer' }}><Plus size={12}/> Tambah</button>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                  {layananManfaat.map((m, i) => (
+                    <div key={i} style={{ display:'flex', gap:'6px' }}>
+                      <input value={m} onChange={e => updateLayananManfaat(i, e.target.value)} style={inp} placeholder={`Manfaat ${i+1}`} />
+                      <button type="button" onClick={() => removeLayananManfaat(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'32px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={13}/></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Link WhatsApp (kosongkan utk default)</label><input value={formLayanan.wa_link} onChange={e => setFormLayanan(p => ({...p,wa_link:e.target.value}))} style={inp} placeholder="https://wa.me/62..." /></div>
+
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Urutan</label><input type="number" value={formLayanan.urutan} onChange={e => setFormLayanan(p => ({...p,urutan:e.target.value}))} style={inp} /></div>
                 <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Status</label>
@@ -962,6 +1019,13 @@ export default function WebsitePage() {
                   </select>
                 </div>
               </div>
+
+              <div style={{ ...cardStyle, padding:'12px' }}>
+                <label style={{ color:'var(--text)', fontSize:'12px', fontWeight:700, display:'block', marginBottom:'8px' }}>SEO (opsional)</label>
+                <div style={{ marginBottom:'8px' }}><input value={formLayanan.meta_title} onChange={e => setFormLayanan(p => ({...p,meta_title:e.target.value}))} style={inp} placeholder="Meta title" /></div>
+                <input value={formLayanan.meta_description} onChange={e => setFormLayanan(p => ({...p,meta_description:e.target.value}))} style={inp} placeholder="Meta description" />
+              </div>
+
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => { setShowForm(false); setEditItem(null); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={saving} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
