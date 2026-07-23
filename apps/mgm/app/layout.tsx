@@ -43,16 +43,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {/* Qontak Webchat Widget */}
         <Script id="qontak-chat" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
-          var qchatInit = document.createElement('script');
-          qchatInit.src = "https://webchat.qontak.com/qchatInitialize.js";
-          var qchatWidget = document.createElement('script');
-          qchatWidget.src = "https://webchat.qontak.com/js/app.js";
-          document.head.prepend(qchatInit);
-          document.head.prepend(qchatWidget);
-          qchatInit.onload = function() { qchatInitialize({
-            id: "c5c85b2a-ec7a-4b01-92cc-ba866b327798",
-            code: "H0ieCJZfnBKbKQ1tHG-84w"
-          })};
+          if (!window.__qontakChatLoaded) {
+            window.__qontakChatLoaded = true;
+            var qchatInit = document.createElement('script');
+            qchatInit.src = "https://webchat.qontak.com/qchatInitialize.js";
+            var qchatWidget = document.createElement('script');
+            qchatWidget.src = "https://webchat.qontak.com/js/app.js";
+            document.head.prepend(qchatInit);
+            document.head.prepend(qchatWidget);
+            qchatInit.onload = function() { qchatInitialize({
+              id: "c5c85b2a-ec7a-4b01-92cc-ba866b327798",
+              code: "H0ieCJZfnBKbKQ1tHG-84w"
+            })};
+          }
         `}} />
       </body>
     </html>
