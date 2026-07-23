@@ -29,7 +29,7 @@ export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: 
   }, [n]);
 
   return (
-    <section style={{ position: 'relative', minHeight: '100svh', overflow: 'hidden', background: `linear-gradient(135deg, #04232b 0%, #0a5568 35%, #0e92b3 65%, #9c488b 100%)` }}>
+    <section className="hero-slider-section" style={{ position: 'relative', overflow: 'hidden', background: `linear-gradient(135deg, #04232b 0%, #0a5568 35%, #0e92b3 65%, #9c488b 100%)` }}>
       {list.map((s, i) => (
         <div key={i} style={{
           position: 'absolute', inset: 0, opacity: i === idx ? 1 : 0,
@@ -69,6 +69,8 @@ export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: 
         .hero-arrow:hover { background: rgba(255,255,255,0.3); }
         @media (max-width: 768px) { .hero-arrow {
  display: none; } }
+        .hero-slider-section { min-height: clamp(380px, 62vh, 620px); }
+        @media (max-width: 768px) { .hero-slider-section { min-height: clamp(300px, 48vh, 420px); } }
       `}</style>
     </section>
   );

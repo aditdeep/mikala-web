@@ -113,7 +113,7 @@ export default async function HomePage() {
   } catch { sertifikatImages = []; }
 
   return (
-    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(135deg, #fbf0fa 0%, #f3edf8 30%, #eaf2f8 60%, #e6f6fb 100%)` }}>
+    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(135deg, #041e26 0%, #0e6a85 30%, #4a3d75 55%, #7a3574 78%, ${PINK} 100%)` }}>
       <Navbar active="/" />
 
       {/* ═══ HERO ═══ */}
@@ -140,8 +140,8 @@ export default async function HomePage() {
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Layanan Kami</span>
-            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>Langkah Tepat Mengawal Kesehatan</h2>
-            <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Tim profesional berpengalaman siap memberikan perawatan terbaik</p>
+            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'white', margin:'0 0 12px' }}>Langkah Tepat Mengawal Kesehatan</h2>
+            <p style={{ color:'rgba(255,255,255,0.78)', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Tim profesional berpengalaman siap memberikan perawatan terbaik</p>
           </div>
 
           {/* Desktop grid / Mobile horizontal scroll */}
@@ -177,8 +177,8 @@ export default async function HomePage() {
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'48px' }}>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Penunjang Kesehatan</span>
-              <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>Fasilitas Penunjang Siap Membantu</h2>
-              <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Sarana dan prasarana pendukung layanan kesehatan Anda</p>
+              <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'white', margin:'0 0 12px' }}>Fasilitas Penunjang Siap Membantu</h2>
+              <p style={{ color:'rgba(255,255,255,0.78)', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Sarana dan prasarana pendukung layanan kesehatan Anda</p>
             </div>
 
             <div className="card-grid card-grid-mobile-scroll">
@@ -208,11 +208,11 @@ export default async function HomePage() {
       {/* ═══ WHY US ═══ */}
       <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
         <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:`linear-gradient(135deg, ${PINK}1c, ${PINK}08)`, backdropFilter:'blur(10px)', border:`1px solid ${PINK}22`, borderRadius:'32px', padding:'clamp(24px,4vw,48px)', boxShadow:`0 20px 50px ${PINK}12` }} className="two-col">
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))', backdropFilter:'blur(16px)', border:'1px solid rgba(255,255,255,0.18)', borderRadius:'32px', padding:'clamp(24px,4vw,48px)', boxShadow:'0 20px 50px rgba(0,0,0,0.25)' }} className="two-col">
             <div>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'16px' }}>Mengapa Kami</span>
-              <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
-              <p style={{ color:'#6b7280', fontSize:'16px', lineHeight:1.8, marginBottom:'28px' }}>
+              <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'white', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
+              <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'16px', lineHeight:1.8, marginBottom:'28px' }}>
                 {profileText}
               </p>
               {[
@@ -221,16 +221,16 @@ export default async function HomePage() {
                 { icon:'❤️', t:'Pelayanan Ramah 24/7', d:'Standby admin 24 jam untuk kebutuhan Anda' },
               ].map(f => (
                 <div key={f.t} style={{ display:'flex', gap:'14px', marginBottom:'18px', alignItems:'flex-start' }}>
-                  <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', flexShrink:0 }}>{f.icon}</div>
+                  <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:'rgba(255,255,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', flexShrink:0 }}>{f.icon}</div>
                   <div>
-                    <h4 style={{ fontWeight:700, color:'#1a2e25', margin:'0 0 3px', fontSize:'15px' }}>{f.t}</h4>
-                    <p style={{ color:'#6b7280', fontSize:'13px', margin:0 }}>{f.d}</p>
+                    <h4 style={{ fontWeight:700, color:'white', margin:'0 0 3px', fontSize:'15px' }}>{f.t}</h4>
+                    <p style={{ color:'rgba(255,255,255,0.75)', fontSize:'13px', margin:0 }}>{f.d}</p>
                   </div>
                 </div>
               ))}
               <div style={{ display:'flex', gap:'12px', marginTop:'28px', flexWrap:'wrap' }}>
-                <a href={WA} target="_blank" rel="noreferrer" style={{ background:`linear-gradient(135deg, ${GREEN}, #3a9e78)`, color:'white', padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none' }}>Buat Janji</a>
-                <Link href="/layanan" style={{ background:'white', color:GREEN, padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none', border:`2px solid ${GREEN}` }}>Cek Layanan</Link>
+                <a href={WA} target="_blank" rel="noreferrer" style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none' }}>Buat Janji</a>
+                <Link href="/layanan" style={{ background:'white', color:GREEN, padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none', border:`2px solid white` }}>Cek Layanan</Link>
               </div>
             </div>
             <div style={{ position:'relative' }}>
@@ -262,7 +262,7 @@ export default async function HomePage() {
       <section style={{ padding:'80px 0', background:'transparent', overflow:'hidden' }} className="section-pad">
         <div style={{ textAlign:'center', marginBottom:'48px', padding:'0 20px' }}>
           <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Testimoni</span>
-          <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Kata Mereka tentang Kami</h2>
+          <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'white', margin:0 }}>Kata Mereka tentang Kami</h2>
         </div>
         <div className="testi-marquee-track">
           <div className="testi-marquee-content">
@@ -299,8 +299,8 @@ export default async function HomePage() {
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Kenapa Pilih Kami</span>
-            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>6 Alasan Memilih Mikala</h2>
-            <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
+            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'white', margin:'0 0 12px' }}>6 Alasan Memilih Mikala</h2>
+            <p style={{ color:'rgba(255,255,255,0.78)', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
           </div>
           <div className="card-grid card-grid-mobile-scroll">
             {alasanData.slice(0,6).map((al, i) => (
@@ -320,7 +320,7 @@ export default async function HomePage() {
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'40px' }}>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Legalitas & Sertifikasi</span>
-              <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Sertifikat & Izin Resmi Kami</h2>
+              <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'white', margin:0 }}>Sertifikat & Izin Resmi Kami</h2>
             </div>
             <div style={{ display:'flex', gap:'20px', overflowX:'auto', paddingBottom:'12px', scrollSnapType:'x mandatory' }}>
               {sertifikatImages.map((img, i) => (
@@ -340,7 +340,7 @@ export default async function HomePage() {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'32px', flexWrap:'wrap', gap:'16px' }}>
               <div>
                 <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'10px' }}>Artikel Terbaru</span>
-                <h2 style={{ fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Tips & Info Kesehatan</h2>
+                <h2 style={{ fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'white', margin:0 }}>Tips & Info Kesehatan</h2>
               </div>
               <Link href="/artikel" style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'10px 22px', borderRadius:'20px', fontSize:'13px', fontWeight:600, textDecoration:'none' }}>
                 Lihat Semua →
@@ -348,7 +348,7 @@ export default async function HomePage() {
             </div>
 
             {/* ── DESKTOP: list kiri + featured besar kanan ── */}
-            <div className="artikel-split hide-mobile" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'32px', alignItems:'stretch', background:'rgba(255,255,255,0.55)', backdropFilter:'blur(14px)', borderRadius:'28px', border:'1px solid rgba(14,146,179,0.1)', padding:'24px', boxShadow:'0 4px 24px rgba(0,0,0,0.05)' }}>
+            <div className="artikel-split hide-mobile" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'32px', alignItems:'stretch', background:'rgba(255,255,255,0.9)', backdropFilter:'blur(14px)', borderRadius:'28px', border:'1px solid rgba(14,146,179,0.1)', padding:'24px', boxShadow:'0 8px 30px rgba(0,0,0,0.2)' }}>
               {/* List */}
               <div style={{ display:'flex', flexDirection:'column' }}>
                 {artikel.slice(1,4).map((a: any, i: number) => (
@@ -386,7 +386,7 @@ export default async function HomePage() {
             </div>
 
             {/* ── MOBILE: list dengan thumbnail kiri ── */}
-            <div className="hide-desktop" style={{ flexDirection:'column', gap:'0' }}>
+            <div className="hide-desktop" style={{ flexDirection:'column', gap:'0', background:'rgba(255,255,255,0.9)', backdropFilter:'blur(14px)', borderRadius:'20px', padding:'8px 16px', boxShadow:'0 8px 30px rgba(0,0,0,0.2)' }}>
               {artikel.slice(0,4).map((a: any, i: number) => (
                 <Link key={i} href={`/artikel/${a.slug}`} style={{ textDecoration:'none' }}>
                   <div style={{ display:'flex', gap:'14px', alignItems:'center', padding:'14px 4px', borderBottom: i < Math.min(artikel.length,4)-1 ? '1px solid rgba(14,146,179,0.12)' : 'none' }}>
@@ -409,7 +409,7 @@ export default async function HomePage() {
       )}
 
       {/* ═══ CTA ═══ */}
-      <section style={{ padding:'80px 20px', background:`linear-gradient(135deg, ${GREEN} 0%, #1a5c3a 50%, ${PINK} 100%)`, position:'relative', overflow:'hidden', textAlign:'center' }} className="section-pad">
+      <section style={{ padding:'80px 20px', background:`linear-gradient(135deg, ${GREEN} 0%, #3a3a6b 50%, ${PINK} 100%)`, position:'relative', overflow:'hidden', textAlign:'center' }} className="section-pad">
         <div style={{ position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none' }}>
           <div style={{ position:'absolute', top:'-30%', right:'-10%', width:'400px', height:'400px', borderRadius:'50%', background:'rgba(255,255,255,0.05)', filter:'blur(40px)' }} />
         </div>

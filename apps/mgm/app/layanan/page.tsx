@@ -124,7 +124,7 @@ export default async function LayananPage() {
   const alasanData = alasanList.length > 0 ? alasanList : defaultAlasan;
 
   return (
-    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(135deg, #fbf0fa 0%, #f3edf8 30%, #eaf2f8 60%, #e6f6fb 100%)` }}>
+    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(135deg, #041e26 0%, #0e6a85 30%, #4a3d75 55%, #7a3574 78%, ${PINK} 100%)` }}>
       <Navbar active="/layanan"/>
 
       {/* ═══ HERO ═══ */}
@@ -146,7 +146,7 @@ export default async function LayananPage() {
       {/* ═══ 6 ALASAN (strip ringkas) ═══ */}
       <section style={{ padding:'40px 20px', background:'transparent' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
-          <h2 style={{ textAlign:'center', fontSize:'clamp(16px,2.4vw,20px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px' }}>6 Alasan Memilih Layanan Kami</h2>
+          <h2 style={{ textAlign:'center', fontSize:'clamp(16px,2.4vw,20px)', fontWeight:800, color:'white', margin:'0 0 20px' }}>6 Alasan Memilih Layanan Kami</h2>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:'12px' }}>
             {alasanData.slice(0,6).map((al, i) => (
               <div key={i} style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, borderRadius:'16px', padding:'16px 14px', textAlign:'center', boxShadow:`0 8px 20px ${GREEN}25` }}>
@@ -161,7 +161,7 @@ export default async function LayananPage() {
       {/* ═══ APA YANG ANDA BUTUHKAN ═══ */}
       <section style={{ padding:'20px 20px 80px' }} className="section-pad">
         <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
-          <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3.2vw,30px)', fontWeight:800, color:'#1a2e25', margin:'0 0 36px' }}>Apa yang Anda Butuhkan?</h2>
+          <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3.2vw,30px)', fontWeight:800, color:'white', margin:'0 0 36px' }}>Apa yang Anda Butuhkan?</h2>
 
           <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
             {data.map((l: any, i: number) => {

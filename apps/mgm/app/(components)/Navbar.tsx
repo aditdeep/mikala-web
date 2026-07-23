@@ -50,18 +50,18 @@ export default function Navbar({ active = '' }: { active?: string }) {
   return (
     <>
       <nav style={{ position:'sticky', top:0, zIndex:100, background:'rgba(255,255,255,0.72)', backdropFilter:'blur(18px) saturate(180%)', WebkitBackdropFilter:'blur(18px) saturate(180%)', borderBottom:'1px solid rgba(14,146,179,0.12)', boxShadow:'0 2px 20px rgba(14,146,179,0.06)' }}>
-        <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'0 16px', display:'flex', alignItems:'center', gap:'14px', height:'65px' }}>
-          <Link href="/" style={{ flexShrink:0 }}><img src={LOGO} alt="Mikala" style={{ height:'34px', objectFit:'contain' }} /></Link>
+        <div style={{ maxWidth:'1440px', margin:'0 auto', padding:'0 32px', display:'flex', alignItems:'center', gap:'20px', height:'86px' }} className="mgm-nav-inner">
+          <Link href="/" style={{ flexShrink:0 }}><img src={LOGO} alt="Mikala" style={{ height:'44px', objectFit:'contain' }} /></Link>
 
           {/* Search bar - selalu tampil */}
-          <form onSubmit={doSearch} style={{ flex:1, maxWidth:'380px', display:'flex' }} className="mgm-search-form">
-            <div style={{ display:'flex', alignItems:'center', gap:'8px', width:'100%', background:'rgba(14,146,179,0.06)', border:'1px solid rgba(14,146,179,0.15)', borderRadius:'20px', padding:'8px 14px' }}>
-              <SearchIcon color={GREEN} size={15} />
+          <form onSubmit={doSearch} style={{ flex:1, maxWidth:'420px', display:'flex' }} className="mgm-search-form">
+            <div style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', background:'rgba(14,146,179,0.06)', border:'1px solid rgba(14,146,179,0.15)', borderRadius:'22px', padding:'11px 16px' }}>
+              <SearchIcon color={GREEN} size={16} />
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Apa yang Anda cari?"
-                style={{ border:'none', outline:'none', background:'transparent', fontSize:'13px', color:'#1a2e25', width:'100%' }}
+                style={{ border:'none', outline:'none', background:'transparent', fontSize:'14px', color:'#1a2e25', width:'100%' }}
               />
             </div>
           </form>
@@ -69,24 +69,24 @@ export default function Navbar({ active = '' }: { active?: string }) {
           <div style={{ flex:1 }} className="mgm-spacer" />
 
           {/* Desktop nav links */}
-          <div style={{ display:'flex', alignItems:'center', gap:'20px' }} className="mgm-desktop-nav">
+          <div style={{ display:'flex', alignItems:'center', gap:'30px' }} className="mgm-desktop-nav">
             {NAV_LINKS.map(n => (
-              <Link key={n.href} href={n.href} style={{ color: active===n.href?GREEN:'#374151', fontSize:'14px', fontWeight: active===n.href?700:500, textDecoration:'none', borderBottom: active===n.href?`2px solid ${GREEN}`:'2px solid transparent', paddingBottom:'2px', transition:'all 0.2s', whiteSpace:'nowrap' }}>{n.l}</Link>
+              <Link key={n.href} href={n.href} style={{ color: active===n.href?GREEN:'#374151', fontSize:'15.5px', fontWeight: active===n.href?700:600, textDecoration:'none', borderBottom: active===n.href?`2px solid ${GREEN}`:'2px solid transparent', paddingBottom:'3px', transition:'all 0.2s', whiteSpace:'nowrap' }}>{n.l}</Link>
             ))}
           </div>
 
           <TranslateButton />
 
           <a href={WA} target="_blank" rel="noreferrer" aria-label="WhatsApp"
-            style={{ flexShrink:0, width:'38px', height:'38px', borderRadius:'50%', background:'linear-gradient(135deg,#25d366,#1fb655)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 12px rgba(37,211,102,0.35)' }} className="hide-mobile">
-            <WaIcon />
+            style={{ flexShrink:0, width:'44px', height:'44px', borderRadius:'50%', background:'linear-gradient(135deg,#25d366,#1fb655)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 12px rgba(37,211,102,0.35)' }} className="hide-mobile">
+            <WaIcon size={20} />
           </a>
 
           {/* Hamburger - selalu tampil, buka panel gradient */}
-          <button onClick={() => setOpen(true)} aria-label="Menu" style={{ flexShrink:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, border:'none', borderRadius:'12px', cursor:'pointer', width:'40px', height:'40px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'4px', boxShadow:`0 4px 14px rgba(14,146,179,0.35)` }}>
-            <span style={{ display:'block', width:'18px', height:'2px', background:'white', borderRadius:'2px' }} />
-            <span style={{ display:'block', width:'18px', height:'2px', background:'white', borderRadius:'2px' }} />
-            <span style={{ display:'block', width:'18px', height:'2px', background:'white', borderRadius:'2px' }} />
+          <button onClick={() => setOpen(true)} aria-label="Menu" style={{ flexShrink:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, border:'none', borderRadius:'13px', cursor:'pointer', width:'46px', height:'46px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'5px', boxShadow:`0 4px 14px rgba(14,146,179,0.35)` }}>
+            <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
+            <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
+            <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
           </button>
         </div>
       </nav>
@@ -164,6 +164,8 @@ export default function Navbar({ active = '' }: { active?: string }) {
         @media (max-width: 900px) {
           .mgm-desktop-nav { display: none !important; }
           .mgm-spacer { display: none !important; }
+          .mgm-nav-inner { height: 68px !important; padding: 0 16px !important; }
+          .mgm-nav-inner img { height: 34px !important; }
         }
         @media (max-width: 480px) {
           .mgm-search-form { max-width: 150px !important; }
