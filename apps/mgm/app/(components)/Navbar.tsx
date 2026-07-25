@@ -88,19 +88,22 @@ export default function Navbar({ active = '', overlay = false }: { active?: stri
             </div>
           </form>
 
-          <TranslateButton scrolled={glass} />
+          {/* Grup kanan: selalu nempel ke tepi kanan, meski search disembunyikan di mobile */}
+          <div style={{ display:'flex', alignItems:'center', gap:'14px', marginLeft:'auto', flexShrink:0 }} className="mgm-nav-actions">
+            <TranslateButton scrolled={glass} />
 
-          <a href={WA} target="_blank" rel="noreferrer" aria-label="WhatsApp"
-            style={{ flexShrink:0, width:'44px', height:'44px', borderRadius:'50%', background:'linear-gradient(135deg,#25d366,#1fb655)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 12px rgba(37,211,102,0.35)' }} className="hide-mobile">
-            <WaIcon size={20} />
-          </a>
+            <a href={WA} target="_blank" rel="noreferrer" aria-label="WhatsApp"
+              style={{ flexShrink:0, width:'44px', height:'44px', borderRadius:'50%', background:'linear-gradient(135deg,#25d366,#1fb655)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 12px rgba(37,211,102,0.35)' }} className="hide-mobile">
+              <WaIcon size={20} />
+            </a>
 
-          {/* Hamburger - selalu tampil, buka panel gradient */}
-          <button onClick={() => setOpen(true)} aria-label="Menu" style={{ flexShrink:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, border:'none', borderRadius:'13px', cursor:'pointer', width:'46px', height:'46px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'5px', boxShadow:`0 4px 14px rgba(14,146,179,0.35)` }}>
-            <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
-            <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
-            <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
-          </button>
+            {/* Hamburger - selalu tampil, buka panel gradient */}
+            <button onClick={() => setOpen(true)} aria-label="Menu" style={{ flexShrink:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, border:'none', borderRadius:'13px', cursor:'pointer', width:'46px', height:'46px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'5px', boxShadow:`0 4px 14px rgba(14,146,179,0.35)` }}>
+              <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
+              <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
+              <span style={{ display:'block', width:'20px', height:'2px', background:'white', borderRadius:'2px' }} />
+            </button>
+          </div>
         </div>
       </nav>
       {!overlay && <div className="mgm-nav-spacer" />}
