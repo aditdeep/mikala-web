@@ -176,6 +176,7 @@ export default function WebsitePage() {
 
   const handleSaveGaleri = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formGaleri.kategori) { alert('Pilih Kategori terlebih dahulu.'); return; }
     setSaving(true);
     try {
       await apiClient.post('/internal/cms/galeri', formGaleri);
@@ -297,7 +298,7 @@ export default function WebsitePage() {
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>Kelola konten website mikalaglobalmedika.com</p>
         </div>
         <div style={{ display:'flex', gap:'8px' }}>
-          <a href="https://mikala-web-mgm.vercel.app" target="_blank" rel="noreferrer"
+          <a href="https://mikalaglobalmedika.com" target="_blank" rel="noreferrer"
             style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontSize:'13px', textDecoration:'none' }}>
             <Eye size={14}/>Preview Website
           </a>
@@ -354,7 +355,7 @@ export default function WebsitePage() {
                     </td>
                     <td style={{ padding:'10px 16px' }}>
                       <div style={{ display:'flex', gap:'6px' }}>
-                        <a href={`https://mikala-web-mgm.vercel.app/artikel/${a.slug}`} target="_blank" rel="noreferrer"
+                        <a href={`https://mikalaglobalmedika.com/artikel/${a.slug}`} target="_blank" rel="noreferrer"
                           style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', textDecoration:'none' }}>
                           <Eye size={12}/>
                         </a>
@@ -709,11 +710,12 @@ export default function WebsitePage() {
           {/* Sertifikat */}
           <div style={{ ...cardStyle, padding:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
-              <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700 }}>Sertifikat & Izin Resmi ({sertifikatImages.length})</label>
+              <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700 }}>Sertifikat & Izin Resmi — Halaman Home ({sertifikatImages.length})</label>
               <button type="button" onClick={addSertifikatImage} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                 <Plus size={14} /> Tambah Sertifikat
               </button>
             </div>
+            <p style={{ color:'var(--text3)', fontSize:'11px', margin:'0 0 10px' }}>Ini khusus untuk section Legalitas di halaman <strong>Home</strong>. Untuk halaman <strong>/perusahaan</strong>, isi di tab "Perusahaan" → "Foto Dokumen Legalitas".</p>
             <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
               {sertifikatImages.map((img, i) => (
                 <div key={i} style={{ position:'relative' }}>
@@ -872,7 +874,7 @@ export default function WebsitePage() {
               <div><label style={{ color:'var(--text2)', fontSize:'11px', fontWeight:500, display:'block', marginBottom:'4px' }}>Izin LPPRT</label><input value={formSettings.prsh_legalitas_izin||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_legalitas_izin:e.target.value}))} style={inp} /></div>
             </div>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
-              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Foto Dokumen Legalitas ({prshLegalitasImages.length})</label>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Foto Dokumen Legalitas — Halaman /perusahaan ({prshLegalitasImages.length})</label>
               <button type="button" onClick={addPrshLegalitasImage} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah Foto</button>
             </div>
             <div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
@@ -1182,11 +1184,12 @@ export default function WebsitePage() {
                 {formGaleri.url && <img src={formGaleri.url} alt="" style={{ width:'100%', height:'150px', objectFit:'cover', borderRadius:'10px', marginTop:'8px' }} />}
               </div>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Judul</label><input value={formGaleri.judul} onChange={e => setFormGaleri(p => ({...p,judul:e.target.value}))} style={inp} /></div>
-              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Kategori</label>
-                <select value={formGaleri.kategori} onChange={e => setFormGaleri(p => ({...p,kategori:e.target.value}))} style={inp}>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Kategori *</label>
+                <select value={formGaleri.kategori} onChange={e => setFormGaleri(p => ({...p,kategori:e.target.value}))} style={inp} required>
                   <option value="">-- Pilih --</option>
                   {['Tim','Layanan','Event','Fasilitas','Peralatan'].map(k => <option key={k} value={k}>{k}</option>)}
                 </select>
+                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'5px 0 0' }}>Pilih <strong>Fasilitas</strong> agar foto ini muncul di section "Galeri Fasilitas dan Kegiatan" pada halaman /perusahaan.</p>
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>

@@ -59,7 +59,9 @@ export default async function PerusahaanPage() {
   const legalitasNib = s.prsh_legalitas_nib || '2008240079968';
   const legalitasIzin = s.prsh_legalitas_izin || '2008240799680001';
 
-  const galeriFasilitas = (galeri || []).filter((g: any) => g.kategori === 'Fasilitas');
+  const galeriAll = galeri || [];
+  const galeriFasilitas = galeriAll.filter((g: any) => String(g.kategori||'').trim().toLowerCase() === 'fasilitas');
+  const galeriDisplay = galeriFasilitas.length > 0 ? galeriFasilitas : galeriAll;
 
   const checklist: string[] = parseJson(s.prsh_checklist_list, [
     'Gratis konsultasi untuk mendapatkan layanan tepat',
@@ -169,7 +171,7 @@ export default async function PerusahaanPage() {
       </section>
 
       {/* ═══ GALERI FASILITAS ═══ */}
-      {galeriFasilitas.length > 0 && (
+      {galeriDisplay.length > 0 && (
         <section style={{ padding:'clamp(40px,7vw,60px) 0', background:'white', overflow:'hidden' }}>
           <ScrollFade>
             <div style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, textAlign:'center', padding:'14px 20px', marginBottom:'28px', maxWidth:'1100px', margin:'0 auto 28px', borderRadius:'16px' }}>
@@ -178,7 +180,7 @@ export default async function PerusahaanPage() {
           </ScrollFade>
           <div className="galeri-marquee-track">
             <div className="galeri-marquee-content">
-              {[...galeriFasilitas, ...galeriFasilitas].map((g: any, i: number) => (
+              {[...galeriDisplay, ...galeriDisplay].map((g: any, i: number) => (
                 <div key={i} style={{ flex:'0 0 auto', width:'240px', height:'170px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 16px rgba(0,0,0,0.08)' }}>
                   <img src={g.url||g.thumbnail} alt={g.judul||'Fasilitas'} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                 </div>

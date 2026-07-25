@@ -98,7 +98,7 @@ export default function WebsiteMgaPage() {
           <p style={{ color: 'var(--text3)', fontSize: '13px' }}>Kelola konten website Mikala Global Akademi</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <a href="https://mikala-web-mga.vercel.app" target="_blank" rel="noreferrer"
+          <a href="https://mikalaglobalakademi.co.id" target="_blank" rel="noreferrer"
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: 'var(--glass)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text2)', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
             <Globe size={14}/> Preview Website
           </a>
@@ -240,7 +240,7 @@ export default function WebsiteMgaPage() {
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', gap: '6px' }}>
                           {tab === 'artikel' && (
-                            <a href={`https://mikala-web-mga.vercel.app/artikel/${item.slug}`} target="_blank" rel="noreferrer"
+                            <a href={`https://mikalaglobalakademi.co.id/artikel/${item.slug}`} target="_blank" rel="noreferrer"
                               style={{ padding: '5px 8px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '7px', color: '#3b82f6', display: 'flex', cursor: 'pointer' }}>
                               <Eye size={13}/>
                             </a>
