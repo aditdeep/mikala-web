@@ -35,7 +35,7 @@ export default function WebsitePage() {
 
   // Forms
   const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
-  const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+  const [formLayanan, setFormLayanan] = useState({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [layananManfaat, setLayananManfaat] = useState<string[]>([]);
   const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [penunjangManfaat, setPenunjangManfaat] = useState<string[]>([]);
@@ -144,7 +144,7 @@ export default function WebsitePage() {
       if (editItem) await apiClient.patch('/internal/cms/layanan/'+editItem.id, payload);
       else await apiClient.post('/internal/cms/layanan', payload);
       setShowForm(false); setEditItem(null);
-      setFormLayanan({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+      setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
       setLayananManfaat([]);
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
@@ -303,7 +303,7 @@ export default function WebsitePage() {
             <Eye size={14}/>Preview Website
           </a>
           {['artikel','layanan','penunjang','galeri'].includes(activeTab) && (
-            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); } if (activeTab === 'penunjang') { setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setPenunjangManfaat([]); } }}
+            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); } if (activeTab === 'penunjang') { setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setPenunjangManfaat([]); } }}
               style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
               <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : activeTab === 'penunjang' ? 'Penunjang' : 'Foto'}
             </button>
@@ -429,7 +429,7 @@ export default function WebsitePage() {
                     </td>
                     <td style={{ padding:'10px 16px' }}>
                       <div style={{ display:'flex', gap:'6px' }}>
-                        <button onClick={() => { setEditItem(l); setFormLayanan({nama:l.nama,deskripsi:l.deskripsi||'',deskripsi_panjang:l.deskripsi_panjang||'',gambar:l.gambar||'',icon:l.icon||'',wa_link:l.wa_link||'',urutan:String(l.urutan||1),is_active:l.is_active,meta_title:l.meta_title||'',meta_description:l.meta_description||''}); setLayananManfaat((() => { try { const p = typeof l.manfaat==='string'?JSON.parse(l.manfaat):l.manfaat; return Array.isArray(p)?p:[]; } catch { return []; } })()); setShowForm(true); }}
+                        <button onClick={() => { setEditItem(l); setFormLayanan({nama:l.nama,subjudul:l.subjudul||'',deskripsi:l.deskripsi||'',deskripsi_panjang:l.deskripsi_panjang||'',gambar:l.gambar||'',icon:l.icon||'',wa_link:l.wa_link||'',urutan:String(l.urutan||1),is_active:l.is_active,meta_title:l.meta_title||'',meta_description:l.meta_description||''}); setLayananManfaat((() => { try { const p = typeof l.manfaat==='string'?JSON.parse(l.manfaat):l.manfaat; return Array.isArray(p)?p:[]; } catch { return []; } })()); setShowForm(true); }}
                           style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Edit2 size={12}/>
                         </button>
@@ -1042,6 +1042,7 @@ export default function WebsitePage() {
             <form onSubmit={handleSaveLayanan} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Layanan *</label><input required value={formLayanan.nama} onChange={e => setFormLayanan(p => ({...p,nama:e.target.value}))} style={inp} /></div>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Icon (emoji)</label><input value={formLayanan.icon} onChange={e => setFormLayanan(p => ({...p,icon:e.target.value}))} style={inp} placeholder="🏥" /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Sub Judul (opsional, tampil di bawah nama layanan)</label><input value={formLayanan.subjudul} onChange={e => setFormLayanan(p => ({...p,subjudul:e.target.value}))} style={inp} placeholder="Contoh: Perawat Pendamping • Perawat Lansia" /></div>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi Singkat (tampil di list & card)</label><textarea value={formLayanan.deskripsi} onChange={e => setFormLayanan(p => ({...p,deskripsi:e.target.value}))} style={{...inp, minHeight:'70px', resize:'vertical'}} /></div>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi Lengkap (halaman detail, pisahkan paragraf dengan baris baru)</label><textarea value={formLayanan.deskripsi_panjang} onChange={e => setFormLayanan(p => ({...p,deskripsi_panjang:e.target.value}))} style={{...inp, minHeight:'110px', resize:'vertical'}} /></div>
               <div>

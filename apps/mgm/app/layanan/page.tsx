@@ -32,6 +32,7 @@ async function getData() {
 const defaultLayanan = [
   {
     nama: 'Perawat Medis',
+    subjudul: 'Perawat Homecare • Perawat Intensive Care',
     icon: '🏥',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-medis.jpg',
     deskripsi: 'Menghadirkan perawat profesional dan bersertifikat untuk merawat pasien di rumah maupun di rumah sakit. Mampu melakukan tindakan medis dan non-medis seperti injeksi, perawatan luka, pemberian infus, monitoring tanda vital, dan pendampingan pasien pasca operasi.',
@@ -40,6 +41,7 @@ const defaultLayanan = [
   },
   {
     nama: 'Perawat Jiwa',
+    subjudul: 'Perawat Pendamping • Perawat Psikiatri',
     icon: '🧠',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-jiwa.jpg',
     deskripsi: 'Perawat jiwa profesional terlatih melayani berbagai aspek dukungan dan perawatan bagi individu dengan masalah kesehatan mental, mulai dari gangguan kecemasan, depresi, skizofrenia, hingga gangguan bipolar dengan pendekatan humanis dan evidence-based.',
@@ -48,6 +50,7 @@ const defaultLayanan = [
   },
   {
     nama: 'Caregiver / Perawat Lansia',
+    subjudul: 'Perawat Pendamping • Perawat Lansia',
     icon: '👴',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/caregiver.jpg',
     deskripsi: 'Mendampingi dan mengurus orang tua atau pasien lansia yang membutuhkan bantuan dalam aktivitas sehari-hari. Caregiver terlatih kami membantu mandi, makan, mobilisasi, hingga aktivitas sosial untuk meningkatkan kualitas hidup lansia.',
@@ -56,6 +59,7 @@ const defaultLayanan = [
   },
   {
     nama: 'Babysitter',
+    subjudul: 'Newborn Care • Nanny',
     icon: '👶',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/babysitter.jpg',
     deskripsi: 'Tenaga perawat bayi dan anak terlatih, berpengalaman menangani bayi newborn hingga anak usia sekolah. Tersedia layanan khusus untuk ibu pra/pasca melahirkan termasuk perawatan tali pusar, memandikan bayi, dan edukasi pengasuhan.',
@@ -64,6 +68,7 @@ const defaultLayanan = [
   },
   {
     nama: 'Dokter Visit',
+    subjudul: 'Dokter Umum • Dokter Spesialis',
     icon: '👨‍⚕️',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/dokter-visit.jpg',
     deskripsi: 'Menghadirkan dokter umum maupun spesialis terbaik langsung ke rumah Anda. Cocok untuk pemeriksaan rutin, konsultasi medis, penanganan penyakit ringan-sedang, hingga medical check-up di rumah tanpa perlu antri di klinik atau RS.',
@@ -72,6 +77,7 @@ const defaultLayanan = [
   },
   {
     nama: 'Medikal Evakuasi',
+    subjudul: 'Ambulan Darurat • Transportasi Pasien',
     icon: '🚑',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/medikal-evakuasi.jpg',
     deskripsi: 'Menyediakan ambulan medis dengan peralatan lengkap dan tenaga medis terlatih untuk evakuasi dan transportasi pasien. Beroperasi 24 jam untuk kondisi darurat maupun non-darurat, dengan jangkauan Jabodetabek dan sekitarnya.',
@@ -80,6 +86,7 @@ const defaultLayanan = [
   },
   {
     nama: 'Pelayanan Penunjang',
+    subjudul: 'Fisioterapi • Hipnoterapi • Terapi Wicara',
     icon: '💆',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/penunjang.jpg',
     deskripsi: 'Layanan fisioterapi, hipnoterapi, dan terapi wicara (speech therapist) langsung di rumah. Membantu pemulihan pasca stroke, cedera, gangguan bicara pada anak, serta meningkatkan kualitas hidup melalui terapi non-farmakologi.',
@@ -88,6 +95,7 @@ const defaultLayanan = [
   },
   {
     nama: 'Persewaan & Penjualan Alat Medis',
+    subjudul: 'Sewa Alat • Jual Alat Kesehatan',
     icon: '🩺',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/alat-medis.jpg',
     deskripsi: 'Menyewakan dan menjual peralatan medis berkualitas sesuai kebutuhan pasien, termasuk kursi roda, tempat tidur pasien, nebulizer, oksigen concentrator, hospital bed, dan peralatan medis lainnya dengan harga terjangkau.',
@@ -179,50 +187,48 @@ export default async function LayananPage() {
             <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3.2vw,30px)', fontWeight:800, color:'#1a2e25', margin:'0 0 36px' }}>Apa yang Anda Butuhkan?</h2>
           </ScrollFade>
 
-          <div style={{ display:'flex', flexDirection:'column', gap:'28px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
             {data.map((l: any, i: number) => {
               const slug = slugify(l.nama);
               const imgSide = i % 2 === 0 ? 'left' : 'right';
+              const imageEl = (
+                <div key="img" style={{
+                  position:'relative', minHeight:'300px', zIndex:1,
+                  clipPath: imgSide==='left' ? 'polygon(0 0, 100% 0, 88% 100%, 0 100%)' : 'polygon(12% 0, 100% 0, 100% 100%, 0 100%)',
+                }} className="layanan-img">
+                  {l.gambar ? (
+                    <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                  ) : (
+                    <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'64px' }}>{l.icon||'🏥'}</div>
+                  )}
+                </div>
+              );
+              const textEl = (
+                <div key="text" style={{
+                  position:'relative', zIndex:2, padding:'clamp(30px,5vw,52px)', display:'flex', flexDirection:'column', justifyContent:'center',
+                  [imgSide==='left' ? 'marginLeft' : 'marginRight']: '-46px',
+                  background:`linear-gradient(135deg, ${GREEN}14 0%, #eef8f7 55%)`,
+                  backdropFilter:'blur(10px)',
+                }} className="layanan-text">
+                  <div style={{ display:'flex', alignItems:'center', gap:'14px', marginBottom:'8px' }}>
+                    <span style={{ fontSize:'32px' }}>{l.icon||'🏥'}</span>
+                    <h3 style={{ fontSize:'clamp(20px,3vw,28px)', fontWeight:800, color:'#1a2e25', margin:0 }}>{l.nama}</h3>
+                  </div>
+                  {l.subjudul && <p style={{ fontSize:'clamp(13px,1.6vw,15px)', color:GREEN, fontWeight:700, margin:'0 0 14px' }}>{l.subjudul}</p>}
+                  <p style={{ fontSize:'15px', color:'#6b7280', lineHeight:1.85, margin:'0 0 20px' }}>{(l.deskripsi||'').slice(0,180)}{(l.deskripsi||'').length>180?'...':''}</p>
+                  <span style={{ color:GREEN, fontWeight:700, fontSize:'15px' }}>Selengkapnya →</span>
+                </div>
+              );
               return (
                 <ScrollFade key={i} delay={(i%3)*90}>
                   <Link href={`/layanan/${slug}`} style={{ textDecoration:'none' }}>
                     <div style={{
-                      display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
-                      borderRadius:'28px', overflow:'hidden', minHeight:'260px',
+                      display:'grid',
+                      gridTemplateColumns: imgSide==='left' ? 'minmax(240px,38%) 1fr' : '1fr minmax(240px,38%)',
+                      borderRadius:'28px', overflow:'hidden', minHeight:'300px',
                       boxShadow:'0 6px 28px rgba(0,0,0,0.09)', border:'1px solid rgba(14,146,179,0.1)',
                     }} className="layanan-card">
-                      {/* Gambar full + wave divider */}
-                      <div style={{ position:'relative', minHeight:'260px', order: imgSide==='left' ? 0 : 1 }}>
-                        {l.gambar ? (
-                          <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                        ) : (
-                          <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'64px' }}>{l.icon||'🏥'}</div>
-                        )}
-                        {/* Wave divider di sisi yang bersentuhan dengan panel teks */}
-                        <div aria-hidden className="layanan-wave" style={{
-                          position:'absolute', top:0, bottom:0, width:'50px', zIndex:2,
-                          [imgSide==='left' ? 'right' : 'left']: '-1px',
-                          transform: imgSide==='left' ? undefined : 'scaleX(-1)',
-                        }}>
-                          <svg viewBox="0 0 50 300" preserveAspectRatio="none" style={{ width:'100%', height:'100%', display:'block' }}>
-                            <path d="M50,0 C14,36 14,64 50,100 C86,136 86,164 50,200 C14,236 14,264 50,300 L50,300 L0,300 L0,0 Z" fill="#eef8f7" />
-                          </svg>
-                        </div>
-                      </div>
-                      {/* Konten dengan gradasi MGM */}
-                      <div style={{
-                        position:'relative', padding:'clamp(26px,4.5vw,44px)', display:'flex', flexDirection:'column', justifyContent:'center',
-                        order: imgSide==='left' ? 1 : 0,
-                        background:`linear-gradient(135deg, ${GREEN}14 0%, #eef8f7 55%)`,
-                        backdropFilter:'blur(10px)',
-                      }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' }}>
-                          <span style={{ fontSize:'28px' }}>{l.icon||'🏥'}</span>
-                          <h3 style={{ fontSize:'clamp(18px,2.6vw,24px)', fontWeight:800, color:'#1a2e25', margin:0 }}>{l.nama}</h3>
-                        </div>
-                        <p style={{ fontSize:'14px', color:'#6b7280', lineHeight:1.85, margin:'0 0 20px' }}>{(l.deskripsi||'').slice(0,180)}{(l.deskripsi||'').length>180?'...':''}</p>
-                        <span style={{ color:GREEN, fontWeight:700, fontSize:'14px' }}>Selengkapnya →</span>
-                      </div>
+                      {imgSide==='left' ? <>{imageEl}{textEl}</> : <>{textEl}{imageEl}</>}
                     </div>
                   </Link>
                 </ScrollFade>
@@ -253,7 +259,8 @@ export default async function LayananPage() {
       <style>{`
         @media (max-width: 700px) {
           .layanan-card { grid-template-columns: 1fr !important; }
-          .layanan-wave { display: none !important; }
+          .layanan-img { clip-path: none !important; min-height: 220px !important; }
+          .layanan-text { margin-left: 0 !important; margin-right: 0 !important; }
         }
       `}</style>
     </div>
