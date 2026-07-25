@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href:'/', l:'Beranda' },
   { href:'/perusahaan', l:'Perusahaan' },
   { href:'/layanan', l:'Layanan' },
+  { href:'/penunjang', l:'Penunjang Kesehatan' },
   { href:'/artikel', l:'Artikel' },
   { href:'/galeri', l:'Galeri' },
   { href:'/kontak', l:'Kontak' },

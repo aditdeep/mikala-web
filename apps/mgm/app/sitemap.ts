@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE,              lastModified: new Date(), changeFrequency: 'weekly',  priority: 1.0 },
     { url: `${BASE}/layanan`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${BASE}/penunjang`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/perusahaan`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/perusahaan/prakata`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/artikel`, lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
@@ -44,5 +45,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch {}
 
-  return [...staticPages, ...artikelPages, ...layananPages];
+  // Dynamic penunjang detail pages
+  let penunjangPages: MetadataRoute.Sitemap = [];
+  try {
+    const res  = await fetch(`${API}/cms/penunjang`, { next: { revalidate: 3600 } });
+    const data = await res.json();
+    const items = data.data || [];
+    penunjangPages = items.map((p: any) => ({
+      url:             `${BASE}/penunjang/${slugify(p.nama)}`,
+      lastModified:    new Date(p.updated_at || p.created_at || Date.now()),
+      changeFrequency: 'monthly' as const,
+      priority:        0.5,
+    }));
+  } catch {}
+
+  return [...staticPages, ...artikelPages, ...layananPages, ...penunjangPages];
 }

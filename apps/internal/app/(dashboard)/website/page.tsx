@@ -37,7 +37,8 @@ export default function WebsitePage() {
   const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
   const [formLayanan, setFormLayanan] = useState({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [layananManfaat, setLayananManfaat] = useState<string[]>([]);
-  const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
+  const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+  const [penunjangManfaat, setPenunjangManfaat] = useState<string[]>([]);
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
   const [heroSlides, setHeroSlides] = useState<{ image:string; title:string; subtitle:string }[]>([]);
@@ -156,14 +157,20 @@ export default function WebsitePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      if (editItem) await apiClient.patch('/internal/cms/penunjang/'+editItem.id, formPenunjang);
-      else await apiClient.post('/internal/cms/penunjang', formPenunjang);
+      const payload = { ...formPenunjang, manfaat: JSON.stringify(penunjangManfaat) };
+      if (editItem) await apiClient.patch('/internal/cms/penunjang/'+editItem.id, payload);
+      else await apiClient.post('/internal/cms/penunjang', payload);
       setShowForm(false); setEditItem(null);
-      setFormPenunjang({ nama:'', tipe:'', deskripsi:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true });
+      setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+      setPenunjangManfaat([]);
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
     setSaving(false);
   };
+
+  const addPenunjangManfaat = () => setPenunjangManfaat(p => [...p, '']);
+  const removePenunjangManfaat = (i: number) => setPenunjangManfaat(p => p.filter((_, idx) => idx !== i));
+  const updatePenunjangManfaat = (i: number, val: string) => setPenunjangManfaat(p => p.map((s, idx) => idx === i ? val : s));
 
   const handleSaveGaleri = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,7 +294,7 @@ export default function WebsitePage() {
             <Eye size={14}/>Preview Website
           </a>
           {['artikel','layanan','penunjang','galeri'].includes(activeTab) && (
-            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); } }}
+            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); } if (activeTab === 'penunjang') { setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setPenunjangManfaat([]); } }}
               style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
               <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : activeTab === 'penunjang' ? 'Penunjang' : 'Foto'}
             </button>
@@ -461,7 +468,7 @@ export default function WebsitePage() {
                     </td>
                     <td style={{ padding:'10px 16px' }}>
                       <div style={{ display:'flex', gap:'6px' }}>
-                        <button onClick={() => { setEditItem(p); setFormPenunjang({nama:p.nama,tipe:p.tipe||'',deskripsi:p.deskripsi||'',gambar:p.gambar||'',wa_link:p.wa_link||'',urutan:String(p.urutan||1),is_active:p.is_active}); setShowForm(true); }}
+                        <button onClick={() => { setEditItem(p); setFormPenunjang({nama:p.nama,tipe:p.tipe||'',deskripsi:p.deskripsi||'',deskripsi_panjang:p.deskripsi_panjang||'',icon:p.icon||'',gambar:p.gambar||'',wa_link:p.wa_link||'',urutan:String(p.urutan||1),is_active:p.is_active,meta_title:p.meta_title||'',meta_description:p.meta_description||''}); let pm: string[] = []; try { const parsed = typeof p.manfaat === 'string' ? JSON.parse(p.manfaat) : p.manfaat; if (Array.isArray(parsed)) pm = parsed; } catch {} setPenunjangManfaat(pm); setShowForm(true); }}
                           style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Edit2 size={12}/>
                         </button>
@@ -1048,7 +1055,9 @@ export default function WebsitePage() {
             <form onSubmit={handleSavePenunjang} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama *</label><input required value={formPenunjang.nama} onChange={e => setFormPenunjang(p => ({...p,nama:e.target.value}))} style={inp} placeholder="mis. Ambulan Standby" /></div>
               <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tipe</label><input value={formPenunjang.tipe} onChange={e => setFormPenunjang(p => ({...p,tipe:e.target.value}))} style={inp} placeholder="mis. Transportasi Medis" /></div>
-              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi</label><textarea value={formPenunjang.deskripsi} onChange={e => setFormPenunjang(p => ({...p,deskripsi:e.target.value}))} style={{...inp, minHeight:'80px', resize:'vertical'}} /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Icon (emoji)</label><input value={formPenunjang.icon} onChange={e => setFormPenunjang(p => ({...p,icon:e.target.value}))} style={inp} placeholder="🩺" /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi Singkat (tampil di list & card)</label><textarea value={formPenunjang.deskripsi} onChange={e => setFormPenunjang(p => ({...p,deskripsi:e.target.value}))} style={{...inp, minHeight:'70px', resize:'vertical'}} /></div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi Lengkap (halaman detail, pisahkan paragraf dengan baris baru)</label><textarea value={formPenunjang.deskripsi_panjang} onChange={e => setFormPenunjang(p => ({...p,deskripsi_panjang:e.target.value}))} style={{...inp, minHeight:'100px', resize:'vertical'}} /></div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Gambar URL</label>
                 <div style={{ display:'flex', gap:'8px' }}>
@@ -1059,6 +1068,24 @@ export default function WebsitePage() {
                   </label>
                 </div>
               </div>
+
+              <div>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'6px' }}>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Manfaat ({penunjangManfaat.length})</label>
+                  <button type="button" onClick={addPenunjangManfaat} style={{ display:'flex', alignItems:'center', gap:'4px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'4px 10px', color:'var(--text)', fontSize:'11px', fontWeight:600, cursor:'pointer' }}><Plus size={12}/> Tambah</button>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                  {penunjangManfaat.map((m, i) => (
+                    <div key={i} style={{ display:'flex', gap:'6px' }}>
+                      <input value={m} onChange={e => updatePenunjangManfaat(i, e.target.value)} style={inp} placeholder={`Manfaat ${i+1}`} />
+                      <button type="button" onClick={() => removePenunjangManfaat(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'32px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={13}/></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Link WhatsApp (kosongkan utk default)</label><input value={formPenunjang.wa_link} onChange={e => setFormPenunjang(p => ({...p,wa_link:e.target.value}))} style={inp} placeholder="https://wa.me/62..." /></div>
+
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Urutan</label><input type="number" value={formPenunjang.urutan} onChange={e => setFormPenunjang(p => ({...p,urutan:e.target.value}))} style={inp} /></div>
                 <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Status</label>
@@ -1066,6 +1093,12 @@ export default function WebsitePage() {
                     <option value="1">Aktif</option><option value="0">Nonaktif</option>
                   </select>
                 </div>
+              </div>
+
+              <div style={{ background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px' }}>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:600, display:'block', marginBottom:'8px' }}>SEO (opsional)</label>
+                <div style={{ marginBottom:'8px' }}><input value={formPenunjang.meta_title} onChange={e => setFormPenunjang(p => ({...p,meta_title:e.target.value}))} style={inp} placeholder="Meta title" /></div>
+                <input value={formPenunjang.meta_description} onChange={e => setFormPenunjang(p => ({...p,meta_description:e.target.value}))} style={inp} placeholder="Meta description" />
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => { setShowForm(false); setEditItem(null); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
