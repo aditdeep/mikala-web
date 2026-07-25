@@ -61,7 +61,7 @@ export default async function ArtikelPage({ searchParams }: { searchParams: { pa
                     </div>
                     <div style={{ padding:'16px 18px 18px', display:'flex', flexDirection:'column', flex:1 }}>
                       <p style={{ color:'#9ca3af', fontSize:'11px', margin:'0 0 6px' }}>
-                        {a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}
+                        {(a.published_at||a.created_at) ? new Date(a.published_at||a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}
                       </p>
                       <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px', lineHeight:1.4, flex:1 }}>{a.judul}</h3>
                       <p style={{ fontSize:'12px', color:'#6b7280', margin:'0 0 12px', lineHeight:1.5 }}>{(a.excerpt||'').slice(0,100)}...</p>

@@ -99,7 +99,7 @@ export default async function ArtikelDetailPage({ params }: { params: { slug: st
         <div style={{ display:'flex', gap:'10px', marginBottom:'14px', alignItems:'center', flexWrap:'wrap' }}>
           <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'12px', padding:'4px 12px', fontSize:'12px', fontWeight:600 }}>{artikel.kategori||'Artikel'}</span>
           <span style={{ color:'#9ca3af', fontSize:'12px' }}>
-            {artikel.created_at ? new Date(artikel.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}
+            {(artikel.published_at||artikel.created_at) ? new Date(artikel.published_at||artikel.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}
           </span>
         </div>
 

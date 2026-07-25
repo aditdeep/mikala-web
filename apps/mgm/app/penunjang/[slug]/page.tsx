@@ -75,7 +75,7 @@ export default async function PenunjangDetailPage({ params }: { params: { slug: 
 
   return (
     <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
-      <Navbar active="/penunjang"/>
+      <Navbar active="/penunjang" overlay/>
 
       <section style={{ position:'relative', minHeight:'clamp(240px,36vh,360px)', overflow:'hidden' }}>
         {item.gambar ? (

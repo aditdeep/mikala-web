@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TranslateButton from './TranslateButton';
 
 const GREEN = '#0e92b3';
@@ -10,12 +10,10 @@ const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo
 const WA = "https://wa.me/6281296998827";
 
 const NAV_LINKS = [
-  { href:'/', l:'Beranda' },
   { href:'/perusahaan', l:'Perusahaan' },
   { href:'/layanan', l:'Layanan' },
   { href:'/penunjang', l:'Penunjang Kesehatan' },
   { href:'/artikel', l:'Artikel' },
-  { href:'/galeri', l:'Galeri' },
   { href:'/kontak', l:'Kontak' },
 ];
 
@@ -36,10 +34,19 @@ function WaIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-export default function Navbar({ active = '' }: { active?: string }) {
+export default function Navbar({ active = '', overlay = false }: { active?: string; overlay?: boolean }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [scrolled, setScrolled] = useState(!overlay);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!overlay) return;
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [overlay]);
 
   const doSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,15 +55,29 @@ export default function Navbar({ active = '' }: { active?: string }) {
     router.push(`/artikel?q=${encodeURIComponent(query.trim())}`);
   };
 
+  const glass = scrolled;
+
   return (
     <>
-      <nav style={{ position:'sticky', top:0, zIndex:100, background:'rgba(255,255,255,0.72)', backdropFilter:'blur(18px) saturate(180%)', WebkitBackdropFilter:'blur(18px) saturate(180%)', borderBottom:'1px solid rgba(14,146,179,0.12)', boxShadow:'0 2px 20px rgba(14,146,179,0.06)' }}>
+      <nav style={{
+        position:'fixed', top:0, left:0, right:0, zIndex:100,
+        background: glass ? 'rgba(255,255,255,0.72)' : 'transparent',
+        backdropFilter: glass ? 'blur(18px) saturate(180%)' : 'none',
+        WebkitBackdropFilter: glass ? 'blur(18px) saturate(180%)' : 'none',
+        borderBottom: glass ? '1px solid rgba(14,146,179,0.12)' : '1px solid transparent',
+        boxShadow: glass ? '0 2px 20px rgba(14,146,179,0.06)' : 'none',
+        transition: 'background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+      }}>
         <div style={{ maxWidth:'1440px', margin:'0 auto', padding:'0 32px', display:'flex', alignItems:'center', gap:'20px', height:'86px' }} className="mgm-nav-inner">
-          <Link href="/" style={{ flexShrink:0 }}><img src={LOGO} alt="Mikala" style={{ height:'44px', objectFit:'contain' }} /></Link>
+          <Link href="/" style={{ flexShrink:0 }}>
+            <div style={{ background:'white', borderRadius:'14px', padding:'6px 10px', boxShadow:'0 8px 22px rgba(0,0,0,0.15)' }}>
+              <img src={LOGO} alt="Mikala" style={{ height:'38px', objectFit:'contain', display:'block' }} />
+            </div>
+          </Link>
 
           {/* Search bar - selalu tampil, di tengah */}
           <form onSubmit={doSearch} style={{ flex:1, maxWidth:'520px', display:'flex', margin:'0 auto' }} className="mgm-search-form">
-            <div style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', background:'rgba(14,146,179,0.06)', border:'1px solid rgba(14,146,179,0.15)', borderRadius:'22px', padding:'11px 16px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', background:'rgba(255,255,255,0.9)', backdropFilter:'blur(10px)', border:'1px solid rgba(14,146,179,0.15)', borderRadius:'22px', padding:'11px 16px', boxShadow: glass ? 'none' : '0 4px 16px rgba(0,0,0,0.1)' }}>
               <SearchIcon color={GREEN} size={16} />
               <input
                 value={query}
@@ -67,7 +88,7 @@ export default function Navbar({ active = '' }: { active?: string }) {
             </div>
           </form>
 
-          <TranslateButton />
+          <TranslateButton scrolled={glass} />
 
           <a href={WA} target="_blank" rel="noreferrer" aria-label="WhatsApp"
             style={{ flexShrink:0, width:'44px', height:'44px', borderRadius:'50%', background:'linear-gradient(135deg,#25d366,#1fb655)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 12px rgba(37,211,102,0.35)' }} className="hide-mobile">
@@ -82,6 +103,7 @@ export default function Navbar({ active = '' }: { active?: string }) {
           </button>
         </div>
       </nav>
+      {!overlay && <div className="mgm-nav-spacer" />}
 
       {/* Overlay */}
       {open && (
@@ -153,9 +175,11 @@ export default function Navbar({ active = '' }: { active?: string }) {
       <style>{`
         .mgm-panel { transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); }
         .mgm-panel-open { transform: translateX(0); }
+        .mgm-nav-spacer { height: 86px; }
         @media (max-width: 900px) {
           .mgm-nav-inner { height: 68px !important; padding: 0 16px !important; }
-          .mgm-nav-inner img { height: 34px !important; }
+          .mgm-nav-inner img { height: 28px !important; }
+          .mgm-nav-spacer { height: 68px; }
         }
         @media (max-width: 480px) {
           .mgm-search-form { max-width: 150px !important; }

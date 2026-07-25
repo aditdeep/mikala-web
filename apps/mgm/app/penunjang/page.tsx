@@ -63,7 +63,7 @@ export default async function PenunjangPage() {
 
   return (
     <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
-      <Navbar active="/penunjang"/>
+      <Navbar active="/penunjang" overlay/>
 
       <section style={{ position:'relative', minHeight:'clamp(280px,40vh,400px)', overflow:'hidden' }}>
         <ImageFade images={heroImages} alt="Penunjang Kesehatan Mikala Global Medika" />

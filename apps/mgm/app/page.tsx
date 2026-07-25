@@ -149,7 +149,7 @@ export default async function HomePage() {
 
   return (
     <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
-      <Navbar active="/" />
+      <Navbar active="/" overlay />
 
       {/* ═══ HERO ═══ */}
       <HeroSlider
@@ -434,7 +434,7 @@ export default async function HomePage() {
                       <div style={{ minWidth:0 }}>
                         <div style={{ display:'flex', gap:'8px', marginBottom:'4px', alignItems:'center' }}>
                           <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'10px', padding:'2px 8px', fontSize:'10px', fontWeight:700, textTransform:'uppercase' }}>{a.kategori||'Artikel'}</span>
-                          <span style={{ color:'#9ca3af', fontSize:'11px' }}>{a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : ''}</span>
+                          <span style={{ color:'#9ca3af', fontSize:'11px' }}>{(a.published_at||a.created_at) ? new Date(a.published_at||a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : ''}</span>
                         </div>
                         <h3 style={{ fontSize:'14px', fontWeight:700, color:'#1a2e25', margin:0, lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{a.judul}</h3>
                       </div>
@@ -451,7 +451,7 @@ export default async function HomePage() {
                     <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(4,35,43,0.88) 0%, rgba(4,35,43,0.25) 55%, rgba(4,35,43,0.05) 100%)' }} />
                     <span style={{ position:'absolute', top:'18px', left:'18px', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(10px)', color:'white', border:'1px solid rgba(255,255,255,0.3)', borderRadius:'20px', padding:'6px 16px', fontSize:'12px', fontWeight:700 }}>{artikel[0].kategori||'Artikel'}</span>
                     <div style={{ position:'absolute', bottom:'24px', left:'24px', right:'24px' }}>
-                      <span style={{ color:'rgba(255,255,255,0.75)', fontSize:'12px' }}>{artikel[0].created_at ? new Date(artikel[0].created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
+                      <span style={{ color:'rgba(255,255,255,0.75)', fontSize:'12px' }}>{(artikel[0].published_at||artikel[0].created_at) ? new Date(artikel[0].published_at||artikel[0].created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
                       <h3 style={{ fontSize:'22px', fontWeight:800, color:'white', margin:'6px 0 0', lineHeight:1.3 }}>{artikel[0].judul}</h3>
                     </div>
                   </div>
@@ -470,7 +470,7 @@ export default async function HomePage() {
                     <div style={{ minWidth:0, flex:1 }}>
                       <div style={{ display:'flex', gap:'8px', marginBottom:'4px', alignItems:'center' }}>
                         <span style={{ background:`${GREEN}15`, color:GREEN, borderRadius:'10px', padding:'2px 8px', fontSize:'10px', fontWeight:700, textTransform:'uppercase' }}>{a.kategori||'Artikel'}</span>
-                        <span style={{ color:'#9ca3af', fontSize:'11px' }}>{a.created_at ? new Date(a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : ''}</span>
+                        <span style={{ color:'#9ca3af', fontSize:'11px' }}>{(a.published_at||a.created_at) ? new Date(a.published_at||a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : ''}</span>
                       </div>
                       <h3 style={{ fontSize:'14px', fontWeight:700, color:'#1a2e25', margin:0, lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{a.judul}</h3>
                     </div>

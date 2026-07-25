@@ -115,7 +115,7 @@ export default async function LayananDetailPage({ params }: { params: { slug: st
 
   return (
     <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
-      <Navbar active="/layanan"/>
+      <Navbar active="/layanan" overlay/>
 
       {/* Hero */}
       <section style={{ position:'relative', minHeight:'clamp(260px,38vh,380px)', overflow:'hidden' }}>

@@ -75,7 +75,7 @@ export default async function PerusahaanPage() {
 
   return (
     <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
-      <Navbar active="/perusahaan" />
+      <Navbar active="/perusahaan" overlay />
 
       {/* ═══ HERO ═══ */}
       <section style={{ position:'relative', minHeight:'clamp(360px,55vh,560px)', overflow:'hidden' }}>

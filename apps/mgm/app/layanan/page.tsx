@@ -125,7 +125,7 @@ export default async function LayananPage() {
 
   return (
     <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
-      <Navbar active="/layanan"/>
+      <Navbar active="/layanan" overlay/>
 
       {/* ═══ HERO ═══ */}
       <section style={{ position:'relative', minHeight:'clamp(320px,45vh,460px)', overflow:'hidden' }}>
