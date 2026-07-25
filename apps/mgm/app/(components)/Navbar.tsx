@@ -53,8 +53,8 @@ export default function Navbar({ active = '' }: { active?: string }) {
         <div style={{ maxWidth:'1440px', margin:'0 auto', padding:'0 32px', display:'flex', alignItems:'center', gap:'20px', height:'86px' }} className="mgm-nav-inner">
           <Link href="/" style={{ flexShrink:0 }}><img src={LOGO} alt="Mikala" style={{ height:'44px', objectFit:'contain' }} /></Link>
 
-          {/* Search bar - selalu tampil */}
-          <form onSubmit={doSearch} style={{ flex:1, maxWidth:'420px', display:'flex' }} className="mgm-search-form">
+          {/* Search bar - selalu tampil, di tengah */}
+          <form onSubmit={doSearch} style={{ flex:1, maxWidth:'520px', display:'flex', margin:'0 auto' }} className="mgm-search-form">
             <div style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', background:'rgba(14,146,179,0.06)', border:'1px solid rgba(14,146,179,0.15)', borderRadius:'22px', padding:'11px 16px' }}>
               <SearchIcon color={GREEN} size={16} />
               <input
@@ -65,15 +65,6 @@ export default function Navbar({ active = '' }: { active?: string }) {
               />
             </div>
           </form>
-
-          <div style={{ flex:1 }} className="mgm-spacer" />
-
-          {/* Desktop nav links */}
-          <div style={{ display:'flex', alignItems:'center', gap:'30px' }} className="mgm-desktop-nav">
-            {NAV_LINKS.map(n => (
-              <Link key={n.href} href={n.href} style={{ color: active===n.href?GREEN:'#374151', fontSize:'15.5px', fontWeight: active===n.href?700:600, textDecoration:'none', borderBottom: active===n.href?`2px solid ${GREEN}`:'2px solid transparent', paddingBottom:'3px', transition:'all 0.2s', whiteSpace:'nowrap' }}>{n.l}</Link>
-            ))}
-          </div>
 
           <TranslateButton />
 
@@ -162,8 +153,6 @@ export default function Navbar({ active = '' }: { active?: string }) {
         .mgm-panel { transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); }
         .mgm-panel-open { transform: translateX(0); }
         @media (max-width: 900px) {
-          .mgm-desktop-nav { display: none !important; }
-          .mgm-spacer { display: none !important; }
           .mgm-nav-inner { height: 68px !important; padding: 0 16px !important; }
           .mgm-nav-inner img { height: 34px !important; }
         }

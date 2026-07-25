@@ -71,6 +71,7 @@ export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: 
  display: none; } }
         .hero-slider-section { min-height: clamp(380px, 62vh, 620px); }
         @media (max-width: 768px) { .hero-slider-section { min-height: clamp(300px, 48vh, 420px); } }
+        @media (min-width: 1024px) { .hero-slider-section { min-height: clamp(560px, 82vh, 780px); } }
       `}</style>
     </section>
   );

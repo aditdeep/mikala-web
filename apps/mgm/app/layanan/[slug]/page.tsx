@@ -114,7 +114,7 @@ export default async function LayananDetailPage({ params }: { params: { slug: st
   const related = data.filter((l: any) => slugify(l.nama) !== params.slug).slice(0, 3);
 
   return (
-    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(135deg, #041e26 0%, #0e6a85 30%, #4a3d75 55%, #7a3574 78%, ${PINK} 100%)` }}>
+    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
       <Navbar active="/layanan"/>
 
       {/* Hero */}
@@ -145,7 +145,7 @@ export default async function LayananDetailPage({ params }: { params: { slug: st
 
         {manfaat.length > 0 && (
           <div style={{ marginBottom:'28px' }}>
-            <h2 style={{ fontSize:'18px', fontWeight:800, color:'white', margin:'0 0 16px' }}>Manfaat Layanan</h2>
+            <h2 style={{ fontSize:'18px', fontWeight:800, color:'#1a2e25', margin:'0 0 16px' }}>Manfaat Layanan</h2>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%,220px),1fr))', gap:'12px' }}>
               {manfaat.map((m, i) => (
                 <div key={i} style={{ display:'flex', gap:'10px', alignItems:'flex-start', background:`linear-gradient(135deg, ${GREEN}10, rgba(255,255,255,0.92))`, border:`1px solid ${GREEN}15`, borderRadius:'14px', padding:'14px 16px', boxShadow:'0 4px 16px rgba(0,0,0,0.15)' }}>
@@ -167,7 +167,7 @@ export default async function LayananDetailPage({ params }: { params: { slug: st
 
         {related.length > 0 && (
           <div>
-            <h2 style={{ fontSize:'18px', fontWeight:800, color:'white', margin:'0 0 16px' }}>Layanan Lainnya</h2>
+            <h2 style={{ fontSize:'18px', fontWeight:800, color:'#1a2e25', margin:'0 0 16px' }}>Layanan Lainnya</h2>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%,220px),1fr))', gap:'16px' }}>
               {related.map((r: any, i: number) => (
                 <Link key={i} href={`/layanan/${slugify(r.nama)}`} style={{ textDecoration:'none' }}>

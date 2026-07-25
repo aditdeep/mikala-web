@@ -65,6 +65,9 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
 @media (max-width: 768px) {
   .mgm-page-bg { background-attachment: scroll; }
 }
+@media (min-width: 769px) {
+  .scroll-fade-mobile-only { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
 
 /* Animations */
 @keyframes fadeUp {

@@ -126,7 +126,7 @@ export default async function PerusahaanPage() {
       </section>
 
       {/* ═══ LEGALITAS ═══ */}
-      <section style={{ padding:'clamp(48px,8vw,80px) 20px', background:'#eef8fa' }} className="section-pad">
+      <section id="legalitas" style={{ padding:'clamp(48px,8vw,80px) 20px', background:'#eef8fa' }} className="section-pad">
         <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
           <h2 style={{ textAlign:'center', fontSize:'clamp(18px,2.4vw,24px)', fontWeight:800, color:'#1a2e25', margin:'0 0 28px' }}>Legalitas Perusahaan</h2>
 
@@ -194,7 +194,7 @@ export default async function PerusahaanPage() {
       </section>
 
       {/* ═══ MGA + LOKER ═══ */}
-      <section style={{ padding:'clamp(48px,8vw,80px) 20px', background:'#eef8fa' }} className="section-pad">
+      <section id="mga" style={{ padding:'clamp(48px,8vw,80px) 20px', background:'#eef8fa' }} className="section-pad">
         <div style={{ maxWidth:'1100px', margin:'0 auto', display:'flex', flexDirection:'column', gap:'20px' }}>
           <div style={{ background:'white', borderRadius:'24px', overflow:'hidden', boxShadow:'0 4px 24px rgba(0,0,0,0.06)', border:`1px solid ${GREEN}10`, display:'grid', gridTemplateColumns:'1fr 1.3fr', gap:'0' }} className="two-col">
             {mgaImages[0] && <img src={mgaImages[0]} alt="Mikala Global Akademi" style={{ width:'100%', height:'100%', minHeight:'220px', objectFit:'cover' }} className="hide-mobile" />}

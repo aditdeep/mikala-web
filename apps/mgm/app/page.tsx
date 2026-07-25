@@ -3,6 +3,11 @@ import Navbar from './(components)/Navbar';
 import Footer from './(components)/Footer';
 import HeroSlider from './(components)/HeroSlider';
 import VideoSection from './(components)/VideoSection';
+import ImageFade from './(components)/ImageFade';
+import ScrollFade from './(components)/ScrollFade';
+import SecureGallery from './(components)/SecureGallery';
+
+const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
@@ -49,8 +54,22 @@ export default async function HomePage() {
   ];
 
   const layananData = layanan.length > 0 ? layanan : defaultLayanan;
+  const layananHighlight = (() => {
+    const targets = ['caregiver', 'perawat medis', 'perawat jiwa'];
+    const picked = targets
+      .map(t => layananData.find((l: any) => (l.nama || '').toLowerCase().includes(t)))
+      .filter(Boolean);
+    return picked.length === 3 ? picked : layananData.slice(0, 3);
+  })();
   const testimoniData = testimoni.length > 0 ? testimoni : defaultTestimoni;
   const penunjangData = (penunjang || []).filter((p: any) => p.is_active !== false).sort((a: any, b: any) => (a.urutan||0)-(b.urutan||0));
+  const penunjangHighlight = (() => {
+    const targets = ['terapi', 'alat kesehatan', 'alat medis'];
+    const picked = targets
+      .map(t => penunjangData.find((p: any) => (p.nama || '').toLowerCase().includes(t)))
+      .filter(Boolean);
+    return picked.length === 3 ? picked : penunjangData.slice(0, 3);
+  })();
 
   let profileImages: string[] = [];
   try {
@@ -68,11 +87,25 @@ export default async function HomePage() {
     if (Array.isArray(parsed)) heroSlides = parsed;
   } catch { heroSlides = []; }
   const stats = [
-    { value:(settings.stats_customer||'500')+'+', label:'Customer', icon:'👥' },
+    { value:(settings.stats_customer||'500')+'+', label:'Klien Aktif', icon:'👥' },
     { value:(settings.stats_nakes||'100')+'+', label:'Tenaga Kesehatan', icon:'👨‍⚕️' },
-    { value:(settings.stats_mitra||'50')+'+', label:'Mitra', icon:'🤝' },
-    { value:'24/7', label:'Standby', icon:'⏰' },
+    { value:(settings.stats_rating||'4.9')+' ★', label:'Rating Google', icon:'⭐' },
   ];
+
+  const komprehensifChecklist: string[] = (() => {
+    try {
+      const raw = settings.prsh_checklist_list;
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+    return [
+      'Gratis konsultasi untuk mendapatkan layanan tepat',
+      'Tenaga terlatih oleh profesional berpengalaman',
+      'Memiliki Akademi Pelatihan terakreditasi sendiri',
+      'Garansi ganti perawat jika kurang berkenan',
+      'Biaya Admin sekali seumur hidup',
+    ];
+  })();
 
   const videoUrl = settings.video_url || '';
   const videoTitle = settings.video_title || 'Kenali Lebih Dekat Mikala Global Medika';
@@ -113,7 +146,7 @@ export default async function HomePage() {
   } catch { sertifikatImages = []; }
 
   return (
-    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(135deg, #041e26 0%, #0e6a85 30%, #4a3d75 55%, #7a3574 78%, ${PINK} 100%)` }}>
+    <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
       <Navbar active="/" />
 
       {/* ═══ HERO ═══ */}
@@ -123,12 +156,12 @@ export default async function HomePage() {
         fallbackSubtitle={settings.hero_subtitle || 'Penyedia layanan homecare terpercaya dengan tim medis profesional yang berkomitmen memberikan pelayanan terbaik untuk Anda dan keluarga.'}
       />
 
-      {/* ═══ STATS (overlap card) ═══ */}
-      <div style={{ position:'relative', zIndex:5, maxWidth:'1000px', margin:'-40px auto 0', padding:'0 20px' }} className="section-pad">
-        <div style={{ background:'rgba(255,255,255,0.9)', backdropFilter:'blur(20px)', borderRadius:'24px', padding:'28px 20px', boxShadow:'0 20px 50px rgba(0,0,0,0.12)', border:'1px solid rgba(14,146,179,0.1)', display:'flex', justifyContent:'space-around', flexWrap:'wrap', gap:'20px' }}>
+      {/* ═══ STATS (nongol center di garis batas bawah hero) ═══ */}
+      <div style={{ position:'relative', zIndex:5, maxWidth:'760px', margin:'-58px auto 0', padding:'0 20px' }} className="section-pad">
+        <div style={{ background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', borderRadius:'24px', padding:'26px 20px', boxShadow:'0 20px 50px rgba(0,0,0,0.15)', border:'1px solid rgba(14,146,179,0.12)', display:'flex', justifyContent:'space-around', flexWrap:'wrap', gap:'20px' }}>
           {stats.map(s => (
-            <div key={s.label} style={{ textAlign:'center', minWidth:'100px' }}>
-              <div style={{ fontSize:'clamp(22px,3vw,30px)', fontWeight:900, color:'#1a2e25', lineHeight:1 }}>{s.value}</div>
+            <div key={s.label} style={{ textAlign:'center', minWidth:'110px' }}>
+              <div style={{ fontSize:'clamp(22px,3vw,30px)', fontWeight:900, color:GREEN, lineHeight:1 }}>{s.value}</div>
               <div style={{ fontSize:'12px', color:'#6b7280', marginTop:'4px' }}>{s.label}</div>
             </div>
           ))}
@@ -140,26 +173,28 @@ export default async function HomePage() {
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Layanan Kami</span>
-            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'white', margin:'0 0 12px' }}>Langkah Tepat Mengawal Kesehatan</h2>
-            <p style={{ color:'rgba(255,255,255,0.78)', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Tim profesional berpengalaman siap memberikan perawatan terbaik</p>
+            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>Langkah Tepat Mengawal Kesehatan</h2>
+            <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Tim profesional berpengalaman siap memberikan perawatan terbaik</p>
           </div>
 
-          {/* Desktop grid / Mobile horizontal scroll */}
+          {/* Desktop grid / Mobile horizontal scroll — hanya 3 layanan unggulan biar mancing klik "Lihat Semua" */}
           <div className="card-grid card-grid-mobile-scroll">
-            {layananData.slice(0,6).map((l: any, i: number) => (
-              <div key={i} style={{ position:'relative', height:'320px', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
-                {l.gambar ? (
-                  <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                ) : (
-                  <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'48px' }}>{l.icon||'🏥'}</div>
-                )}
-                <div style={{ position:'absolute', inset:0, background:`linear-gradient(to top, rgba(4,35,43,0.92) 0%, ${GREEN}66 45%, rgba(4,35,43,0.05) 85%)` }} />
-                <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'20px' }}>
-                  <h3 style={{ fontSize:'17px', fontWeight:800, color:'white', margin:'0 0 6px' }}>{l.nama}</h3>
-                  <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.85)', lineHeight:1.6, margin:'0 0 14px' }}>{l.deskripsi}</p>
-                  <a href={l.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'4px' }}>Konsultasi →</a>
+            {layananHighlight.map((l: any, i: number) => (
+              <ScrollFade key={i} delay={i*100} mobileOnly>
+                <div style={{ position:'relative', height:'320px', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                  {l.gambar ? (
+                    <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                  ) : (
+                    <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'48px' }}>{l.icon||'🏥'}</div>
+                  )}
+                  <div style={{ position:'absolute', inset:0, background:`linear-gradient(to top, rgba(4,35,43,0.92) 0%, ${GREEN}66 45%, rgba(4,35,43,0.05) 85%)` }} />
+                  <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'20px' }}>
+                    <h3 style={{ fontSize:'17px', fontWeight:800, color:'white', margin:'0 0 6px' }}>{l.nama}</h3>
+                    <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.85)', lineHeight:1.6, margin:'0 0 14px' }}>{l.deskripsi}</p>
+                    <a href={l.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'4px' }}>Konsultasi →</a>
+                  </div>
                 </div>
-              </div>
+              </ScrollFade>
             ))}
           </div>
 
@@ -172,47 +207,74 @@ export default async function HomePage() {
       </section>
 
       {/* ═══ PENUNJANG KESEHATAN ═══ */}
-      {penunjangData.length > 0 && (
+      {penunjangHighlight.length > 0 && (
         <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'48px' }}>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Penunjang Kesehatan</span>
-              <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'white', margin:'0 0 12px' }}>Fasilitas Penunjang Siap Membantu</h2>
-              <p style={{ color:'rgba(255,255,255,0.78)', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Sarana dan prasarana pendukung layanan kesehatan Anda</p>
+              <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>Fasilitas Penunjang Siap Membantu</h2>
+              <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Sarana dan prasarana pendukung layanan kesehatan Anda</p>
             </div>
 
             <div className="card-grid card-grid-mobile-scroll">
-              {penunjangData.slice(0,6).map((p: any, i: number) => (
-                <div key={p.id||i} style={{ position:'relative', height:'300px', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
-                  {p.gambar ? (
-                    <img src={p.gambar} alt={p.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                  ) : (
-                    <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🩺</div>
-                  )}
-                  <div style={{ position:'absolute', inset:0, background:`linear-gradient(to top, rgba(4,35,43,0.92) 0%, ${GREEN}66 45%, rgba(4,35,43,0.05) 85%)` }} />
-                  {p.tipe && (
-                    <span style={{ position:'absolute', top:'12px', left:'12px', background:'rgba(255,255,255,0.92)', color:GREEN, borderRadius:'20px', padding:'4px 12px', fontSize:'11px', fontWeight:700 }}>{p.tipe}</span>
-                  )}
-                  <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'18px' }}>
-                    <h3 style={{ fontSize:'16px', fontWeight:800, color:'white', margin:'0 0 6px' }}>{p.nama}</h3>
-                    {p.deskripsi && <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.85)', lineHeight:1.6, margin:'0 0 14px' }}>{p.deskripsi}</p>}
-                    <a href={p.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none' }}>Konsultasi →</a>
+              {penunjangHighlight.map((p: any, i: number) => (
+                <ScrollFade key={p.id||i} delay={i*100} mobileOnly>
+                  <div style={{ position:'relative', height:'300px', borderRadius:'20px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
+                    {p.gambar ? (
+                      <img src={p.gambar} alt={p.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                    ) : (
+                      <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'40px' }}>🩺</div>
+                    )}
+                    <div style={{ position:'absolute', inset:0, background:`linear-gradient(to top, rgba(4,35,43,0.92) 0%, ${GREEN}66 45%, rgba(4,35,43,0.05) 85%)` }} />
+                    {p.tipe && (
+                      <span style={{ position:'absolute', top:'12px', left:'12px', background:'rgba(255,255,255,0.92)', color:GREEN, borderRadius:'20px', padding:'4px 12px', fontSize:'11px', fontWeight:700 }}>{p.tipe}</span>
+                    )}
+                    <div style={{ position:'absolute', left:0, right:0, bottom:0, padding:'18px' }}>
+                      <h3 style={{ fontSize:'16px', fontWeight:800, color:'white', margin:'0 0 6px' }}>{p.nama}</h3>
+                      {p.deskripsi && <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.85)', lineHeight:1.6, margin:'0 0 14px' }}>{p.deskripsi}</p>}
+                      <a href={p.wa_link||WA} target="_blank" rel="noreferrer" style={{ color:'white', fontSize:'13px', fontWeight:700, textDecoration:'none' }}>Konsultasi →</a>
+                    </div>
                   </div>
-                </div>
+                </ScrollFade>
               ))}
             </div>
           </div>
         </section>
       )}
 
+      {/* ═══ LAYANAN KESEHATAN KOMPREHENSIF DI RUMAH (slide separo) ═══ */}
+      <section style={{ padding:'0 20px 80px' }} className="section-pad">
+        <div style={{ maxWidth:'1200px', margin:'0 auto', display:'grid', gridTemplateColumns:'1fr 1fr', borderRadius:'28px', overflow:'hidden', boxShadow:'0 20px 50px rgba(14,146,179,0.15)' }} className="two-col komprehensif-grid">
+          <div style={{ position:'relative', minHeight:'340px' }}>
+            <ImageFade images={profileImages.length > 0 ? profileImages : [profileImage]} alt="Layanan Homecare Mikala" />
+          </div>
+          <div style={{ background:`linear-gradient(150deg, ${GREEN} 0%, #0a7a8f 55%, #0a5d6e 100%)`, padding:'clamp(28px,4vw,44px)', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+            <h2 style={{ color:'white', fontSize:'clamp(20px,3vw,28px)', fontWeight:800, lineHeight:1.3, margin:'0 0 14px' }}>Layanan Kesehatan Komprehensif di Rumah untuk Keluarga Anda</h2>
+            <p style={{ color:'rgba(255,255,255,0.88)', fontSize:'14px', lineHeight:1.8, margin:'0 0 22px' }}>{profileText}</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginBottom:'26px' }}>
+              {komprehensifChecklist.map((c, i) => (
+                <div key={i} style={{ display:'flex', gap:'10px', alignItems:'flex-start' }}>
+                  <span style={{ color:'#baf5df', fontWeight:800, flexShrink:0 }}>✓</span>
+                  <span style={{ color:'rgba(255,255,255,0.92)', fontSize:'13.5px', lineHeight:1.6 }}>{c}</span>
+                </div>
+              ))}
+            </div>
+            <a href={WA} target="_blank" rel="noreferrer" className="komprehensif-cta"
+              style={{ alignSelf:'flex-start', background:'white', color:GREEN, padding:'13px 28px', borderRadius:'25px', fontWeight:700, fontSize:'14px', textDecoration:'none' }}>
+              💬 Konsultasikan Sekarang!
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ═══ WHY US ═══ */}
       <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
         <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))', backdropFilter:'blur(16px)', border:'1px solid rgba(255,255,255,0.18)', borderRadius:'32px', padding:'clamp(24px,4vw,48px)', boxShadow:'0 20px 50px rgba(0,0,0,0.25)' }} className="two-col">
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:`linear-gradient(135deg, ${PINK}12, ${PINK}05)`, backdropFilter:'blur(16px)', border:`1px solid ${PINK}20`, borderRadius:'32px', padding:'clamp(24px,4vw,48px)', boxShadow:`0 20px 50px ${PINK}12` }} className="two-col">
             <div>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'16px' }}>Mengapa Kami</span>
-              <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'white', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
-              <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'16px', lineHeight:1.8, marginBottom:'28px' }}>
+              <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
+              <p style={{ color:'#6b7280', fontSize:'16px', lineHeight:1.8, marginBottom:'28px' }}>
                 {profileText}
               </p>
               {[
@@ -221,16 +283,16 @@ export default async function HomePage() {
                 { icon:'❤️', t:'Pelayanan Ramah 24/7', d:'Standby admin 24 jam untuk kebutuhan Anda' },
               ].map(f => (
                 <div key={f.t} style={{ display:'flex', gap:'14px', marginBottom:'18px', alignItems:'flex-start' }}>
-                  <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:'rgba(255,255,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', flexShrink:0 }}>{f.icon}</div>
+                  <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', flexShrink:0 }}>{f.icon}</div>
                   <div>
-                    <h4 style={{ fontWeight:700, color:'white', margin:'0 0 3px', fontSize:'15px' }}>{f.t}</h4>
-                    <p style={{ color:'rgba(255,255,255,0.75)', fontSize:'13px', margin:0 }}>{f.d}</p>
+                    <h4 style={{ fontWeight:700, color:'#1a2e25', margin:'0 0 3px', fontSize:'15px' }}>{f.t}</h4>
+                    <p style={{ color:'#6b7280', fontSize:'13px', margin:0 }}>{f.d}</p>
                   </div>
                 </div>
               ))}
               <div style={{ display:'flex', gap:'12px', marginTop:'28px', flexWrap:'wrap' }}>
-                <a href={WA} target="_blank" rel="noreferrer" style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none' }}>Buat Janji</a>
-                <Link href="/layanan" style={{ background:'white', color:GREEN, padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none', border:`2px solid white` }}>Cek Layanan</Link>
+                <a href={WA} target="_blank" rel="noreferrer" style={{ background:`linear-gradient(135deg, ${GREEN}, #3a9e78)`, color:'white', padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none' }}>Buat Janji</a>
+                <Link href="/layanan" style={{ background:'white', color:GREEN, padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none', border:`2px solid ${GREEN}` }}>Cek Layanan</Link>
               </div>
             </div>
             <div style={{ position:'relative' }}>
@@ -262,7 +324,7 @@ export default async function HomePage() {
       <section style={{ padding:'80px 0', background:'transparent', overflow:'hidden' }} className="section-pad">
         <div style={{ textAlign:'center', marginBottom:'48px', padding:'0 20px' }}>
           <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Testimoni</span>
-          <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'white', margin:0 }}>Kata Mereka tentang Kami</h2>
+          <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Kata Mereka tentang Kami</h2>
         </div>
         <div className="testi-marquee-track">
           <div className="testi-marquee-content">
@@ -295,20 +357,26 @@ export default async function HomePage() {
       {videoId && <VideoSection videoId={videoId} title={videoTitle} />}
 
       {/* ═══ 6 ALASAN ═══ */}
-      <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
-        <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+      <section style={{ padding:'80px 20px', background:'transparent', position:'relative', overflow:'hidden' }} className="section-pad">
+        <div style={{
+          position:'absolute', inset:0, backgroundImage:`url(${LOGO})`, backgroundRepeat:'no-repeat',
+          backgroundPosition:'center', backgroundSize:'min(60%, 480px)', opacity:0.06, pointerEvents:'none',
+        }} />
+        <div style={{ maxWidth:'1200px', margin:'0 auto', position:'relative' }}>
           <div style={{ textAlign:'center', marginBottom:'48px' }}>
             <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Kenapa Pilih Kami</span>
-            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'white', margin:'0 0 12px' }}>6 Alasan Memilih Mikala</h2>
-            <p style={{ color:'rgba(255,255,255,0.78)', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
+            <h2 style={{ fontSize:'clamp(24px,4vw,38px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>6 Alasan Memilih Mikala</h2>
+            <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
           </div>
           <div className="card-grid card-grid-mobile-scroll">
             {alasanData.slice(0,6).map((al, i) => (
-              <div key={i} style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
-                <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', margin:'0 auto 16px' }}>{al.icon||'✅'}</div>
-                <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px' }}>{al.judul}</h3>
-                {al.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:0 }}>{al.deskripsi}</p>}
-              </div>
+              <ScrollFade key={i} delay={i*80}>
+                <div style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
+                  <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', margin:'0 auto 16px' }}>{al.icon||'✅'}</div>
+                  <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px' }}>{al.judul}</h3>
+                  {al.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:0 }}>{al.deskripsi}</p>}
+                </div>
+              </ScrollFade>
             ))}
           </div>
         </div>
@@ -320,15 +388,9 @@ export default async function HomePage() {
           <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'40px' }}>
               <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Legalitas & Sertifikasi</span>
-              <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'white', margin:0 }}>Sertifikat & Izin Resmi Kami</h2>
+              <h2 style={{ fontSize:'clamp(24px,4vw,36px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Sertifikat & Izin Resmi Kami</h2>
             </div>
-            <div style={{ display:'flex', gap:'20px', overflowX:'auto', paddingBottom:'12px', scrollSnapType:'x mandatory' }}>
-              {sertifikatImages.map((img, i) => (
-                <div key={i} style={{ flex:'0 0 auto', width:'220px', scrollSnapAlign:'start', background:'rgba(255,255,255,0.85)', backdropFilter:'blur(20px)', borderRadius:'16px', overflow:'hidden', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)' }}>
-                  <img src={img} alt={`Sertifikat ${i+1}`} style={{ width:'100%', height:'280px', objectFit:'cover' }} />
-                </div>
-              ))}
-            </div>
+            <SecureGallery images={sertifikatImages.slice(0,4)} />
           </div>
         </section>
       )}
@@ -340,7 +402,7 @@ export default async function HomePage() {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'32px', flexWrap:'wrap', gap:'16px' }}>
               <div>
                 <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'10px' }}>Artikel Terbaru</span>
-                <h2 style={{ fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'white', margin:0 }}>Tips & Info Kesehatan</h2>
+                <h2 style={{ fontSize:'clamp(22px,3.5vw,34px)', fontWeight:800, color:'#1a2e25', margin:0 }}>Tips & Info Kesehatan</h2>
               </div>
               <Link href="/artikel" style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'10px 22px', borderRadius:'20px', fontSize:'13px', fontWeight:600, textDecoration:'none' }}>
                 Lihat Semua →
@@ -436,6 +498,15 @@ export default async function HomePage() {
         .testi-marquee-content { display:flex; gap:20px; width:max-content; animation: mgm-testi-marquee 38s linear infinite; }
         .testi-marquee-track:hover .testi-marquee-content { animation-play-state: paused; }
         @keyframes mgm-testi-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .komprehensif-cta { animation: mgm-cta-pulse 2.2s ease-in-out infinite; }
+        @keyframes mgm-cta-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+          50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+        }
+        @media (max-width: 768px) {
+          .komprehensif-grid { grid-template-columns: 1fr !important; }
+          .komprehensif-grid > div:first-child { min-height: 220px !important; }
+        }
       `}</style>
     </div>
   );
