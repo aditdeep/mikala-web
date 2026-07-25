@@ -43,7 +43,7 @@ export default function WebsitePage() {
   const [formSettings, setFormSettings] = useState<any>({});
   const [heroSlides, setHeroSlides] = useState<{ image:string; title:string; subtitle:string }[]>([]);
   const [profileImages, setProfileImages] = useState<string[]>([]);
-  const [alasanList, setAlasanList] = useState<{ icon:string; judul:string; deskripsi:string }[]>([]);
+  const [alasanList, setAlasanList] = useState<{ icon:string; judul:string; deskripsi:string; gambar?:string }[]>([]);
   const [sertifikatImages, setSertifikatImages] = useState<string[]>([]);
   const [prshHeroImages, setPrshHeroImages] = useState<string[]>([]);
   const [prshMisiList, setPrshMisiList] = useState<string[]>([]);
@@ -51,6 +51,7 @@ export default function WebsitePage() {
   const [prshChecklist, setPrshChecklist] = useState<string[]>([]);
   const [prshMgaImages, setPrshMgaImages] = useState<string[]>([]);
   const [layananHeroImages, setLayananHeroImages] = useState<string[]>([]);
+  const [footerSocialIcons, setFooterSocialIcons] = useState<{ label:string; url:string; icon:string }[]>([]);
 
   useEffect(() => { fetchData(); }, [activeTab, artikelPage]);
 
@@ -100,6 +101,7 @@ export default function WebsitePage() {
         setPrshChecklist(parseArr(s.prsh_checklist_list));
         setPrshMgaImages(parseArr(s.prsh_mga_images));
         setLayananHeroImages(parseArr(s.layanan_hero_images));
+        setFooterSocialIcons(parseArr(s.footer_social_icons));
       }
     } catch {}
     setLoading(false);
@@ -200,6 +202,7 @@ export default function WebsitePage() {
         prsh_checklist_list: JSON.stringify(prshChecklist),
         prsh_mga_images: JSON.stringify(prshMgaImages),
         layanan_hero_images: JSON.stringify(layananHeroImages),
+        footer_social_icons: JSON.stringify(footerSocialIcons),
       };
       await apiClient.post('/internal/cms/settings', payload);
       alert('Settings tersimpan!');
@@ -224,9 +227,9 @@ export default function WebsitePage() {
   const removeProfileImage = (i: number) => setProfileImages(p => p.filter((_, idx) => idx !== i));
   const updateProfileImage = (i: number, url: string) => setProfileImages(p => p.map((s, idx) => idx === i ? url : s));
 
-  const addAlasan = () => setAlasanList(p => [...p, { icon:'✅', judul:'', deskripsi:'' }]);
+  const addAlasan = () => setAlasanList(p => [...p, { icon:'✅', judul:'', deskripsi:'', gambar:'' }]);
   const removeAlasan = (i: number) => setAlasanList(p => p.filter((_, idx) => idx !== i));
-  const updateAlasan = (i: number, patch: Partial<{ icon:string; judul:string; deskripsi:string }>) =>
+  const updateAlasan = (i: number, patch: Partial<{ icon:string; judul:string; deskripsi:string; gambar:string }>) =>
     setAlasanList(p => p.map((s, idx) => idx === i ? { ...s, ...patch } : s));
   const moveAlasan = (i: number, dir: -1 | 1) => setAlasanList(p => {
     const j = i + dir;
@@ -263,6 +266,11 @@ export default function WebsitePage() {
   const addLayananHeroImage = () => setLayananHeroImages(p => [...p, '']);
   const removeLayananHeroImage = (i: number) => setLayananHeroImages(p => p.filter((_, idx) => idx !== i));
   const updateLayananHeroImage = (i: number, url: string) => setLayananHeroImages(p => p.map((s, idx) => idx === i ? url : s));
+
+  const addFooterSocial = () => setFooterSocialIcons(p => [...p, { label:'', url:'', icon:'' }]);
+  const removeFooterSocial = (i: number) => setFooterSocialIcons(p => p.filter((_, idx) => idx !== i));
+  const updateFooterSocial = (i: number, patch: Partial<{ label:string; url:string; icon:string }>) =>
+    setFooterSocialIcons(p => p.map((s, idx) => idx === i ? { ...s, ...patch } : s));
 
   const handleDelete = async (type: string, id: number) => {
     if (!confirm('Hapus item ini?')) return;
@@ -674,6 +682,14 @@ export default function WebsitePage() {
                   <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'8px' }}>
                     <input placeholder="Judul alasan" value={al.judul} onChange={e => updateAlasan(i, { judul:e.target.value })} style={inp} />
                     <input placeholder="Deskripsi singkat" value={al.deskripsi} onChange={e => updateAlasan(i, { deskripsi:e.target.value })} style={inp} />
+                    <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+                      <input placeholder="URL gambar (opsional)" value={al.gambar||''} onChange={e => updateAlasan(i, { gambar:e.target.value })} style={inp} />
+                      <label style={{ padding:'8px 12px', background:'rgba(45,122,94,0.1)', border:'1px solid rgba(45,122,94,0.2)', borderRadius:'8px', color:'#2d7a5e', fontSize:'11px', cursor:'pointer', fontWeight:600, display:'flex', alignItems:'center', gap:'4px', flexShrink:0 }}>
+                        <Upload size={12}/>
+                        <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updateAlasan(i, { gambar:url })); }} />
+                      </label>
+                      {al.gambar && <img src={al.gambar} alt="" style={{ width:'32px', height:'32px', borderRadius:'6px', objectFit:'cover', flexShrink:0 }} />}
+                    </div>
                   </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
                     <button type="button" onClick={() => moveAlasan(i, -1)} disabled={i===0} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'6px', width:'28px', height:'28px', cursor:'pointer', color:'var(--text)', opacity:i===0?0.4:1 }}>↑</button>
@@ -734,6 +750,32 @@ export default function WebsitePage() {
               ))}
               {layananHeroImages.length === 0 && (
                 <p style={{ color:'var(--text2)', fontSize:'12px', margin:0 }}>Belum ada foto. Kalau kosong, otomatis pakai foto layanan pertama.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Sosial Media Footer */}
+          <div style={{ ...cardStyle, padding:'16px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
+              <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700 }}>Ikon Sosial Media di Footer ({footerSocialIcons.length})</label>
+              <button type="button" onClick={addFooterSocial} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah Sosmed</button>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              {footerSocialIcons.map((s, i) => (
+                <div key={i} style={{ display:'flex', gap:'12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', alignItems:'center' }}>
+                  <label style={{ width:'44px', height:'44px', borderRadius:'10px', overflow:'hidden', background:'var(--bg2)', border:'1px dashed var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 }}>
+                    {s.icon ? <img src={s.icon} alt="" style={{ width:'100%', height:'100%', objectFit:'contain' }} /> : <Upload size={14} color="var(--text2)" />}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updateFooterSocial(i, { icon:url })); }} />
+                  </label>
+                  <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'8px' }}>
+                    <input placeholder="Nama (mis. Instagram)" value={s.label} onChange={e => updateFooterSocial(i, { label:e.target.value })} style={inp} />
+                    <input placeholder="URL profil/link" value={s.url} onChange={e => updateFooterSocial(i, { url:e.target.value })} style={inp} />
+                  </div>
+                  <button type="button" onClick={() => removeFooterSocial(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'32px', height:'32px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={14}/></button>
+                </div>
+              ))}
+              {footerSocialIcons.length === 0 && (
+                <p style={{ color:'var(--text2)', fontSize:'12px', margin:0 }}>Belum diisi. Jika kosong, footer pakai 5 ikon sosmed default (FB, IG, TikTok, YouTube, WA).</p>
               )}
             </div>
           </div>

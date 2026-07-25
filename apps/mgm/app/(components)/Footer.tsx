@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
 const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
@@ -7,6 +8,25 @@ const WA = "https://wa.me/6281296998827";
 const PHONE_DISPLAY = "0812-9699-8827";
 const MAP_QUERY = encodeURIComponent('Jl. Anyelir No. 1-2, Jatibening, Kota Bekasi');
 const ADDRESS = 'Jl. Anyelir No. 1-2, Jatibening, Kota Bekasi';
+
+const defaultSocial = [
+  { label:'Facebook', url:'https://www.facebook.com/mikalaglobalmdk/', icon:'', letter:'f', bg:'#1877f2' },
+  { label:'Instagram', url:'https://www.instagram.com/mikalaglobalmedika/', icon:'', letter:'ig', bg:'#e1306c' },
+  { label:'TikTok', url:'https://www.tiktok.com/@mikalaglobalmedika_pt', icon:'', letter:'tt', bg:'#000' },
+  { label:'YouTube', url:'https://www.youtube.com/@MikalaGlobalMedika', icon:'', letter:'yt', bg:'#ff0000' },
+  { label:'WhatsApp', url: WA, icon:'', letter:'wa', bg:'#25d366' },
+];
+
+async function getSocialIcons() {
+  try {
+    const res = await fetch(`${API}/cms/settings`, { next: { revalidate: 60 } });
+    const data = await res.json();
+    const raw = data.data?.footer_social_icons;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  } catch {}
+  return defaultSocial;
+}
 
 const COLS = [
   {
@@ -50,7 +70,8 @@ const COLS = [
   },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  const socialIcons = await getSocialIcons();
   return (
     <footer style={{ background:'linear-gradient(160deg, #06333f 0%, #04232b 100%)', color:'white', padding:'60px 20px 24px' }}>
       <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
@@ -84,16 +105,10 @@ export default function Footer() {
             </a>
 
             <div style={{ display:'flex', gap:'10px' }}>
-              {[
-                { href:'https://www.facebook.com/mikalaglobalmdk/', icon:'f', bg:'#1877f2' },
-                { href:'https://www.instagram.com/mikalaglobalmedika/', icon:'ig', bg:'#e1306c' },
-                { href:'https://www.tiktok.com/@mikalaglobalmedika_pt', icon:'tt', bg:'#000' },
-                { href:'https://www.youtube.com/@MikalaGlobalMedika', icon:'yt', bg:'#ff0000' },
-                { href:WA, icon:'wa', bg:'#25d366' },
-              ].map(s => (
-                <a key={s.icon} href={s.href} target="_blank" rel="noreferrer"
-                  style={{ width:'34px', height:'34px', borderRadius:'8px', background:s.bg, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'10px', fontWeight:700, textDecoration:'none' }}>
-                  {s.icon}
+              {socialIcons.map((s: any, i: number) => (
+                <a key={i} href={s.url||s.href} target="_blank" rel="noreferrer" aria-label={s.label}
+                  style={{ width:'34px', height:'34px', borderRadius:'8px', background: s.icon ? 'rgba(255,255,255,0.1)' : (s.bg||GREEN), display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'10px', fontWeight:700, textDecoration:'none', overflow:'hidden' }}>
+                  {s.icon ? <img src={s.icon} alt={s.label||''} style={{ width:'18px', height:'18px', objectFit:'contain' }} /> : (s.letter||s.icon||'?')}
                 </a>
               ))}
             </div>

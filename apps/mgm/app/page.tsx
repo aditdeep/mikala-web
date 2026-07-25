@@ -124,7 +124,7 @@ export default async function HomePage() {
   };
   const videoId = getYoutubeId(videoUrl);
 
-  let alasanList: { icon?: string; judul: string; deskripsi?: string }[] = [];
+  let alasanList: { icon?: string; judul: string; deskripsi?: string; gambar?: string }[] = [];
   try {
     const raw = settings.alasan_list;
     const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -258,7 +258,7 @@ export default async function HomePage() {
       <section style={{ padding:'0 20px 80px' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto', display:'grid', gridTemplateColumns:'1fr 1fr', borderRadius:'28px', overflow:'hidden', boxShadow:'0 20px 50px rgba(14,146,179,0.15)' }} className="two-col komprehensif-grid">
           <div style={{ position:'relative', minHeight:'340px' }}>
-            <ImageFade images={profileImages.length > 0 ? profileImages : [profileImage]} alt="Layanan Homecare Mikala" />
+            <ImageFade images={profileImages.length > 0 ? profileImages : [profileImage]} alt="Layanan Homecare Mikala" arrows />
           </div>
           <div style={{ background:`linear-gradient(150deg, ${GREEN} 0%, #0a7a8f 55%, #0a5d6e 100%)`, padding:'clamp(28px,4vw,44px)', display:'flex', flexDirection:'column', justifyContent:'center' }}>
             <h2 style={{ color:'white', fontSize:'clamp(20px,3vw,28px)', fontWeight:800, lineHeight:1.3, margin:'0 0 14px' }}>Layanan Kesehatan Komprehensif di Rumah untuk Keluarga Anda</h2>
@@ -275,59 +275,6 @@ export default async function HomePage() {
               style={{ alignSelf:'flex-start', background:'white', color:GREEN, padding:'13px 28px', borderRadius:'25px', fontWeight:700, fontSize:'14px', textDecoration:'none' }}>
               💬 Konsultasikan Sekarang!
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ WHY US ═══ */}
-      <section style={{ padding:'80px 20px', background:'transparent' }} className="section-pad">
-        <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'60px', alignItems:'center', background:`linear-gradient(135deg, ${PINK}12, ${PINK}05)`, backdropFilter:'blur(16px)', border:`1px solid ${PINK}20`, borderRadius:'32px', padding:'clamp(24px,4vw,48px)', boxShadow:`0 20px 50px ${PINK}12` }} className="two-col">
-            <div>
-              <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'16px' }}>Mengapa Kami</span>
-              <h2 style={{ fontSize:'clamp(24px,3.5vw,36px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px', lineHeight:1.2 }}>Pelayanan Terbaik untuk Anda & Keluarga</h2>
-              <p style={{ color:'#6b7280', fontSize:'16px', lineHeight:1.8, marginBottom:'28px' }}>
-                {profileText}
-              </p>
-              {[
-                { icon:'🏆', t:'Tim Medis Berkualitas', d:'Tenaga profesional berpengalaman & bersertifikat' },
-                { icon:'💻', t:'Teknologi Terkini', d:'Sarana prasarana paling up-to-date' },
-                { icon:'❤️', t:'Pelayanan Ramah 24/7', d:'Standby admin 24 jam untuk kebutuhan Anda' },
-              ].map(f => (
-                <div key={f.t} style={{ display:'flex', gap:'14px', marginBottom:'18px', alignItems:'flex-start' }}>
-                  <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', flexShrink:0 }}>{f.icon}</div>
-                  <div>
-                    <h4 style={{ fontWeight:700, color:'#1a2e25', margin:'0 0 3px', fontSize:'15px' }}>{f.t}</h4>
-                    <p style={{ color:'#6b7280', fontSize:'13px', margin:0 }}>{f.d}</p>
-                  </div>
-                </div>
-              ))}
-              <div style={{ display:'flex', gap:'12px', marginTop:'28px', flexWrap:'wrap' }}>
-                <a href={WA} target="_blank" rel="noreferrer" style={{ background:`linear-gradient(135deg, ${GREEN}, #3a9e78)`, color:'white', padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none' }}>Buat Janji</a>
-                <Link href="/layanan" style={{ background:'white', color:GREEN, padding:'13px 26px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none', border:`2px solid ${GREEN}` }}>Cek Layanan</Link>
-              </div>
-            </div>
-            <div style={{ position:'relative' }}>
-              <div style={{ borderRadius:'24px', overflow:'hidden', boxShadow:'0 20px 60px rgba(14,146,179,0.2)' }}>
-                <img src={profileImage} alt="Tim Mikala" style={{ width:'100%', height:'380px', objectFit:'cover' }} />
-              </div>
-              {profileImages.length > 1 && (
-                <div style={{ display:'flex', gap:'10px', marginTop:'12px' }}>
-                  {profileImages.slice(1, 4).map((img, i) => (
-                    <div key={i} style={{ flex:1, height:'70px', borderRadius:'12px', overflow:'hidden', boxShadow:'0 4px 15px rgba(0,0,0,0.1)' }}>
-                      <img src={img} alt={`Mikala ${i+2}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div style={{ position:'absolute', bottom:'-16px', right:'-16px', background:'white', borderRadius:'16px', padding:'16px 20px', boxShadow:'0 8px 30px rgba(0,0,0,0.12)', display:'flex', alignItems:'center', gap:'10px' }}>
-                <div style={{ fontSize:'28px' }}>⭐</div>
-                <div>
-                  <div style={{ fontWeight:800, fontSize:'18px', color:'#1a2e25' }}>4.9/5.0</div>
-                  <div style={{ color:'#6b7280', fontSize:'11px' }}>Rating Pelanggan</div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -381,12 +328,19 @@ export default async function HomePage() {
             <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'540px', margin:'0 auto' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
           </div>
           <div className="card-grid card-grid-mobile-scroll">
-            {alasanData.slice(0,6).map((al, i) => (
+            {alasanData.slice(0,6).map((al: any, i: number) => (
               <ScrollFade key={i} delay={i*80}>
-                <div style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding:'28px 22px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center' }}>
-                  <div style={{ width:'56px', height:'56px', borderRadius:'16px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', margin:'0 auto 16px' }}>{al.icon||'✅'}</div>
-                  <h3 style={{ fontSize:'15px', fontWeight:700, color:'#1a2e25', margin:'0 0 8px' }}>{al.judul}</h3>
-                  {al.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6, margin:0 }}>{al.deskripsi}</p>}
+                <div style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding: al.gambar ? '0 24px 26px' : '32px 24px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center', overflow:'hidden' }}>
+                  {al.gambar ? (
+                    <div style={{ position:'relative', margin:'0 -24px 18px', height:'160px' }}>
+                      <img src={al.gambar} alt={al.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                      <div style={{ position:'absolute', bottom:'-22px', left:'50%', transform:'translateX(-50%)', width:'52px', height:'52px', borderRadius:'16px', background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', boxShadow:'0 6px 16px rgba(0,0,0,0.15)' }}>{al.icon||'✅'}</div>
+                    </div>
+                  ) : (
+                    <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'30px', margin:'0 auto 18px' }}>{al.icon||'✅'}</div>
+                  )}
+                  <h3 style={{ fontSize: al.gambar ? '18px' : '17px', fontWeight:800, color:'#1a2e25', margin: al.gambar ? '14px 0 10px' : '0 0 10px' }}>{al.judul}</h3>
+                  {al.deskripsi && <p style={{ fontSize:'14.5px', color:'#6b7280', lineHeight:1.7, margin:0 }}>{al.deskripsi}</p>}
                 </div>
               </ScrollFade>
             ))}
