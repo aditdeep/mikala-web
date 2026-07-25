@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Navbar from '../(components)/Navbar';
 import Footer from '../(components)/Footer';
 import ImageFade from '../(components)/ImageFade';
+import ScrollFade from '../(components)/ScrollFade';
 import { slugify } from '@/lib/slug';
 import type { Metadata } from 'next';
 
@@ -128,13 +129,13 @@ export default async function LayananPage() {
       <Navbar active="/layanan" overlay/>
 
       {/* ═══ HERO ═══ */}
-      <section style={{ position:'relative', minHeight:'clamp(320px,45vh,460px)', overflow:'hidden' }}>
+      <section style={{ position:'relative', minHeight:'clamp(360px,55vh,560px)', overflow:'hidden' }}>
         <ImageFade images={heroImages} alt="Layanan Mikala Global Medika" />
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(4,35,43,0.75) 0%, rgba(4,35,43,0.35) 55%, rgba(4,35,43,0.15) 100%)' }} />
-        <div style={{ position:'relative', zIndex:1, maxWidth:'900px', margin:'0 auto', padding:'clamp(50px,9vw,90px) 20px', textAlign:'center' }}>
+        <div style={{ position:'relative', zIndex:1, maxWidth:'1200px', margin:'0 auto', padding:'clamp(60px,10vw,110px) 20px', textAlign:'center' }}>
           <span style={{ display:'inline-block', background:'rgba(255,255,255,0.15)', backdropFilter:'blur(10px)', border:'1px solid rgba(255,255,255,0.3)', color:'white', borderRadius:'20px', padding:'6px 16px', fontSize:'12px', fontWeight:700, marginBottom:'16px' }}>Layanan Kami</span>
           <h1 style={{ fontSize:'clamp(26px,4.5vw,42px)', fontWeight:800, color:'white', margin:'0 0 12px' }}>Solusi Lengkap Perawatan Kesehatan Anda</h1>
-          <p style={{ fontSize:'clamp(13px,1.8vw,16px)', color:'rgba(255,255,255,0.88)', margin:'0 0 20px' }}>Tersedia 24 jam untuk Anda dan keluarga di Bekasi dan sekitarnya</p>
+          <p style={{ fontSize:'clamp(13px,1.8vw,16px)', color:'rgba(255,255,255,0.88)', margin:'0 0 20px', maxWidth:'640px', marginLeft:'auto', marginRight:'auto' }}>Tersedia 24 jam untuk Anda dan keluarga di Bekasi dan sekitarnya</p>
           <div style={{ display:'flex', gap:'10px', justifyContent:'center', flexWrap:'wrap' }}>
             {['✅ Tenaga Tersertifikasi','⏰ Tersedia 24 Jam','📍 Jabodetabek & Sekitarnya'].map(t => (
               <span key={t} style={{ background:'rgba(255,255,255,0.15)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,0.25)', color:'white', padding:'6px 14px', borderRadius:'20px', fontSize:'12px', fontWeight:500 }}>{t}</span>
@@ -143,16 +144,29 @@ export default async function LayananPage() {
         </div>
       </section>
 
-      {/* ═══ 6 ALASAN (strip ringkas) ═══ */}
-      <section style={{ padding:'40px 20px', background:'transparent' }} className="section-pad">
+      {/* ═══ 6 ALASAN ═══ */}
+      <section style={{ padding:'clamp(48px,8vw,80px) 20px', background:'transparent' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
-          <h2 style={{ textAlign:'center', fontSize:'clamp(16px,2.4vw,20px)', fontWeight:800, color:'#1a2e25', margin:'0 0 20px' }}>6 Alasan Memilih Layanan Kami</h2>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))', gap:'12px' }}>
-            {alasanData.slice(0,6).map((al, i) => (
-              <div key={i} style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, borderRadius:'16px', padding:'16px 14px', textAlign:'center', boxShadow:`0 8px 20px ${GREEN}25` }}>
-                <div style={{ fontSize:'20px', marginBottom:'6px' }}>{al.icon||'✅'}</div>
-                <p style={{ color:'white', fontSize:'12px', fontWeight:600, lineHeight:1.5, margin:0 }}>{al.judul}</p>
-              </div>
+          <ScrollFade>
+            <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3vw,28px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>6 Alasan Memilih Layanan Kami</h2>
+            <p style={{ textAlign:'center', color:'#6b7280', fontSize:'15px', maxWidth:'560px', margin:'0 auto 36px' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
+          </ScrollFade>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'24px' }} className="card-grid card-grid-mobile-scroll">
+            {alasanData.slice(0,6).map((al: any, i) => (
+              <ScrollFade key={i} delay={i*80}>
+                <div style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding: al.gambar ? '0 26px 28px' : '34px 26px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center', overflow:'hidden' }}>
+                  {al.gambar ? (
+                    <div style={{ position:'relative', margin:'0 -26px 20px', height:'170px' }}>
+                      <img src={al.gambar} alt={al.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                      <div style={{ position:'absolute', bottom:'-22px', left:'50%', transform:'translateX(-50%)', width:'52px', height:'52px', borderRadius:'16px', background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', boxShadow:'0 6px 16px rgba(0,0,0,0.15)' }}>{al.icon||'✅'}</div>
+                    </div>
+                  ) : (
+                    <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'30px', margin:'0 auto 18px' }}>{al.icon||'✅'}</div>
+                  )}
+                  <h3 style={{ fontSize: al.gambar ? '19px' : '18px', fontWeight:800, color:'#1a2e25', margin: al.gambar ? '14px 0 10px' : '0 0 10px' }}>{al.judul}</h3>
+                  {al.deskripsi && <p style={{ fontSize:'14.5px', color:'#6b7280', lineHeight:1.7, margin:0 }}>{al.deskripsi}</p>}
+                </div>
+              </ScrollFade>
             ))}
           </div>
         </div>
@@ -160,43 +174,58 @@ export default async function LayananPage() {
 
       {/* ═══ APA YANG ANDA BUTUHKAN ═══ */}
       <section style={{ padding:'20px 20px 80px' }} className="section-pad">
-        <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
-          <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3.2vw,30px)', fontWeight:800, color:'#1a2e25', margin:'0 0 36px' }}>Apa yang Anda Butuhkan?</h2>
+        <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+          <ScrollFade>
+            <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3.2vw,30px)', fontWeight:800, color:'#1a2e25', margin:'0 0 36px' }}>Apa yang Anda Butuhkan?</h2>
+          </ScrollFade>
 
-          <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:'28px' }}>
             {data.map((l: any, i: number) => {
               const slug = slugify(l.nama);
+              const imgSide = i % 2 === 0 ? 'left' : 'right';
               return (
-                <Link key={i} href={`/layanan/${slug}`} style={{ textDecoration:'none' }}>
-                  <div style={{
-                    display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-                    borderRadius:'24px', overflow:'hidden', minHeight:'220px',
-                    boxShadow:'0 4px 24px rgba(0,0,0,0.08)', border:'1px solid rgba(14,146,179,0.1)',
-                  }}>
-                    {/* Gambar full */}
-                    <div style={{ position:'relative', minHeight:'220px', order: i%2===0 ? 0 : 1 }}>
-                      {l.gambar ? (
-                        <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                      ) : (
-                        <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'64px' }}>{l.icon||'🏥'}</div>
-                      )}
-                    </div>
-                    {/* Konten dengan gradasi MGM */}
+                <ScrollFade key={i} delay={(i%3)*90}>
+                  <Link href={`/layanan/${slug}`} style={{ textDecoration:'none' }}>
                     <div style={{
-                      position:'relative', padding:'clamp(22px,4vw,36px)', display:'flex', flexDirection:'column', justifyContent:'center',
-                      order: i%2===0 ? 1 : 0,
-                      background:`linear-gradient(135deg, ${GREEN}14 0%, rgba(255,255,255,0.92) 55%)`,
-                      backdropFilter:'blur(10px)',
-                    }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'10px' }}>
-                        <span style={{ fontSize:'26px' }}>{l.icon||'🏥'}</span>
-                        <h3 style={{ fontSize:'clamp(17px,2.4vw,22px)', fontWeight:800, color:'#1a2e25', margin:0 }}>{l.nama}</h3>
+                      display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+                      borderRadius:'28px', overflow:'hidden', minHeight:'260px',
+                      boxShadow:'0 6px 28px rgba(0,0,0,0.09)', border:'1px solid rgba(14,146,179,0.1)',
+                    }} className="layanan-card">
+                      {/* Gambar full + wave divider */}
+                      <div style={{ position:'relative', minHeight:'260px', order: imgSide==='left' ? 0 : 1 }}>
+                        {l.gambar ? (
+                          <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                        ) : (
+                          <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'64px' }}>{l.icon||'🏥'}</div>
+                        )}
+                        {/* Wave divider di sisi yang bersentuhan dengan panel teks */}
+                        <div aria-hidden className="layanan-wave" style={{
+                          position:'absolute', top:0, bottom:0, width:'50px', zIndex:2,
+                          [imgSide==='left' ? 'right' : 'left']: '-1px',
+                          transform: imgSide==='left' ? undefined : 'scaleX(-1)',
+                        }}>
+                          <svg viewBox="0 0 50 300" preserveAspectRatio="none" style={{ width:'100%', height:'100%', display:'block' }}>
+                            <path d="M50,0 C14,36 14,64 50,100 C86,136 86,164 50,200 C14,236 14,264 50,300 L50,300 L0,300 L0,0 Z" fill="#eef8f7" />
+                          </svg>
+                        </div>
                       </div>
-                      <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.8, margin:'0 0 18px' }}>{(l.deskripsi||'').slice(0,140)}{(l.deskripsi||'').length>140?'...':''}</p>
-                      <span style={{ color:GREEN, fontWeight:700, fontSize:'14px' }}>Selengkapnya →</span>
+                      {/* Konten dengan gradasi MGM */}
+                      <div style={{
+                        position:'relative', padding:'clamp(26px,4.5vw,44px)', display:'flex', flexDirection:'column', justifyContent:'center',
+                        order: imgSide==='left' ? 1 : 0,
+                        background:`linear-gradient(135deg, ${GREEN}14 0%, #eef8f7 55%)`,
+                        backdropFilter:'blur(10px)',
+                      }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' }}>
+                          <span style={{ fontSize:'28px' }}>{l.icon||'🏥'}</span>
+                          <h3 style={{ fontSize:'clamp(18px,2.6vw,24px)', fontWeight:800, color:'#1a2e25', margin:0 }}>{l.nama}</h3>
+                        </div>
+                        <p style={{ fontSize:'14px', color:'#6b7280', lineHeight:1.85, margin:'0 0 20px' }}>{(l.deskripsi||'').slice(0,180)}{(l.deskripsi||'').length>180?'...':''}</p>
+                        <span style={{ color:GREEN, fontWeight:700, fontSize:'14px' }}>Selengkapnya →</span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                </ScrollFade>
               );
             })}
           </div>
@@ -220,6 +249,13 @@ export default async function LayananPage() {
       </section>
 
       <Footer/>
+
+      <style>{`
+        @media (max-width: 700px) {
+          .layanan-card { grid-template-columns: 1fr !important; }
+          .layanan-wave { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

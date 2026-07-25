@@ -181,8 +181,8 @@ export default function Navbar({ active = '', overlay = false }: { active?: stri
           .mgm-nav-inner img { height: 28px !important; }
           .mgm-nav-spacer { height: 68px; }
         }
-        @media (max-width: 480px) {
-          .mgm-search-form { max-width: 150px !important; }
+        @media (max-width: 768px) {
+          .mgm-search-form { display: none !important; }
         }
       `}</style>
     </>
