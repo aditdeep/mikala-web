@@ -894,13 +894,24 @@ export default function WebsitePage() {
               <label style={{ color:'var(--text)', fontSize:'13px', fontWeight:700 }}>Ada Apa dengan MGM (checklist, {prshChecklist.length})</label>
               <button type="button" onClick={addPrshChecklist} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'6px 12px', color:'var(--text)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}><Plus size={14} /> Tambah</button>
             </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:'8px', marginBottom:'12px' }}>
               {prshChecklist.map((c, i) => (
                 <div key={i} style={{ display:'flex', gap:'8px' }}>
                   <input value={c} onChange={e => updatePrshChecklist(i, e.target.value)} style={inp} placeholder={`Poin ${i+1}`} />
                   <button type="button" onClick={() => removePrshChecklist(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'36px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={14} /></button>
                 </div>
               ))}
+            </div>
+            <div>
+              <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Gambar Samping (opsional)</label>
+              <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+                <input value={formSettings.prsh_checklist_image||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_checklist_image:e.target.value}))} style={inp} placeholder="https://..." />
+                <label style={{ padding:'9px 14px', background:'rgba(45,122,94,0.1)', border:'1px solid rgba(45,122,94,0.2)', borderRadius:'10px', color:'#2d7a5e', fontSize:'12px', cursor:'pointer', fontWeight:600, display:'flex', alignItems:'center', gap:'4px', flexShrink:0 }}>
+                  <Upload size={13}/>
+                  <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0], (url) => setFormSettings((p: any) => ({...p,prsh_checklist_image:url}))); }} />
+                </label>
+                {formSettings.prsh_checklist_image && <img src={formSettings.prsh_checklist_image} alt="" style={{ width:'40px', height:'40px', borderRadius:'8px', objectFit:'cover', flexShrink:0 }} />}
+              </div>
             </div>
           </div>
 
