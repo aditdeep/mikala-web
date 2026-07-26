@@ -190,31 +190,30 @@ export default async function LayananPage() {
           <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
             {data.map((l: any, i: number) => {
               const slug = slugify(l.nama);
-              const side = i % 2 === 0 ? 'left' : 'right';
               return (
                 <ScrollFade key={i} delay={(i%3)*90}>
                   <Link href={`/layanan/${slug}`} style={{ textDecoration:'none' }}>
-                    <div className={`layanan-card layanan-card-${side}`} style={{ position:'relative', minHeight:'380px', borderRadius:'28px', overflow:'hidden', boxShadow:'0 10px 34px rgba(0,0,0,0.16)' }}>
+                    <div className="layanan-card layanan-card-right" style={{ position:'relative', minHeight:'380px', borderRadius:'28px', overflow:'hidden', boxShadow:'0 10px 34px rgba(0,0,0,0.16)' }}>
                       {l.gambar ? (
                         <img src={l.gambar} alt={l.nama} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
                       ) : (
                         <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}, ${PINK})` }} />
                       )}
-                      {/* Wrap miring monochrome + glass */}
+                      {/* Wrap miring hijau tosca + glass */}
                       <div className="layanan-glass" style={{
                         position:'absolute', inset:0,
-                        background:'linear-gradient(135deg, rgba(6,20,26,0.82) 0%, rgba(6,20,26,0.52) 100%)',
-                        backdropFilter:'blur(10px) grayscale(0.7) saturate(0.6)',
-                        WebkitBackdropFilter:'blur(10px) grayscale(0.7) saturate(0.6)',
+                        background:`linear-gradient(135deg, ${GREEN}59 0%, ${GREEN}3d 100%)`,
+                        backdropFilter:'blur(14px)',
+                        WebkitBackdropFilter:'blur(14px)',
                       }}>
                         <div className="layanan-glass-content" style={{ height:'100%', display:'flex', flexDirection:'column', justifyContent:'center' }}>
                           <div className="layanan-glass-row" style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'10px' }}>
-                            <span style={{ width:'50px', height:'50px', borderRadius:'14px', background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', flexShrink:0 }}>{l.icon||'🏥'}</span>
-                            <h3 style={{ fontSize:'clamp(19px,2.6vw,26px)', fontWeight:800, color:'white', margin:0 }}>{l.nama}</h3>
+                            <span style={{ width:'50px', height:'50px', borderRadius:'14px', background:'rgba(255,255,255,0.2)', border:'1px solid rgba(255,255,255,0.35)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', flexShrink:0 }}>{l.icon||'🏥'}</span>
+                            <h3 style={{ fontSize:'clamp(19px,2.6vw,26px)', fontWeight:800, color:'white', margin:0, textShadow:'0 2px 10px rgba(0,0,0,0.25)' }}>{l.nama}</h3>
                           </div>
-                          {l.subjudul && <p style={{ fontSize:'clamp(12.5px,1.5vw,14px)', color:'rgba(255,255,255,0.85)', fontWeight:700, margin:'0 0 12px', letterSpacing:'0.3px' }}>{l.subjudul}</p>}
-                          <p style={{ fontSize:'14px', color:'rgba(255,255,255,0.78)', lineHeight:1.8, margin:'0 0 18px' }}>{(l.deskripsi||'').slice(0,170)}{(l.deskripsi||'').length>170?'...':''}</p>
-                          <span style={{ color:'white', fontWeight:700, fontSize:'14px' }}>Selengkapnya →</span>
+                          {l.subjudul && <p style={{ fontSize:'clamp(12.5px,1.5vw,14px)', color:'rgba(255,255,255,0.92)', fontWeight:700, margin:'0 0 12px', letterSpacing:'0.3px', textShadow:'0 1px 6px rgba(0,0,0,0.25)' }}>{l.subjudul}</p>}
+                          <p style={{ fontSize:'14px', color:'rgba(255,255,255,0.9)', lineHeight:1.8, margin:'0 0 18px', textShadow:'0 1px 6px rgba(0,0,0,0.2)' }}>{(l.deskripsi||'').slice(0,170)}{(l.deskripsi||'').length>170?'...':''}</p>
+                          <span style={{ color:'white', fontWeight:700, fontSize:'14px', textShadow:'0 1px 6px rgba(0,0,0,0.2)' }}>Selengkapnya →</span>
                         </div>
                       </div>
                     </div>
@@ -245,21 +244,17 @@ export default async function LayananPage() {
       <Footer/>
 
       <style>{`
-        .layanan-card-left .layanan-glass { clip-path: polygon(0 0, 58% 0, 42% 100%, 0 100%); }
-        .layanan-card-right .layanan-glass { clip-path: polygon(100% 0, 42% 0, 58% 100%, 100% 100%); }
-        .layanan-card-left .layanan-glass-content { max-width: min(52%, 460px); padding: clamp(28px,4.5vw,48px); margin-right: auto; }
-        .layanan-card-right .layanan-glass-content { max-width: min(52%, 460px); padding: clamp(28px,4.5vw,48px); margin-left: auto; text-align: right; align-items: flex-end; }
-        .layanan-card-right .layanan-glass-row { justify-content: flex-end; }
+        .layanan-card-right .layanan-glass { clip-path: polygon(100% 0, 38% 0, 54% 100%, 100% 100%); }
+        .layanan-card-right .layanan-glass-content { max-width: min(56%, 460px); padding: clamp(28px,4.5vw,48px); margin-left: auto; text-align: left; align-items: flex-start; }
         @media (max-width: 700px) {
           .layanan-card { min-height: 340px; }
-          .layanan-card-left .layanan-glass, .layanan-card-right .layanan-glass {
+          .layanan-card-right .layanan-glass {
             clip-path: polygon(0 34%, 100% 20%, 100% 100%, 0 100%);
           }
-          .layanan-card-left .layanan-glass-content, .layanan-card-right .layanan-glass-content {
+          .layanan-card-right .layanan-glass-content {
             max-width: 100% !important; margin: 0 !important; text-align: left !important; align-items: flex-start !important;
             padding: 20px 22px clamp(24px,6vw,32px) !important; justify-content: flex-end !important;
           }
-          .layanan-card-right .layanan-glass-row { justify-content: flex-start !important; }
         }
       `}</style>
     </div>
