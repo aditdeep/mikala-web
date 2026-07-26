@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { cldOptimize } from '@/lib/cloudinary';
 
 export default function ImageFade({ images, alt, arrows = false }: { images: string[]; alt: string; arrows?: boolean }) {
   const list = images && images.length > 0 ? images : ['https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png'];
@@ -17,7 +18,7 @@ export default function ImageFade({ images, alt, arrows = false }: { images: str
   return (
     <div style={{ position:'absolute', inset:0 }}>
       {list.map((img, i) => (
-        <img key={i} src={img} alt={alt} style={{
+        <img key={i} src={cldOptimize(img, 1800)} alt={alt} style={{
           position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover',
           opacity: i === idx ? 1 : 0, transition:'opacity 1.2s ease',
         }} />

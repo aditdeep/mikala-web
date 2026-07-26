@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { cldOptimize } from '@/lib/cloudinary';
 
 type Slide = { image: string; title?: string; subtitle?: string };
 
@@ -35,7 +36,7 @@ export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: 
           position: 'absolute', inset: 0, opacity: i === idx ? 1 : 0,
           transition: 'opacity 1s ease', zIndex: i === idx ? 1 : 0,
         }}>
-          <img src={s.image} alt={s.title || 'Mikala'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={cldOptimize(s.image, 2400)} alt={s.title || 'Mikala'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(4,35,43,0.35) 0%, rgba(4,35,43,0.05) 30%, transparent 60%)' }} />
         </div>
       ))}
