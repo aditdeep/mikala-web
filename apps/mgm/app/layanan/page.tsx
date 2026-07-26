@@ -202,7 +202,7 @@ export default async function LayananPage() {
                       {/* Wrap miring hijau tosca + glass */}
                       <div className="layanan-glass" style={{
                         position:'absolute', inset:0,
-                        background:`linear-gradient(135deg, ${GREEN}59 0%, ${GREEN}3d 100%)`,
+                        background:`linear-gradient(135deg, rgba(10,60,72,0.86) 0%, ${GREEN}c2 100%)`,
                         backdropFilter:'blur(14px)',
                         WebkitBackdropFilter:'blur(14px)',
                       }}>
@@ -244,12 +244,12 @@ export default async function LayananPage() {
       <Footer/>
 
       <style>{`
-        .layanan-card-right .layanan-glass { clip-path: polygon(100% 0, 38% 0, 54% 100%, 100% 100%); }
-        .layanan-card-right .layanan-glass-content { max-width: min(56%, 460px); padding: clamp(28px,4.5vw,48px); margin-left: auto; text-align: left; align-items: flex-start; }
+        .layanan-card-right .layanan-glass { clip-path: polygon(100% 0, 58% 0, 50% 100%, 100% 100%); }
+        .layanan-card-right .layanan-glass-content { max-width: min(42%, 380px); padding: clamp(24px,4vw,40px); margin-left: auto; text-align: left; align-items: flex-start; }
         @media (max-width: 700px) {
           .layanan-card { min-height: 340px; }
           .layanan-card-right .layanan-glass {
-            clip-path: polygon(0 34%, 100% 20%, 100% 100%, 0 100%);
+            clip-path: polygon(0 46%, 100% 38%, 100% 100%, 0 100%);
           }
           .layanan-card-right .layanan-glass-content {
             max-width: 100% !important; margin: 0 !important; text-align: left !important; align-items: flex-start !important;
