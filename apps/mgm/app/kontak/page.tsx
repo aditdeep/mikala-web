@@ -1,113 +1,124 @@
 'use client';
-import Link from 'next/link';
 import { useState } from 'react';
 import Navbar from '../(components)/Navbar';
 import Footer from '../(components)/Footer';
+import ScrollFade from '../(components)/ScrollFade';
 
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
 const WA = "https://wa.me/6281296998827";
 
+const FAQ = [
+  { q: 'Mikala Global Medika layanan kesehatan yang bergerak dibidang apa?', a: 'Perusahaan yang menyediakan layanan kesehatan di rumah.' },
+  { q: 'Berlokasi dimana dan melayani wilayah mana saja?', a: 'Berlokasi di Bekasi, Jawa Barat. Dan dapat melayani seluruh Indonesia.' },
+  { q: 'Apakah bisa mendapatkan layanan harian atau bisa bulanan?', a: 'Semua jenis layanan kami bisa Anda dapatkan sesuai kebutuhan, harian atau bulanan.' },
+  { q: 'Homecare Mikala Global Medika lebih mahal atau murah?', a: 'Harga termurah di kelasnya, dengan kualitas dan layanan homecare terbaik di kelasnya.' },
+  { q: 'Kapan saya dapat menghubungi saat membutuhkan layanan ini?', a: "Tersedia selama 24 jam! Hari kerja setiap pukul 09.00 - 17.00 WIB, dari Senin - Jum'at." },
+  { q: 'Bagaimana caranya saya dapat mengetahui layanan yang tepat untuk saya?', a: 'Dapat menghubungi kami di semua kanal yang tersedia: media sosial, WhatsApp, dsb.' },
+];
+
+const NARAHUBUNG = [
+  { label: 'Customer Care', msg: 'Halo Mikala, saya ingin menghubungi Customer Care.' },
+  { label: 'Rekrutmen', msg: 'Halo Mikala, saya ingin bertanya seputar Rekrutmen / Karir.' },
+  { label: 'Kerja Sama', msg: 'Halo Mikala, saya ingin menjajaki peluang Kerja Sama.' },
+];
+
 export default function KontakPage() {
-  const [form, setForm] = useState({ nama:'', phone:'', email:'', layanan:'', pesan:'' });
+  const [form, setForm] = useState({ nama:'', phone:'', email:'', pesan:'' });
   const [sent, setSent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const msg = encodeURIComponent(`Halo Mikala!\n\nNama: ${form.nama}\nTelepon: ${form.phone}\nEmail: ${form.email}\nLayanan: ${form.layanan}\nPesan: ${form.pesan}`);
-    window.open(`https://wa.me/6281296998827?text=${msg}`, '_blank');
+    const msg = encodeURIComponent(`Halo Mikala!\n\nNama: ${form.nama}\nNo. WhatsApp: ${form.phone}${form.email ? `\nEmail: ${form.email}` : ''}${form.pesan ? `\nPesan: ${form.pesan}` : ''}`);
+    window.open(`${WA}?text=${msg}`, '_blank');
     setSent(true);
   };
 
-  const inp = { width:'100%', padding:'11px 14px', borderRadius:'12px', border:'1px solid #e5e7eb', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, fontFamily:'inherit', background:'white' };
+  const inp = { width:'100%', padding:'12px 14px', borderRadius:'12px', border:'1px solid #e5e7eb', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, fontFamily:'inherit', background:'white' };
 
   return (
     <div style={{ minHeight:'100vh', background:'#eef8fa' }}>
       <Navbar active="/kontak" />
 
-      <div style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, padding:'clamp(40px,8vw,70px) 20px', textAlign:'center' }}>
-        <h1 style={{ fontSize:'clamp(26px,5vw,42px)', fontWeight:800, color:'white', margin:'0 0 10px' }}>Hubungi Kami</h1>
-        <p style={{ color:'rgba(255,255,255,0.85)', fontSize:'clamp(13px,2vw,16px)', margin:0 }}>Siap membantu Anda 24 jam sehari, 7 hari seminggu</p>
-      </div>
+      {/* ═══ HERO + FORM ═══ */}
+      <div style={{ background:`linear-gradient(160deg, ${PINK} 0%, ${GREEN} 100%)`, padding:'clamp(36px,7vw,60px) 20px clamp(48px,8vw,80px)' }}>
+        <div style={{ textAlign:'center', marginBottom:'clamp(28px,5vw,44px)' }}>
+          <span style={{ display:'inline-block', background:'rgba(255,255,255,0.16)', backdropFilter:'blur(10px)', border:'1px solid rgba(255,255,255,0.3)', color:'white', borderRadius:'20px', padding:'6px 16px', fontSize:'12px', fontWeight:700, marginBottom:'16px' }}>Hubungi Kami</span>
+          <h1 style={{ fontSize:'clamp(24px,4.5vw,38px)', fontWeight:800, color:'white', margin:0 }}>Kami Siap Membantu Anda</h1>
+        </div>
 
-      <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'clamp(32px,6vw,60px) 16px' }}>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap:'40px', alignItems:'start' }}>
-          {/* Info */}
-          <div>
-            <h2 style={{ fontSize:'clamp(20px,3vw,26px)', fontWeight:800, color:'#1a2e25', margin:'0 0 28px' }}>Informasi Kontak</h2>
-            {[
-              { icon:'📍', title:'Alamat', desc:'Jl. Anyelir No. 1-2, Jatibening, Kota Bekasi' },
-              { icon:'📞', title:'Telepon', desc:'0821-1448-8878' },
-              { icon:'✉️', title:'Email', desc:'cs@mikalaglobalmedika.com' },
-              { icon:'🕐', title:'Jam Operasional', desc:'Senin-Sabtu, 08.00-21.00 WIB\nStandby Admin 24 jam' },
-            ].map(c => (
-              <div key={c.title} style={{ display:'flex', gap:'14px', marginBottom:'20px', alignItems:'flex-start' }}>
-                <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px', flexShrink:0 }}>{c.icon}</div>
-                <div>
-                  <p style={{ fontWeight:700, color:'#1a2e25', margin:'0 0 3px', fontSize:'14px' }}>{c.title}</p>
-                  <p style={{ color:'#6b7280', fontSize:'13px', margin:0, whiteSpace:'pre-line' }}>{c.desc}</p>
-                </div>
-              </div>
-            ))}
-            <div style={{ marginTop:'24px' }}>
-              <p style={{ fontWeight:700, color:'#1a2e25', marginBottom:'12px', fontSize:'14px' }}>Ikuti Kami:</p>
-              <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
-                {[
-                  { href:'https://www.facebook.com/mikalaglobalmdk/', label:'Facebook' },
-                  { href:'https://www.instagram.com/mikalaglobalmedika/', label:'Instagram' },
-                  { href:'https://www.tiktok.com/@mikalaglobalmedika_pt', label:'TikTok' },
-                  { href:'https://www.youtube.com/@MikalaGlobalMedika', label:'YouTube' },
-                ].map(s => (
-                  <a key={s.label} href={s.href} target="_blank" rel="noreferrer"
-                    style={{ background:'white', border:`1px solid ${GREEN}20`, borderRadius:'10px', padding:'7px 12px', fontSize:'12px', fontWeight:600, color:'#374151', textDecoration:'none' }}>
-                    {s.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Form */}
-          <div style={{ background:'rgba(255,255,255,0.9)', backdropFilter:'blur(20px)', borderRadius:'24px', padding:'clamp(20px,4vw,36px)', boxShadow:'0 8px 30px rgba(0,0,0,0.08)', border:`1px solid ${GREEN}10` }}>
-            <h3 style={{ fontSize:'clamp(18px,2.5vw,22px)', fontWeight:800, color:'#1a2e25', margin:'0 0 22px' }}>Kirim Pesan</h3>
+        <ScrollFade>
+          <div style={{ maxWidth:'480px', margin:'0 auto', background:'white', borderRadius:'32px 32px 32px 6px', padding:'clamp(24px,4.5vw,40px)', boxShadow:'0 20px 50px rgba(0,0,0,0.22)' }}>
+            <h3 style={{ fontSize:'clamp(19px,2.6vw,24px)', fontWeight:800, color:'#1a2e25', margin:'0 0 22px', textAlign:'center', letterSpacing:'0.5px' }}>KIRIM PESAN</h3>
             {sent ? (
-              <div style={{ textAlign:'center', padding:'40px 0' }}>
+              <div style={{ textAlign:'center', padding:'30px 0' }}>
                 <div style={{ fontSize:'56px', marginBottom:'14px' }}>✅</div>
                 <h4 style={{ color:GREEN, fontWeight:700, fontSize:'18px', margin:'0 0 8px' }}>Terkirim!</h4>
-                <p style={{ color:'#6b7280', margin:'0 0 20px' }}>Kami segera menghubungi via WhatsApp.</p>
+                <p style={{ color:'#6b7280', margin:'0 0 20px' }}>Kami segera menghubungi Anda via WhatsApp.</p>
                 <button onClick={() => setSent(false)} style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'11px 24px', borderRadius:'20px', border:'none', cursor:'pointer', fontWeight:600 }}>Kirim Lagi</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
-                {[
-                  {k:'nama',l:'Nama Lengkap *',t:'text',p:'Nama Anda'},
-                  {k:'phone',l:'No. WhatsApp *',t:'tel',p:'08xxxxxxxxxx'},
-                  {k:'email',l:'Email',t:'email',p:'email@contoh.com'},
-                ].map(f => (
-                  <div key={f.k}>
-                    <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#374151', marginBottom:'5px' }}>{f.l}</label>
-                    <input required={f.l.includes('*')} type={f.t} value={(form as any)[f.k]} onChange={e => setForm(p => ({...p,[f.k]:e.target.value}))} placeholder={f.p} style={inp} />
-                  </div>
-                ))}
                 <div>
-                  <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#374151', marginBottom:'5px' }}>Layanan</label>
-                  <select value={form.layanan} onChange={e => setForm(p => ({...p,layanan:e.target.value}))} style={inp}>
-                    <option value="">-- Pilih Layanan --</option>
-                    {['Perawat Medis','Perawat Jiwa','Caregiver','Babysitter','Dokter Visit','Medikal Evakuasi','Fisioterapi','Persewaan Alat Medis','Lainnya'].map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:700, color:'#374151', marginBottom:'5px' }}>Nama Lengkap :*</label>
+                  <input required value={form.nama} onChange={e => setForm(p => ({...p,nama:e.target.value}))} placeholder="Nama Lengkap Anda" style={inp} />
                 </div>
                 <div>
-                  <label style={{ display:'block', fontSize:'13px', fontWeight:600, color:'#374151', marginBottom:'5px' }}>Pesan</label>
-                  <textarea value={form.pesan} onChange={e => setForm(p => ({...p,pesan:e.target.value}))} placeholder="Ceritakan kebutuhan Anda..." style={{...inp, minHeight:'90px', resize:'vertical'}} />
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:700, color:'#374151', marginBottom:'5px' }}>Nomor Whatsapp :*</label>
+                  <input required type="tel" value={form.phone} onChange={e => setForm(p => ({...p,phone:e.target.value}))} placeholder="62xxxxxxxxxx" style={inp} />
                 </div>
-                <button type="submit" style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'13px', borderRadius:'12px', border:'none', fontSize:'15px', fontWeight:700, cursor:'pointer' }}>
-                  💬 Kirim via WhatsApp
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:700, color:'#374151', marginBottom:'5px' }}>Email :</label>
+                  <input type="email" value={form.email} onChange={e => setForm(p => ({...p,email:e.target.value}))} placeholder="xxxx@email.com" style={inp} />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:700, color:'#374151', marginBottom:'5px' }}>Pesan Anda : (opsional)</label>
+                  <textarea maxLength={1000} value={form.pesan} onChange={e => setForm(p => ({...p,pesan:e.target.value}))} placeholder="Ceritakan kebutuhan Anda! (maks. 1000 kata)" style={{...inp, minHeight:'90px', resize:'vertical'}} />
+                </div>
+                <button type="submit" style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'13px', borderRadius:'12px', border:'none', fontSize:'15px', fontWeight:700, cursor:'pointer', marginTop:'4px' }}>
+                  Kirim
                 </button>
               </form>
             )}
           </div>
+        </ScrollFade>
+      </div>
+
+      {/* ═══ NARAHUBUNG ═══ */}
+      <div style={{ padding:'clamp(36px,6vw,56px) 20px', textAlign:'center' }}>
+        <ScrollFade>
+          <h2 style={{ fontSize:'clamp(19px,2.6vw,24px)', fontWeight:800, color:'#1a2e25', margin:'0 0 22px' }}>Narahubung</h2>
+          <div style={{ display:'flex', gap:'14px', justifyContent:'center', flexWrap:'wrap' }}>
+            {NARAHUBUNG.map(n => (
+              <a key={n.label} href={`${WA}?text=${encodeURIComponent(n.msg)}`} target="_blank" rel="noreferrer"
+                style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'13px 26px', borderRadius:'14px', fontWeight:700, fontSize:'14px', textDecoration:'none', boxShadow:`0 6px 18px ${GREEN}30` }}>
+                {n.label}
+              </a>
+            ))}
+          </div>
+        </ScrollFade>
+      </div>
+
+      {/* ═══ FAQ ═══ */}
+      <div style={{ padding:'0 20px clamp(48px,8vw,80px)' }} className="section-pad">
+        <div style={{ maxWidth:'800px', margin:'0 auto', background:`linear-gradient(135deg, ${PINK}, #7a3570)`, borderRadius:'28px', padding:'clamp(28px,4.5vw,44px)', boxShadow:`0 20px 50px ${PINK}30` }}>
+          <ScrollFade>
+            <h2 style={{ textAlign:'center', color:'white', fontSize:'clamp(19px,2.8vw,24px)', fontWeight:800, margin:'0 0 4px', letterSpacing:'1px' }}>FAQ</h2>
+            <p style={{ textAlign:'center', color:'rgba(255,255,255,0.8)', fontSize:'13px', margin:'0 0 26px', fontStyle:'italic' }}>Frequently Asked Questions</p>
+          </ScrollFade>
+          <div style={{ display:'flex', flexDirection:'column', gap:'18px' }}>
+            {FAQ.map((f, i) => (
+              <ScrollFade key={i} delay={i*80}>
+                <div>
+                  <p style={{ color:'white', fontWeight:700, fontSize:'14.5px', margin:'0 0 5px', lineHeight:1.5 }}>{i+1}. {f.q}</p>
+                  <p style={{ color:'rgba(255,255,255,0.82)', fontSize:'13.5px', margin:0, lineHeight:1.7, paddingLeft:'18px' }}>{f.a}</p>
+                </div>
+              </ScrollFade>
+            ))}
+          </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );
