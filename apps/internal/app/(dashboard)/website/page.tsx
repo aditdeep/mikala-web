@@ -34,7 +34,7 @@ export default function WebsitePage() {
   const PER_PAGE = 10;
 
   // Forms
-  const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
+  const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel Kesehatan', status:'published', published_at:'' });
   const [formLayanan, setFormLayanan] = useState({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [layananManfaat, setLayananManfaat] = useState<string[]>([]);
   const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
@@ -130,7 +130,7 @@ export default function WebsitePage() {
       if (editItem) await apiClient.patch('/internal/cms/artikel/'+editItem.id, payload);
       else await apiClient.post('/internal/cms/artikel', payload);
       setShowForm(false); setEditItem(null);
-      setFormArtikel({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel', status:'published', published_at:'' });
+      setFormArtikel({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel Kesehatan', status:'published', published_at:'' });
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
     setSaving(false);
@@ -996,7 +996,7 @@ export default function WebsitePage() {
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Kategori</label>
                   <select value={formArtikel.kategori} onChange={e => setFormArtikel(p => ({...p,kategori:e.target.value}))} style={inp}>
-                    {['Artikel','Kesehatan','Tips','Motivasi','Tokoh','Layanan'].map(k => <option key={k} value={k}>{k}</option>)}
+                    {['Artikel Kesehatan','Berita Perusahaan','Tips Kesehatan','Tokoh Kesehatan','Pengembangan Diri'].map(k => <option key={k} value={k}>{k}</option>)}
                   </select>
                 </div>
                 <div>

@@ -54,10 +54,11 @@ const COLS = [
   {
     title: 'Majalah',
     links: [
-      { l:'Berita Perusahaan', h:'/artikel' },
-      { l:'Tips Kesehatan', h:'/artikel' },
-      { l:'Tokoh Kesehatan', h:'/artikel' },
-      { l:'Pengembangan Diri', h:'/artikel' },
+      { l:'Artikel Kesehatan', h:'/artikel?kategori=' + encodeURIComponent('Artikel Kesehatan') },
+      { l:'Berita Perusahaan', h:'/artikel?kategori=' + encodeURIComponent('Berita Perusahaan') },
+      { l:'Tips Kesehatan', h:'/artikel?kategori=' + encodeURIComponent('Tips Kesehatan') },
+      { l:'Tokoh Kesehatan', h:'/artikel?kategori=' + encodeURIComponent('Tokoh Kesehatan') },
+      { l:'Pengembangan Diri', h:'/artikel?kategori=' + encodeURIComponent('Pengembangan Diri') },
     ],
   },
   {
