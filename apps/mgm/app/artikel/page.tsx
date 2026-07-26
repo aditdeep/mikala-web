@@ -17,7 +17,7 @@ async function getArtikel(page = 1, search = '', kategori = '') {
     const qs = new URLSearchParams({ per_page: String(PER_PAGE), page: String(page) });
     if (search) qs.set('search', search);
     if (kategori) qs.set('kategori', kategori);
-    const res = await fetch(`${API}/cms/artikel?${qs.toString()}`, { next: { revalidate: search ? 0 : 1800 } });
+    const res = await fetch(`${API}/cms/artikel?${qs.toString()}`, { next: { revalidate: (search || kategori) ? 0 : 1800 } });
     const data = await res.json();
     const d = data.data;
     if (d?.data) return { items: d.data, total: d.total || 0, lastPage: d.last_page || 1, currentPage: d.current_page || 1 };
