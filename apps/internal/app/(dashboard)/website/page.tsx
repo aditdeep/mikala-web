@@ -37,7 +37,7 @@ export default function WebsitePage() {
   const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel Kesehatan', status:'published', published_at:'' });
   const [formLayanan, setFormLayanan] = useState({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [layananManfaat, setLayananManfaat] = useState<string[]>([]);
-  const [layananTiers, setLayananTiers] = useState<{ nama:string; harga_bulanan:string; harga_harian:string; deskripsi:string }[]>([]);
+  const [layananTiers, setLayananTiers] = useState<{ nama:string; harga_bulanan:string; harga_harian:string; deskripsi:string; gambar:string }[]>([]);
   const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [penunjangManfaat, setPenunjangManfaat] = useState<string[]>([]);
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
@@ -156,7 +156,7 @@ export default function WebsitePage() {
   const addLayananManfaat = () => setLayananManfaat(p => [...p, '']);
   const removeLayananManfaat = (i: number) => setLayananManfaat(p => p.filter((_, idx) => idx !== i));
 
-  const addLayananTier = () => setLayananTiers(p => [...p, { nama:'', harga_bulanan:'', harga_harian:'', deskripsi:'' }]);
+  const addLayananTier = () => setLayananTiers(p => [...p, { nama:'', harga_bulanan:'', harga_harian:'', deskripsi:'', gambar:'' }]);
   const removeLayananTier = (i: number) => setLayananTiers(p => p.filter((_, idx) => idx !== i));
   const updateLayananTier = (i: number, field: string, val: string) => setLayananTiers(p => p.map((t, idx) => idx === i ? {...t, [field]: val} : t));
   const updateLayananManfaat = (i: number, val: string) => setLayananManfaat(p => p.map((s, idx) => idx === i ? val : s));
@@ -435,7 +435,7 @@ export default function WebsitePage() {
                     </td>
                     <td style={{ padding:'10px 16px' }}>
                       <div style={{ display:'flex', gap:'6px' }}>
-                        <button onClick={() => { setEditItem(l); setFormLayanan({nama:l.nama,subjudul:l.subjudul||'',deskripsi:l.deskripsi||'',deskripsi_panjang:l.deskripsi_panjang||'',gambar:l.gambar||'',icon:l.icon||'',wa_link:l.wa_link||'',urutan:String(l.urutan||1),is_active:l.is_active,meta_title:l.meta_title||'',meta_description:l.meta_description||''}); setLayananManfaat((() => { try { const p = typeof l.manfaat==='string'?JSON.parse(l.manfaat):l.manfaat; return Array.isArray(p)?p:[]; } catch { return []; } })()); setLayananTiers((() => { try { const p = typeof l.tier_data==='string'?JSON.parse(l.tier_data):l.tier_data; return Array.isArray(p)?p:[]; } catch { return []; } })()); setShowForm(true); }}
+                        <button onClick={() => { setEditItem(l); setFormLayanan({nama:l.nama,subjudul:l.subjudul||'',deskripsi:l.deskripsi||'',deskripsi_panjang:l.deskripsi_panjang||'',gambar:l.gambar||'',icon:l.icon||'',wa_link:l.wa_link||'',urutan:String(l.urutan||1),is_active:l.is_active,meta_title:l.meta_title||'',meta_description:l.meta_description||''}); setLayananManfaat((() => { try { const p = typeof l.manfaat==='string'?JSON.parse(l.manfaat):l.manfaat; return Array.isArray(p)?p:[]; } catch { return []; } })()); setLayananTiers((() => { try { const p = typeof l.tier_data==='string'?JSON.parse(l.tier_data):l.tier_data; return Array.isArray(p)?p.map((t:any)=>({nama:t.nama||'',harga_bulanan:t.harga_bulanan||'',harga_harian:t.harga_harian||'',deskripsi:t.deskripsi||'',gambar:t.gambar||''})):[]; } catch { return []; } })()); setShowForm(true); }}
                           style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Edit2 size={12}/>
                         </button>
@@ -1096,6 +1096,13 @@ export default function WebsitePage() {
                         <input value={t.harga_harian} onChange={e => updateLayananTier(i, 'harga_harian', e.target.value)} style={inp} placeholder="Harga Harian / Sesi (opsional)" />
                       </div>
                       <textarea value={t.deskripsi} onChange={e => updateLayananTier(i, 'deskripsi', e.target.value)} style={{...inp, minHeight:'54px', resize:'vertical'}} placeholder="Deskripsi / kualifikasi tier ini" />
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                        <label style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 12px', background:'rgba(45,122,94,0.1)', border:'1px solid rgba(45,122,94,0.2)', borderRadius:'8px', color:'#2d7a5e', fontSize:'11px', fontWeight:600, cursor:'pointer', flexShrink:0 }}>
+                          <Upload size={13}/>{t.gambar ? 'Ganti Gambar' : 'Upload Gambar'}
+                          <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => updateLayananTier(i, 'gambar', url)); }} />
+                        </label>
+                        {t.gambar && <img src={t.gambar} alt="" style={{ width:'44px', height:'44px', objectFit:'cover', borderRadius:'8px' }} />}
+                      </div>
                     </div>
                   ))}
                 </div>
