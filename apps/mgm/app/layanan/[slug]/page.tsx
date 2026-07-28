@@ -126,7 +126,7 @@ function parseManfaat(raw: any): string[] {
   } catch { return Array.isArray(raw) ? raw : []; }
 }
 
-type Tier = { nama: string; harga_bulanan?: string; harga_harian?: string; deskripsi?: string };
+type Tier = { nama: string; harga_bulanan?: string; harga_harian?: string; deskripsi?: string; gambar?: string };
 function parseTiers(raw: any): Tier[] {
   try {
     const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -210,8 +210,14 @@ export default async function LayananDetailPage({ params }: { params: { slug: st
                     display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%,220px),1fr))', gap:'0',
                     borderRadius:'20px', overflow:'hidden', boxShadow:'0 6px 24px rgba(0,0,0,0.08)', border:`1px solid ${GREEN}12`,
                   }}>
-                    <div style={{ background:`linear-gradient(135deg, ${GREEN}18, ${PINK}12)`, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'110px', padding:'20px' }}>
-                      <span style={{ fontSize:'40px' }}>{item.icon || '🏥'}</span>
+                    <div style={{ position:'relative', minHeight:'110px' }}>
+                      {t.gambar ? (
+                        <img src={t.gambar} alt={`${item.nama} ${t.nama}`} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                      ) : (
+                        <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${GREEN}18, ${PINK}12)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <span style={{ fontSize:'40px' }}>{item.icon || '🏥'}</span>
+                        </div>
+                      )}
                     </div>
                     <div style={{ background:'rgba(255,255,255,0.95)', padding:'clamp(18px,3vw,26px)' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'12px', flexWrap:'wrap', marginBottom:'6px' }}>

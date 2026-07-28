@@ -51,7 +51,7 @@ export default function Navbar({ active = '', overlay = false }: { active?: stri
     e.preventDefault();
     if (!query.trim()) return;
     setOpen(false);
-    router.push(`/artikel?q=${encodeURIComponent(query.trim())}`);
+    router.push(`/pencarian?q=${encodeURIComponent(query.trim())}`);
   };
 
   const glass = scrolled;
