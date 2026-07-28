@@ -18,6 +18,11 @@ const defaultLayanan = [
     deskripsi_panjang: 'Menghadirkan perawat profesional dan bersertifikat untuk merawat pasien di rumah maupun di rumah sakit. Mampu melakukan tindakan medis dan non-medis seperti injeksi, perawatan luka, pemberian infus, monitoring tanda vital, dan pendampingan pasien pasca operasi.\n\nTim perawat kami berpengalaman menangani berbagai kondisi, mulai dari perawatan pasca operasi, pasien kronis, hingga pendampingan lansia dengan kebutuhan medis khusus.',
     manfaat: ['Tindakan medis & non-medis', 'Monitoring kondisi 24 jam', 'Laporan perkembangan harian', 'Tersedia untuk rawat inap'],
     wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Medis'),
+    tier_data: [
+      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Lulusan SMK Kesehatan / Keperawatan sederajat (fresh graduate), sertifikasi pelatihan keperawatan dasar, non-pengalaman.' },
+      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Lulusan Kesehatan / Keperawatan bersertifikat, berpengalaman 1-3 tahun menangani pasien homecare.' },
+      { nama:'Senior', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Perawat berpengalaman 3+ tahun, terlatih penanganan intensive care & kondisi khusus.' },
+    ],
   },
   {
     nama: 'Perawat Jiwa', icon: '🧠',
@@ -26,14 +31,24 @@ const defaultLayanan = [
     deskripsi_panjang: 'Perawat jiwa profesional terlatih melayani berbagai aspek dukungan dan perawatan bagi individu dengan masalah kesehatan mental, mulai dari gangguan kecemasan, depresi, skizofrenia, hingga gangguan bipolar dengan pendekatan humanis dan evidence-based.\n\nKami berkoordinasi erat dengan psikiater yang menangani pasien untuk memastikan perawatan berjalan sesuai rencana terapi.',
     manfaat: ['Pendampingan 24 jam', 'Terlatih tangani gangguan mental', 'Koordinasi dengan psikiater', 'Pendekatan humanis & aman'],
     wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Jiwa'),
+    tier_data: [
+      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Lulusan Keperawatan sederajat (fresh graduate), sertifikasi pelatihan dasar kesehatan jiwa, non-pengalaman.' },
+      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Berpengalaman 1-3 tahun menangani pasien dengan gangguan kecemasan, depresi, hingga skizofrenia ringan.' },
+      { nama:'Senior', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Berpengalaman 3+ tahun, terlatih koordinasi dengan psikiater untuk kasus kompleks / intensif.' },
+    ],
   },
   {
-    nama: 'Caregiver / Perawat Lansia', icon: '👴',
+    nama: 'Caregiver / Perawat Lansia', subjudul: 'Perawat Pendamping', icon: '👴',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/caregiver.jpg',
     deskripsi: 'Mendampingi dan mengurus orang tua atau pasien lansia yang membutuhkan bantuan dalam aktivitas sehari-hari.',
     deskripsi_panjang: 'Mendampingi dan mengurus orang tua atau pasien lansia yang membutuhkan bantuan dalam aktivitas sehari-hari. Caregiver terlatih kami membantu mandi, makan, mobilisasi, hingga aktivitas sosial untuk meningkatkan kualitas hidup lansia.',
     manfaat: ['Bantu aktivitas harian', 'Terapi fisik ringan', 'Pendampingan sosial', 'Laporan kondisi ke keluarga'],
     wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Caregiver'),
+    tier_data: [
+      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Lulusan SMK Kesehatan / Keperawatan sederajat (fresh graduate), sertifikasi pelatihan keperawatan dasar, non-pengalaman.' },
+      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Berpengalaman 1-3 tahun mendampingi lansia, terlatih bantu aktivitas harian & mobilisasi.' },
+      { nama:'Senior', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Berpengalaman 3+ tahun, terlatih menangani lansia dengan kondisi khusus / ketergantungan tinggi.' },
+    ],
   },
   {
     nama: 'Babysitter', icon: '👶',
@@ -42,6 +57,24 @@ const defaultLayanan = [
     deskripsi_panjang: 'Tenaga perawat bayi dan anak terlatih, berpengalaman menangani bayi newborn hingga anak usia sekolah. Tersedia layanan khusus untuk ibu pra/pasca melahirkan termasuk perawatan tali pusar, memandikan bayi, dan edukasi pengasuhan.',
     manfaat: ['Spesialis bayi newborn', 'Perawatan ibu nifas', 'Edukasi ASI & MPASI', 'Live-in atau harian'],
     wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Babysitter'),
+    tier_data: [
+      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Fresh graduate, sertifikasi pelatihan dasar perawatan bayi & anak, non-pengalaman.' },
+      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Berpengalaman 1-3 tahun mengasuh anak, terlatih dasar perawatan newborn care.' },
+      { nama:'Senior / Newborn Care', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Berpengalaman 3+ tahun, spesialis newborn care & perawatan ibu nifas.' },
+    ],
+  },
+  {
+    nama: 'Terapi', icon: '💆',
+    gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/penunjang.jpg',
+    deskripsi: 'Layanan fisioterapi, terapi wicara, dan terapi lainnya langsung di rumah, dengan pilihan paket sesuai kebutuhan.',
+    deskripsi_panjang: 'Layanan fisioterapi, terapi wicara, dan terapi lainnya langsung di rumah Anda. Membantu pemulihan pasca stroke, cedera, gangguan bicara pada anak, serta meningkatkan kualitas hidup melalui terapi non-farmakologi.\n\nTersedia pilihan paket Terapi A, B, dan C sesuai jenis dan intensitas kebutuhan terapi Anda.',
+    manfaat: ['Fisioterapi di rumah', 'Terapi wicara anak', 'Terapis bersertifikat', 'Program pemulihan terstruktur'],
+    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
+    tier_data: [
+      { nama:'Terapi A', harga_harian:'Rp 150K - 200K / sesi', deskripsi:'Terapi ringan / pemeliharaan, cocok untuk perawatan rutin dan pencegahan.' },
+      { nama:'Terapi B', harga_harian:'Rp 200K - 275K / sesi', deskripsi:'Terapi menengah, untuk pemulihan pasca cedera atau kondisi yang membutuhkan penanganan lebih intensif.' },
+      { nama:'Terapi C', harga_harian:'Rp 275K - 350K / sesi', deskripsi:'Terapi intensif, untuk kasus kompleks seperti pemulihan pasca stroke atau gangguan bicara berat.' },
+    ],
   },
   {
     nama: 'Dokter Visit', icon: '👨‍⚕️',
@@ -93,6 +126,14 @@ function parseManfaat(raw: any): string[] {
   } catch { return Array.isArray(raw) ? raw : []; }
 }
 
+type Tier = { nama: string; harga_bulanan?: string; harga_harian?: string; deskripsi?: string };
+function parseTiers(raw: any): Tier[] {
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return Array.isArray(parsed) ? parsed.filter((t: any) => t && t.nama) : [];
+  } catch { return []; }
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const data = await getLayanan();
   const item = data.find((l: any) => slugify(l.nama) === params.slug);
@@ -109,6 +150,7 @@ export default async function LayananDetailPage({ params }: { params: { slug: st
   if (!item) notFound();
 
   const manfaat = parseManfaat(item.manfaat);
+  const tiers = parseTiers(item.tier_data);
   const paragraphs = (item.deskripsi_panjang || item.deskripsi || '').split('\n').filter((p: string) => p.trim());
   const waLink = item.wa_link || `${WA}?text=${encodeURIComponent(`Halo Mikala, saya ingin konsultasi layanan ${item.nama}`)}`;
   const related = data.filter((l: any) => slugify(l.nama) !== params.slug).slice(0, 3);
@@ -153,6 +195,43 @@ export default async function LayananDetailPage({ params }: { params: { slug: st
                   <span style={{ fontSize:'13px', color:'#374151', lineHeight:1.6 }}>{m}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {tiers.length > 0 && (
+          <div style={{ marginBottom:'28px' }}>
+            <h2 style={{ fontSize:'18px', fontWeight:800, color:'#1a2e25', margin:'0 0 16px' }}>Pilihan Paket</h2>
+            <div style={{ display:'flex', flexDirection:'column', gap:'18px' }}>
+              {tiers.map((t, i) => {
+                const tierWa = `${WA}?text=${encodeURIComponent(`Halo, Saya berminat untuk mengkonsultasikan layanan ${item.nama} ${t.nama} untuk kebutuhan saya.`)}`;
+                return (
+                  <div key={i} style={{
+                    display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(min(100%,220px),1fr))', gap:'0',
+                    borderRadius:'20px', overflow:'hidden', boxShadow:'0 6px 24px rgba(0,0,0,0.08)', border:`1px solid ${GREEN}12`,
+                  }}>
+                    <div style={{ background:`linear-gradient(135deg, ${GREEN}18, ${PINK}12)`, display:'flex', alignItems:'center', justifyContent:'center', minHeight:'110px', padding:'20px' }}>
+                      <span style={{ fontSize:'40px' }}>{item.icon || '🏥'}</span>
+                    </div>
+                    <div style={{ background:'rgba(255,255,255,0.95)', padding:'clamp(18px,3vw,26px)' }}>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'12px', flexWrap:'wrap', marginBottom:'6px' }}>
+                        <h3 style={{ fontSize:'clamp(17px,2.4vw,22px)', fontWeight:800, color:'#1a2e25', margin:0, textTransform:'uppercase' }}>{t.nama}</h3>
+                        <span style={{ color:GREEN, fontWeight:700, fontSize:'11px', textTransform:'uppercase', letterSpacing:'0.5px' }}>Price Rate</span>
+                      </div>
+                      {(t.harga_bulanan || t.harga_harian) && (
+                        <p style={{ fontSize:'13px', color:'#374151', fontWeight:700, margin:'0 0 8px', lineHeight:1.7 }}>
+                          {t.harga_bulanan && <>Bulanan : {t.harga_bulanan}<br/></>}
+                          {t.harga_harian && <>Harian : {t.harga_harian}</>}
+                        </p>
+                      )}
+                      {t.deskripsi && <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.7, margin:'0 0 14px' }}>{t.deskripsi}</p>}
+                      <a href={tierWa} target="_blank" rel="noreferrer" style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'9px 22px', borderRadius:'20px', fontWeight:700, fontSize:'13px', textDecoration:'none' }}>
+                        Konsultasi
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

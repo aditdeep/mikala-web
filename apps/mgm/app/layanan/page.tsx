@@ -67,6 +67,15 @@ const defaultLayanan = [
     wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Babysitter'),
   },
   {
+    nama: 'Terapi',
+    subjudul: 'Terapi A • Terapi B • Terapi C',
+    icon: '💆',
+    gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/penunjang.jpg',
+    deskripsi: 'Layanan fisioterapi, terapi wicara, dan terapi lainnya langsung di rumah, dengan pilihan paket sesuai kebutuhan.',
+    manfaat: ['Fisioterapi di rumah', 'Terapi wicara anak', 'Terapis bersertifikat', 'Program pemulihan terstruktur'],
+    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
+  },
+  {
     nama: 'Dokter Visit',
     subjudul: 'Dokter Umum • Dokter Spesialis',
     icon: '👨‍⚕️',
