@@ -8,6 +8,14 @@ const GREEN = '#0e92b3';
 const PINK = '#9c488b';
 const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
 const WA = "https://wa.me/6282114488878";
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
+
+const defaultSocial = [
+  { label:'Facebook', url:'https://www.facebook.com/mikalaglobalmdk/', icon:'', letter:'f', bg:'#1877f2' },
+  { label:'Instagram', url:'https://www.instagram.com/mikalaglobalmedika/', icon:'', letter:'ig', bg:'#e1306c' },
+  { label:'TikTok', url:'https://www.tiktok.com/@mikalaglobalmedika_pt', icon:'', letter:'tt', bg:'#000' },
+  { label:'YouTube', url:'https://www.youtube.com/@MikalaGlobalMedika', icon:'', letter:'yt', bg:'#ff0000' },
+];
 
 const NAV_LINKS = [
   { href:'/perusahaan', l:'Perusahaan' },
@@ -37,6 +45,7 @@ export default function Navbar({ active = '', overlay = false }: { active?: stri
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [scrolled, setScrolled] = useState(!overlay);
+  const [socialIcons, setSocialIcons] = useState<any[]>(defaultSocial);
   const router = useRouter();
 
   useEffect(() => {
@@ -46,6 +55,19 @@ export default function Navbar({ active = '', overlay = false }: { active?: stri
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [overlay]);
+
+  useEffect(() => {
+    fetch(`${API}/cms/settings`)
+      .then(res => res.json())
+      .then(data => {
+        const raw = data.data?.footer_social_icons;
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSocialIcons(parsed.filter((s: any) => (s.label || s.letter) !== 'WhatsApp' && (s.letter||'').toLowerCase() !== 'wa'));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const doSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,13 +183,11 @@ export default function Navbar({ active = '', overlay = false }: { active?: stri
         </a>
 
         <div style={{ display:'flex', gap:'10px', justifyContent:'center', marginBottom:'14px' }}>
-          {[
-            { href:'https://www.facebook.com/mikalaglobalmdk/', label:'f' },
-            { href:'https://www.instagram.com/mikalaglobalmedika/', label:'ig' },
-            { href:'https://www.tiktok.com/@mikalaglobalmedika_pt', label:'tt' },
-            { href:'https://www.youtube.com/@MikalaGlobalMedika', label:'yt' },
-          ].map(s => (
-            <a key={s.label} href={s.href} target="_blank" rel="noreferrer" style={{ width:'30px', height:'30px', borderRadius:'8px', background:'rgba(255,255,255,0.18)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'10px', fontWeight:700, textDecoration:'none' }}>{s.label}</a>
+          {socialIcons.map((s: any, i: number) => (
+            <a key={i} href={s.url || s.href} target="_blank" rel="noreferrer" aria-label={s.label}
+              style={{ width:'34px', height:'34px', borderRadius:'8px', background: s.icon ? 'rgba(255,255,255,0.18)' : (s.bg||'rgba(255,255,255,0.18)'), display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'10px', fontWeight:700, textDecoration:'none', overflow:'hidden' }}>
+              {s.icon ? <img src={s.icon} alt={s.label||''} style={{ width:'18px', height:'18px', objectFit:'contain' }} /> : (s.letter||'?')}
+            </a>
           ))}
         </div>
         <p style={{ textAlign:'center', color:'rgba(255,255,255,0.85)', fontSize:'12px', fontStyle:'italic', margin:'0 0 4px' }}>"With Love We Serve"</p>
