@@ -4,8 +4,8 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.c
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
 const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
-const WA = "https://wa.me/6281296998827";
-const PHONE_DISPLAY = "0812-9699-8827";
+const WA = "https://wa.me/6282114488878";
+const PHONE_DISPLAY = "0821-1448-8878";
 const MAP_QUERY = encodeURIComponent('Jl. Anyelir No. 1-2, Jatibening, Kota Bekasi');
 const ADDRESS = 'Jl. Anyelir No. 1-2, Jatibening, Kota Bekasi';
 

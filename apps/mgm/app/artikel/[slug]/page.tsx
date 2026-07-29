@@ -7,7 +7,7 @@ import Footer from '../../(components)/Footer';
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
-const WA = "https://wa.me/6281296998827";
+const WA = "https://wa.me/6282114488878";
 
 function cleanContent(html: string): string {
   if (!html) return '';

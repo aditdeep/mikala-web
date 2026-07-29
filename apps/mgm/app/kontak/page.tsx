@@ -6,7 +6,7 @@ import ScrollFade from '../(components)/ScrollFade';
 
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
-const WA = "https://wa.me/6281296998827";
+const WA = "https://wa.me/6282114488878";
 
 const FAQ = [
   { q: 'Mikala Global Medika layanan kesehatan yang bergerak dibidang apa?', a: 'Perusahaan yang menyediakan layanan kesehatan di rumah.' },

@@ -7,7 +7,7 @@ import TranslateButton from './TranslateButton';
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
 const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
-const WA = "https://wa.me/6281296998827";
+const WA = "https://wa.me/6282114488878";
 
 const NAV_LINKS = [
   { href:'/perusahaan', l:'Perusahaan' },

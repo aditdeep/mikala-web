@@ -14,26 +14,26 @@ export const metadata: Metadata = {
 const API   = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
 const PINK  = '#9c488b';
-const WA    = 'https://wa.me/6281296998827';
+const WA    = 'https://wa.me/6282114488878';
 
 const defaultPenunjang = [
   {
     nama: 'Terapi', tipe: 'Fisioterapi & Terapi Wicara', icon: '🧘',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/fisioterapi.jpg',
     deskripsi: 'Fisioterapi, hipnoterapi, dan terapi wicara langsung di rumah untuk membantu proses pemulihan Anda.',
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
   },
   {
     nama: 'Alat Kesehatan', tipe: 'Sewa & Jual', icon: '🩺',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/alat-medis.jpg',
     deskripsi: 'Persewaan dan penjualan alat kesehatan berkualitas seperti kursi roda, tempat tidur pasien, dan nebulizer.',
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Kesehatan'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Kesehatan'),
   },
   {
     nama: 'Alat Medis', tipe: 'Peralatan Medis Lengkap', icon: '💉',
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/medikal-evakuasi.jpg',
     deskripsi: 'Peralatan medis lengkap dan bergaransi untuk mendukung perawatan pasien di rumah maupun fasilitas kesehatan.',
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Medis'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Medis'),
   },
 ];
 

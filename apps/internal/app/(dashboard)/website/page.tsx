@@ -35,10 +35,10 @@ export default function WebsitePage() {
 
   // Forms
   const [formArtikel, setFormArtikel] = useState({ judul:'', slug:'', excerpt:'', konten:'', thumbnail:'', thumbnail_caption:'', kategori:'Artikel Kesehatan', status:'published', published_at:'' });
-  const [formLayanan, setFormLayanan] = useState({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+  const [formLayanan, setFormLayanan] = useState({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [layananManfaat, setLayananManfaat] = useState<string[]>([]);
   const [layananTiers, setLayananTiers] = useState<{ nama:string; harga_bulanan:string; harga_harian:string; deskripsi:string; gambar:string }[]>([]);
-  const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+  const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [penunjangManfaat, setPenunjangManfaat] = useState<string[]>([]);
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
   const [formSettings, setFormSettings] = useState<any>({});
@@ -145,7 +145,7 @@ export default function WebsitePage() {
       if (editItem) await apiClient.patch('/internal/cms/layanan/'+editItem.id, payload);
       else await apiClient.post('/internal/cms/layanan', payload);
       setShowForm(false); setEditItem(null);
-      setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+      setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
       setLayananManfaat([]);
       setLayananTiers([]);
       fetchData();
@@ -169,7 +169,7 @@ export default function WebsitePage() {
       if (editItem) await apiClient.patch('/internal/cms/penunjang/'+editItem.id, payload);
       else await apiClient.post('/internal/cms/penunjang', payload);
       setShowForm(false); setEditItem(null);
-      setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
+      setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
       setPenunjangManfaat([]);
       fetchData();
     } catch(e: any) { alert(e.response?.data?.message || 'Gagal'); }
@@ -309,7 +309,7 @@ export default function WebsitePage() {
             <Eye size={14}/>Preview Website
           </a>
           {['artikel','layanan','penunjang','galeri'].includes(activeTab) && (
-            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); setLayananTiers([]); } if (activeTab === 'penunjang') { setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6281296998827', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setPenunjangManfaat([]); } }}
+            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); setLayananTiers([]); } if (activeTab === 'penunjang') { setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setPenunjangManfaat([]); } }}
               style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
               <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : activeTab === 'penunjang' ? 'Penunjang' : 'Foto'}
             </button>
@@ -956,7 +956,7 @@ export default function WebsitePage() {
             </div>
             <div>
               <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Link "Klik Daftar" (URL loker)</label>
-              <input value={formSettings.prsh_loker_url||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_loker_url:e.target.value}))} style={inp} placeholder="https://wa.me/6281296998827" />
+              <input value={formSettings.prsh_loker_url||''} onChange={e => setFormSettings((p: any) => ({...p,prsh_loker_url:e.target.value}))} style={inp} placeholder="https://wa.me/6282114488878" />
             </div>
           </div>
 
@@ -1083,7 +1083,7 @@ export default function WebsitePage() {
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Tier Harga (opsional, mis. Junior/Medium/Senior atau A/B/C)</label>
                   <button type="button" onClick={addLayananTier} style={{ display:'flex', alignItems:'center', gap:'4px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'4px 10px', color:'var(--text)', fontSize:'11px', fontWeight:600, cursor:'pointer' }}><Plus size={12}/> Tambah Tier</button>
                 </div>
-                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'0 0 10px' }}>Jika diisi, kartu tier akan tampil di halaman detail layanan lengkap dengan tombol Konsultasi WhatsApp per tier.</p>
+                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'0 0 10px' }}>Jika diisi, kartu tier akan tampil di halaman detail layanan lengkap dengan tombol Konsultasi WhatsApp per tier. Baris harga tidak diberi label otomatis (bukan selalu "Bulanan/Harian") — tulis labelnya sendiri di dalam teks, mis. "Spesialis Per-Sesi: &gt; Rp 2.500.000".</p>
                 <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                   {layananTiers.map((t, i) => (
                     <div key={i} style={{ background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', padding:'10px', display:'flex', flexDirection:'column', gap:'6px' }}>
@@ -1092,8 +1092,8 @@ export default function WebsitePage() {
                         <button type="button" onClick={() => removeLayananTier(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'32px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={13}/></button>
                       </div>
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px' }}>
-                        <input value={t.harga_bulanan} onChange={e => updateLayananTier(i, 'harga_bulanan', e.target.value)} style={inp} placeholder="Harga Bulanan (opsional)" />
-                        <input value={t.harga_harian} onChange={e => updateLayananTier(i, 'harga_harian', e.target.value)} style={inp} placeholder="Harga Harian / Sesi (opsional)" />
+                        <input value={t.harga_bulanan} onChange={e => updateLayananTier(i, 'harga_bulanan', e.target.value)} style={inp} placeholder="Baris harga 1 (opsional, bebas format, mis. 'Bulanan: Rp 3jt')" />
+                        <input value={t.harga_harian} onChange={e => updateLayananTier(i, 'harga_harian', e.target.value)} style={inp} placeholder="Baris harga 2 (opsional, bebas format, mis. 'Spesialis: Rp 650rb')" />
                       </div>
                       <textarea value={t.deskripsi} onChange={e => updateLayananTier(i, 'deskripsi', e.target.value)} style={{...inp, minHeight:'54px', resize:'vertical'}} placeholder="Deskripsi / kualifikasi tier ini" />
                       <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>

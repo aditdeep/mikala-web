@@ -8,7 +8,7 @@ import SecureGallery from '../(components)/SecureGallery';
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
-const WA = "https://wa.me/6281296998827";
+const WA = "https://wa.me/6282114488878";
 const LOGO_ROUND = "https://res.cloudinary.com/djgtchmsx/image/upload/v1784965226/Logo_Bulet_MGM_tdub8m.png";
 const MITRA_REGISTER_URL = "https://mitra.mikalaglobalmedika.com/auth/register";
 

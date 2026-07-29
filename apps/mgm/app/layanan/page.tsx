@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const API   = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
 const PINK  = '#9c488b';
-const WA    = 'https://wa.me/6281296998827';
+const WA    = 'https://wa.me/6282114488878';
 
 async function getData() {
   try {
@@ -37,7 +37,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-medis.jpg',
     deskripsi: 'Menghadirkan perawat profesional dan bersertifikat untuk merawat pasien di rumah maupun di rumah sakit. Mampu melakukan tindakan medis dan non-medis seperti injeksi, perawatan luka, pemberian infus, monitoring tanda vital, dan pendampingan pasien pasca operasi.',
     manfaat: ['Tindakan medis & non-medis', 'Monitoring kondisi 24 jam', 'Laporan perkembangan harian', 'Tersedia untuk rawat inap'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Medis'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Medis'),
   },
   {
     nama: 'Perawat Jiwa',
@@ -46,7 +46,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/perawat-jiwa.jpg',
     deskripsi: 'Perawat jiwa profesional terlatih melayani berbagai aspek dukungan dan perawatan bagi individu dengan masalah kesehatan mental, mulai dari gangguan kecemasan, depresi, skizofrenia, hingga gangguan bipolar dengan pendekatan humanis dan evidence-based.',
     manfaat: ['Pendampingan 24 jam', 'Terlatih tangani gangguan mental', 'Koordinasi dengan psikiater', 'Pendekatan humanis & aman'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Jiwa'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Jiwa'),
   },
   {
     nama: 'Caregiver / Perawat Lansia',
@@ -55,7 +55,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/caregiver.jpg',
     deskripsi: 'Mendampingi dan mengurus orang tua atau pasien lansia yang membutuhkan bantuan dalam aktivitas sehari-hari. Caregiver terlatih kami membantu mandi, makan, mobilisasi, hingga aktivitas sosial untuk meningkatkan kualitas hidup lansia.',
     manfaat: ['Bantu aktivitas harian', 'Terapi fisik ringan', 'Pendampingan sosial', 'Laporan kondisi ke keluarga'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Caregiver'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Caregiver'),
   },
   {
     nama: 'Babysitter',
@@ -64,7 +64,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/babysitter.jpg',
     deskripsi: 'Tenaga perawat bayi dan anak terlatih, berpengalaman menangani bayi newborn hingga anak usia sekolah. Tersedia layanan khusus untuk ibu pra/pasca melahirkan termasuk perawatan tali pusar, memandikan bayi, dan edukasi pengasuhan.',
     manfaat: ['Spesialis bayi newborn', 'Perawatan ibu nifas', 'Edukasi ASI & MPASI', 'Live-in atau harian'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Babysitter'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Babysitter'),
   },
   {
     nama: 'Terapi',
@@ -73,7 +73,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/penunjang.jpg',
     deskripsi: 'Layanan fisioterapi, terapi wicara, dan terapi lainnya langsung di rumah, dengan pilihan paket sesuai kebutuhan.',
     manfaat: ['Fisioterapi di rumah', 'Terapi wicara anak', 'Terapis bersertifikat', 'Program pemulihan terstruktur'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
   },
   {
     nama: 'Dokter Visit',
@@ -82,7 +82,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/dokter-visit.jpg',
     deskripsi: 'Menghadirkan dokter umum maupun spesialis terbaik langsung ke rumah Anda. Cocok untuk pemeriksaan rutin, konsultasi medis, penanganan penyakit ringan-sedang, hingga medical check-up di rumah tanpa perlu antri di klinik atau RS.',
     manfaat: ['Dokter umum & spesialis', 'Tersedia 7 hari seminggu', 'Resep & surat keterangan', 'Pemeriksaan lab di rumah'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Dokter Visit'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Dokter Visit'),
   },
   {
     nama: 'Medikal Evakuasi',
@@ -91,7 +91,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/medikal-evakuasi.jpg',
     deskripsi: 'Menyediakan ambulan medis dengan peralatan lengkap dan tenaga medis terlatih untuk evakuasi dan transportasi pasien. Beroperasi 24 jam untuk kondisi darurat maupun non-darurat, dengan jangkauan Jabodetabek dan sekitarnya.',
     manfaat: ['Armada ambulan lengkap', 'Tenaga medis terlatih', 'Operasional 24 jam', 'Jangkauan Jabodetabek'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Medikal Evakuasi'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Medikal Evakuasi'),
   },
   {
     nama: 'Pelayanan Penunjang',
@@ -100,7 +100,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/penunjang.jpg',
     deskripsi: 'Layanan fisioterapi, hipnoterapi, dan terapi wicara (speech therapist) langsung di rumah. Membantu pemulihan pasca stroke, cedera, gangguan bicara pada anak, serta meningkatkan kualitas hidup melalui terapi non-farmakologi.',
     manfaat: ['Fisioterapi di rumah', 'Terapi wicara anak', 'Hipnoterapi & relaksasi', 'Program pemulihan terstruktur'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Penunjang Kesehatan'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Penunjang Kesehatan'),
   },
   {
     nama: 'Persewaan & Penjualan Alat Medis',
@@ -109,7 +109,7 @@ const defaultLayanan = [
     gambar: 'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/layanan/alat-medis.jpg',
     deskripsi: 'Menyewakan dan menjual peralatan medis berkualitas sesuai kebutuhan pasien, termasuk kursi roda, tempat tidur pasien, nebulizer, oksigen concentrator, hospital bed, dan peralatan medis lainnya dengan harga terjangkau.',
     manfaat: ['Sewa & beli alat medis', 'Produk berkualitas & bergaransi', 'Antar ke rumah', 'Konsultasi kebutuhan gratis'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Persewaan Alat Medis'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Persewaan Alat Medis'),
   },
 ];
 

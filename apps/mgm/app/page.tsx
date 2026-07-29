@@ -14,7 +14,7 @@ const LOGO_ROUND = "https://res.cloudinary.com/djgtchmsx/image/upload/v178496522
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
-const WA = "https://wa.me/6281296998827";
+const WA = "https://wa.me/6282114488878";
 
 async function getData() {
   try {

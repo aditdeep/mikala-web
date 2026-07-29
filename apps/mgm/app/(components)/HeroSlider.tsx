@@ -6,7 +6,7 @@ type Slide = { image: string; title?: string; subtitle?: string };
 
 const GREEN = '#0e92b3';
 const PINK = '#9c488b';
-const WA = 'https://wa.me/6281296998827';
+const WA = 'https://wa.me/6282114488878';
 
 export default function HeroSlider({ slides, fallbackTitle, fallbackSubtitle }: {
   slides: Slide[];

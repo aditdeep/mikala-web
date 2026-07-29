@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 const API   = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
 const PINK  = '#9c488b';
-const WA    = 'https://wa.me/6281296998827';
+const WA    = 'https://wa.me/6282114488878';
 
 const defaultPenunjang = [
   {
@@ -17,7 +17,7 @@ const defaultPenunjang = [
     deskripsi: 'Fisioterapi, hipnoterapi, dan terapi wicara langsung di rumah untuk membantu proses pemulihan Anda.',
     deskripsi_panjang: 'Fisioterapi, hipnoterapi, dan terapi wicara (speech therapist) langsung di rumah. Membantu pemulihan pasca stroke, cedera, gangguan bicara pada anak, serta meningkatkan kualitas hidup melalui terapi non-farmakologi.\n\nTerapis kami berpengalaman menangani berbagai kondisi dengan pendekatan yang personal dan terstruktur sesuai kebutuhan pasien.',
     manfaat: ['Fisioterapi di rumah', 'Terapi wicara anak', 'Hipnoterapi & relaksasi', 'Program pemulihan terstruktur'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Terapi'),
   },
   {
     nama: 'Alat Kesehatan', tipe: 'Sewa & Jual', icon: '🩺',
@@ -25,7 +25,7 @@ const defaultPenunjang = [
     deskripsi: 'Persewaan dan penjualan alat kesehatan berkualitas seperti kursi roda, tempat tidur pasien, dan nebulizer.',
     deskripsi_panjang: 'Menyewakan dan menjual peralatan kesehatan berkualitas sesuai kebutuhan pasien, termasuk kursi roda, tempat tidur pasien, nebulizer, oksigen concentrator, hospital bed, dan peralatan lainnya dengan harga terjangkau.',
     manfaat: ['Sewa & beli alat kesehatan', 'Produk berkualitas & bergaransi', 'Antar ke rumah', 'Konsultasi kebutuhan gratis'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Kesehatan'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Kesehatan'),
   },
   {
     nama: 'Alat Medis', tipe: 'Peralatan Medis Lengkap', icon: '💉',
@@ -33,7 +33,7 @@ const defaultPenunjang = [
     deskripsi: 'Peralatan medis lengkap dan bergaransi untuk mendukung perawatan pasien di rumah maupun fasilitas kesehatan.',
     deskripsi_panjang: 'Menyediakan peralatan medis lengkap dan bergaransi untuk mendukung perawatan pasien di rumah maupun fasilitas kesehatan, mulai dari alat monitoring hingga peralatan penunjang tindakan medis.',
     manfaat: ['Peralatan lengkap & bergaransi', 'Konsultasi kebutuhan gratis', 'Pengantaran cepat', 'Layanan purna jual'],
-    wa_link: 'https://wa.me/6281296998827?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Medis'),
+    wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi Alat Medis'),
   },
 ];
 
