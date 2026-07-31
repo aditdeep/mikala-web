@@ -84,24 +84,24 @@ export default async function Footer() {
     ...COLS.slice(1),
   ];
   return (
-    <footer style={{ background:'linear-gradient(160deg, #1f4752 0%, #1d3940 100%)', color:'white', padding:'60px 20px 24px' }}>
+    <footer style={{ background:'linear-gradient(160deg, #cbddd9 0%, #b8d6ce 100%)', color:'#1a2e25', padding:'60px 20px 24px' }}>
       <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
         <div style={{ display:'grid', gridTemplateColumns:'1.3fr repeat(4, 1fr)', gap:'32px', marginBottom:'40px' }} className="footer-grid">
           <div>
             <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'14px' }}>
-              <div style={{ width:'48px', height:'48px', borderRadius:'12px', overflow:'hidden', flexShrink:0, background:'rgba(255,255,255,0.06)' }}>
+              <div style={{ width:'48px', height:'48px', borderRadius:'12px', overflow:'hidden', flexShrink:0, background:'rgba(255,255,255,0.65)' }}>
                 <img src={LOGO} alt="Mikala" style={{ height:'48px', width:'48px', objectFit:'cover', objectPosition:'left center' }} />
               </div>
               <div>
-                <p style={{ color:'rgba(255,255,255,0.68)', fontSize:'11px', margin:'0 0 2px' }}>Part of:</p>
-                <p style={{ color:'white', fontSize:'15px', fontWeight:800, letterSpacing:'0.3px', margin:0 }}>MIKALA GLOBAL GROUP</p>
+                <p style={{ color:'rgba(26,46,37,0.65)', fontSize:'11px', margin:'0 0 2px' }}>Part of:</p>
+                <p style={{ color:'#1a2e25', fontSize:'15px', fontWeight:800, letterSpacing:'0.3px', margin:0 }}>MIKALA GLOBAL GROUP</p>
               </div>
             </div>
 
-            <p style={{ color:'rgba(255,255,255,0.68)', fontSize:'13px', lineHeight:1.8, margin:'0 0 10px', display:'flex', gap:'8px' }}>
+            <p style={{ color:'rgba(26,46,37,0.7)', fontSize:'13px', lineHeight:1.8, margin:'0 0 10px', display:'flex', gap:'8px' }}>
               <span>📍</span><span>{ADDRESS}</span>
             </p>
-            <a href={WA} target="_blank" rel="noreferrer" style={{ color:'rgba(255,255,255,0.8)', fontSize:'13px', lineHeight:1.8, margin:'0 0 18px', display:'flex', gap:'8px', textDecoration:'none' }}>
+            <a href={WA} target="_blank" rel="noreferrer" style={{ color:'#0e6a80', fontSize:'13px', lineHeight:1.8, margin:'0 0 18px', display:'flex', gap:'8px', textDecoration:'none', fontWeight:600 }}>
               <span>📞</span><span>{PHONE_DISPLAY}</span>
             </a>
 
@@ -110,7 +110,7 @@ export default async function Footer() {
               <iframe
                 src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
                 width="100%" height="110" loading="lazy"
-                style={{ border:0, borderRadius:'12px', filter:'grayscale(0.3) saturate(1.2)', pointerEvents:'none' }}
+                style={{ border:0, borderRadius:'12px', pointerEvents:'none' }}
                 title="Lokasi Mikala Global Medika"
               />
             </a>
@@ -118,8 +118,8 @@ export default async function Footer() {
             <div style={{ display:'flex', gap:'10px' }}>
               {socialIcons.map((s: any, i: number) => (
                 <a key={i} href={s.url||s.href} target="_blank" rel="noreferrer" aria-label={s.label}
-                  style={{ width:'34px', height:'34px', borderRadius:'8px', background: s.icon ? 'rgba(255,255,255,0.1)' : (s.bg||GREEN), display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'10px', fontWeight:700, textDecoration:'none', overflow:'hidden' }}>
-                  {s.icon ? <img src={s.icon} alt={s.label||''} style={{ width:'18px', height:'18px', objectFit:'contain' }} /> : (s.letter||s.icon||'?')}
+                  style={{ width:'34px', height:'34px', borderRadius:'8px', background: s.icon ? 'transparent' : (s.bg||GREEN), display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'10px', fontWeight:700, textDecoration:'none', overflow:'hidden' }}>
+                  {s.icon ? <img src={s.icon} alt={s.label||''} style={{ width:'34px', height:'34px', objectFit:'contain' }} /> : (s.letter||s.icon||'?')}
                 </a>
               ))}
             </div>
@@ -127,18 +127,18 @@ export default async function Footer() {
 
           {cols.map(col => (
             <div key={col.title}>
-              <h4 style={{ fontWeight:700, fontSize:'14px', marginBottom:'16px', color:'white' }}>{col.title}</h4>
+              <h4 style={{ fontWeight:700, fontSize:'14px', marginBottom:'16px', color:'#1a2e25' }}>{col.title}</h4>
               {col.links.map(l => (
                 <div key={l.l} style={{ marginBottom:'8px' }}>
-                  <Link href={l.h} style={{ color:'rgba(255,255,255,0.68)', fontSize:'13px', textDecoration:'none' }}>{l.l}</Link>
+                  <Link href={l.h} style={{ color:'rgba(26,46,37,0.7)', fontSize:'13px', textDecoration:'none' }}>{l.l}</Link>
                 </div>
               ))}
             </div>
           ))}
         </div>
-        <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:'20px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
-          <p style={{ color:'rgba(255,255,255,0.45)', fontSize:'12px', margin:0 }}>Copyright © 2026 mikalaglobalmedika.com. All Rights Reserved</p>
-          <p style={{ color:'rgba(255,255,255,0.45)', fontSize:'12px', margin:0, fontStyle:'italic' }}>With Love We Serve ❤️</p>
+        <div style={{ borderTop:'1px solid rgba(26,46,37,0.15)', paddingTop:'20px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
+          <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'12px', margin:0 }}>Copyright © 2026 mikalaglobalmedika.com. All Rights Reserved</p>
+          <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'12px', margin:0, fontStyle:'italic' }}>With Love We Serve ❤️</p>
         </div>
       </div>
 
