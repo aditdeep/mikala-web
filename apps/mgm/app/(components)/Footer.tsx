@@ -93,15 +93,15 @@ export default async function Footer() {
                 <img src={LOGO} alt="Mikala" style={{ height:'48px', width:'48px', objectFit:'cover', objectPosition:'left center' }} />
               </div>
               <div>
-                <p style={{ color:'rgba(26,46,37,0.65)', fontSize:'11px', margin:'0 0 2px' }}>Part of:</p>
-                <p style={{ color:'#1a2e25', fontSize:'15px', fontWeight:800, letterSpacing:'0.3px', margin:0 }}>MIKALA GLOBAL GROUP</p>
+                <p style={{ color:'rgba(26,46,37,0.65)', fontSize:'12px', margin:'0 0 2px' }}>Part of:</p>
+                <p style={{ color:'#1a2e25', fontSize:'16px', fontWeight:800, letterSpacing:'0.3px', margin:0 }}>MIKALA GLOBAL GROUP</p>
               </div>
             </div>
 
-            <p style={{ color:'rgba(26,46,37,0.7)', fontSize:'13px', lineHeight:1.8, margin:'0 0 10px', display:'flex', gap:'8px' }}>
+            <p style={{ color:'rgba(26,46,37,0.7)', fontSize:'14px', lineHeight:1.8, margin:'0 0 10px', display:'flex', gap:'8px' }}>
               <span>📍</span><span>{ADDRESS}</span>
             </p>
-            <a href={WA} target="_blank" rel="noreferrer" style={{ color:'#0e6a80', fontSize:'13px', lineHeight:1.8, margin:'0 0 18px', display:'flex', gap:'8px', textDecoration:'none', fontWeight:600 }}>
+            <a href={WA} target="_blank" rel="noreferrer" style={{ color:'#0e6a80', fontSize:'14px', lineHeight:1.8, margin:'0 0 18px', display:'flex', gap:'8px', textDecoration:'none', fontWeight:600 }}>
               <span>📞</span><span>{PHONE_DISPLAY}</span>
             </a>
 
@@ -127,18 +127,18 @@ export default async function Footer() {
 
           {cols.map(col => (
             <div key={col.title}>
-              <h4 style={{ fontWeight:700, fontSize:'14px', marginBottom:'16px', color:'#1a2e25' }}>{col.title}</h4>
+              <h4 style={{ fontWeight:700, fontSize:'15px', marginBottom:'16px', color:'#1a2e25' }}>{col.title}</h4>
               {col.links.map(l => (
                 <div key={l.l} style={{ marginBottom:'8px' }}>
-                  <Link href={l.h} style={{ color:'rgba(26,46,37,0.7)', fontSize:'13px', textDecoration:'none' }}>{l.l}</Link>
+                  <Link href={l.h} style={{ color:'rgba(26,46,37,0.7)', fontSize:'14px', textDecoration:'none' }}>{l.l}</Link>
                 </div>
               ))}
             </div>
           ))}
         </div>
         <div style={{ borderTop:'1px solid rgba(26,46,37,0.15)', paddingTop:'20px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
-          <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'12px', margin:0 }}>Copyright © 2026 mikalaglobalmedika.com. All Rights Reserved</p>
-          <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'12px', margin:0, fontStyle:'italic' }}>With Love We Serve ❤️</p>
+          <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'13px', margin:0 }}>Copyright © 2026 mikalaglobalmedika.com. All Rights Reserved</p>
+          <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'13px', margin:0, fontStyle:'italic' }}>With Love We Serve ❤️</p>
         </div>
       </div>
 
