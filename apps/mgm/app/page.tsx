@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import Navbar from './(components)/Navbar';
 import Footer from './(components)/Footer';
 import HeroSlider from './(components)/HeroSlider';
@@ -34,6 +35,41 @@ async function getData() {
       testimoni: t.data || [],
     };
   } catch { return { settings:{}, layanan:[], penunjang:[], artikel:[], testimoni:[] }; }
+}
+
+function extractHeroImage(settings: any): string {
+  try {
+    const raw = settings.hero_slides;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed) && parsed[0]?.image) return parsed[0].image;
+  } catch {}
+  return LOGO;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { settings } = await getData();
+  const ogImage = extractHeroImage(settings);
+  const title = 'Mikala Global Medika – Layanan Homecare 24 Jam';
+  const description = 'Penyedia layanan homecare terpercaya. Perawat medis, caregiver, babysitter, dokter visit, medikal evakuasi di Bekasi dan sekitarnya.';
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: 'https://mikalaglobalmedika.com',
+      siteName: 'Mikala Global Medika',
+      locale: 'id_ID',
+      type: 'website',
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+    },
+  };
 }
 
 export default async function HomePage() {
