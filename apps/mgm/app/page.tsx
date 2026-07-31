@@ -246,7 +246,7 @@ export default async function HomePage() {
             </div>
 
             <div style={{ textAlign:'center', marginTop:'32px' }}>
-              <Link href="/penunjang" style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'12px 28px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none' }}>
+              <Link href="/layanan" style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', padding:'12px 28px', borderRadius:'25px', fontSize:'14px', fontWeight:600, textDecoration:'none' }}>
                 Lihat Semua Penunjang Kesehatan →
               </Link>
             </div>

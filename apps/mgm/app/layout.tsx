@@ -26,7 +26,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body style={{ margin:0, padding:0, fontFamily:"'Segoe UI', Arial, sans-serif" }}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" />
+      </head>
+      <body style={{ margin:0, padding:0, fontFamily:"'Futura', 'Jost', 'Century Gothic', 'Trebuchet MS', Arial, sans-serif" }}>
         {children}
         {/* Google Translate — hidden widget, custom button di Navbar */}
         <Script id="google-translate-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `

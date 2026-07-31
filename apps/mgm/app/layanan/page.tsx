@@ -161,36 +161,8 @@ export default async function LayananPage() {
         </div>
       </section>
 
-      {/* ═══ 6 ALASAN ═══ */}
-      <section style={{ padding:'clamp(48px,8vw,80px) 20px', background:'transparent' }} className="section-pad">
-        <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
-          <ScrollFade>
-            <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3vw,28px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>6 Alasan Memilih Layanan Kami</h2>
-            <p style={{ textAlign:'center', color:'#6b7280', fontSize:'15px', maxWidth:'560px', margin:'0 auto 36px' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
-          </ScrollFade>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'24px' }} className="card-grid card-grid-mobile-scroll">
-            {alasanData.slice(0,6).map((al: any, i) => (
-              <ScrollFade key={i} delay={i*80}>
-                <div style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding: al.gambar ? '0 26px 28px' : '34px 26px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center', overflow:'hidden' }}>
-                  {al.gambar ? (
-                    <div style={{ position:'relative', margin:'0 -26px 20px', height:'170px' }}>
-                      <img src={al.gambar} alt={al.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                      <div style={{ position:'absolute', bottom:'-22px', left:'50%', transform:'translateX(-50%)', width:'52px', height:'52px', borderRadius:'16px', background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', boxShadow:'0 6px 16px rgba(0,0,0,0.15)' }}>{al.icon||'✅'}</div>
-                    </div>
-                  ) : (
-                    <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'30px', margin:'0 auto 18px' }}>{al.icon||'✅'}</div>
-                  )}
-                  <h3 style={{ fontSize: al.gambar ? '19px' : '18px', fontWeight:800, color:'#1a2e25', margin: al.gambar ? '14px 0 10px' : '0 0 10px' }}>{al.judul}</h3>
-                  {al.deskripsi && <p style={{ fontSize:'14.5px', color:'#6b7280', lineHeight:1.7, margin:0 }}>{al.deskripsi}</p>}
-                </div>
-              </ScrollFade>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ═══ APA YANG ANDA BUTUHKAN ═══ */}
-      <section style={{ padding:'20px 20px 80px' }} className="section-pad">
+      <section style={{ padding:'clamp(48px,8vw,80px) 20px 20px' }} className="section-pad">
         <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
           <ScrollFade>
             <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3.2vw,30px)', fontWeight:800, color:'#1a2e25', margin:'0 0 36px' }}>Apa yang Anda Butuhkan?</h2>
@@ -230,6 +202,34 @@ export default async function LayananPage() {
                 </ScrollFade>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ 6 ALASAN ═══ */}
+      <section style={{ padding:'clamp(48px,8vw,80px) 20px', background:'transparent' }} className="section-pad">
+        <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+          <ScrollFade>
+            <h2 style={{ textAlign:'center', fontSize:'clamp(20px,3vw,28px)', fontWeight:800, color:'#1a2e25', margin:'0 0 12px' }}>6 Alasan Memilih Layanan Kami</h2>
+            <p style={{ textAlign:'center', color:'#6b7280', fontSize:'15px', maxWidth:'560px', margin:'0 auto 36px' }}>Komitmen kami untuk kesehatan Anda dan keluarga</p>
+          </ScrollFade>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'24px' }} className="card-grid card-grid-mobile-scroll">
+            {alasanData.slice(0,6).map((al: any, i) => (
+              <ScrollFade key={i} delay={i*80}>
+                <div style={{ background:`linear-gradient(180deg, ${GREEN}20 0%, rgba(255,255,255,0.9) 55%)`, backdropFilter:'blur(20px)', borderRadius:'20px', padding: al.gambar ? '0 26px 28px' : '34px 26px', border:'1px solid rgba(14,146,179,0.1)', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', textAlign:'center', overflow:'hidden' }}>
+                  {al.gambar ? (
+                    <div style={{ position:'relative', margin:'0 -26px 20px', height:'170px' }}>
+                      <img src={al.gambar} alt={al.judul} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                      <div style={{ position:'absolute', bottom:'-22px', left:'50%', transform:'translateX(-50%)', width:'52px', height:'52px', borderRadius:'16px', background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', boxShadow:'0 6px 16px rgba(0,0,0,0.15)' }}>{al.icon||'✅'}</div>
+                    </div>
+                  ) : (
+                    <div style={{ width:'64px', height:'64px', borderRadius:'18px', background:`linear-gradient(135deg, ${GREEN}15, ${PINK}15)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'30px', margin:'0 auto 18px' }}>{al.icon||'✅'}</div>
+                  )}
+                  <h3 style={{ fontSize: al.gambar ? '19px' : '18px', fontWeight:800, color:'#1a2e25', margin: al.gambar ? '14px 0 10px' : '0 0 10px' }}>{al.judul}</h3>
+                  {al.deskripsi && <p style={{ fontSize:'14.5px', color:'#6b7280', lineHeight:1.7, margin:0 }}>{al.deskripsi}</p>}
+                </div>
+              </ScrollFade>
+            ))}
           </div>
 
           {/* CTA bawah */}

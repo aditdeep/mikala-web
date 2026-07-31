@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { slugify } from '@/lib/slug';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const GREEN = '#0e92b3';
@@ -28,6 +29,22 @@ async function getSocialIcons() {
   return defaultSocial;
 }
 
+const defaultLayananNames = [
+  'Perawat Medis', 'Babysitter', 'Perawat Jiwa', 'Terapi',
+  'Dokter Visit', 'Medikal Evakuasi', 'Pelayanan Penunjang', 'Persewaan & Penjualan Alat Medis',
+];
+
+async function getLayananLinks() {
+  try {
+    const res = await fetch(`${API}/cms/layanan`, { next: { revalidate: 60 } });
+    const data = await res.json();
+    const list = Array.isArray(data.data) && data.data.length > 0 ? data.data : defaultLayananNames.map(n => ({ nama: n }));
+    return list.slice(0, 7).map((l: any) => ({ l: l.nama, h: `/layanan/${slugify(l.nama)}` }));
+  } catch {
+    return defaultLayananNames.slice(0, 7).map(n => ({ l: n, h: `/layanan/${slugify(n)}` }));
+  }
+}
+
 const COLS = [
   {
     title: 'Perusahaan',
@@ -37,18 +54,6 @@ const COLS = [
       { l:'Perizinan', h:'/perusahaan#legalitas' },
       { l:'Akademi Pelatihan', h:'/perusahaan#mga' },
       { l:'Karir', h:'/perusahaan#mga' },
-    ],
-  },
-  {
-    title: 'Layanan',
-    links: [
-      { l:'Perawat Medis', h:'/layanan' },
-      { l:'Babysitter', h:'/layanan' },
-      { l:'Perawat Jiwa', h:'/layanan' },
-      { l:'Terapi', h:'/layanan' },
-      { l:'Kunjungan Dokter', h:'/layanan' },
-      { l:'Evakuasi Medis', h:'/layanan' },
-      { l:'Penunjang Kesehatan', h:'/layanan' },
     ],
   },
   {
@@ -72,9 +77,14 @@ const COLS = [
 ];
 
 export default async function Footer() {
-  const socialIcons = await getSocialIcons();
+  const [socialIcons, layananLinks] = await Promise.all([getSocialIcons(), getLayananLinks()]);
+  const cols = [
+    COLS[0],
+    { title: 'Layanan', links: layananLinks },
+    ...COLS.slice(1),
+  ];
   return (
-    <footer style={{ background:'linear-gradient(160deg, #06333f 0%, #04232b 100%)', color:'white', padding:'60px 20px 24px' }}>
+    <footer style={{ background:'linear-gradient(160deg, #1f4752 0%, #1d3940 100%)', color:'white', padding:'60px 20px 24px' }}>
       <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
         <div style={{ display:'grid', gridTemplateColumns:'1.3fr repeat(4, 1fr)', gap:'32px', marginBottom:'40px' }} className="footer-grid">
           <div>
@@ -83,12 +93,12 @@ export default async function Footer() {
                 <img src={LOGO} alt="Mikala" style={{ height:'48px', width:'48px', objectFit:'cover', objectPosition:'left center' }} />
               </div>
               <div>
-                <p style={{ color:'rgba(255,255,255,0.55)', fontSize:'11px', margin:'0 0 2px' }}>Part of:</p>
+                <p style={{ color:'rgba(255,255,255,0.68)', fontSize:'11px', margin:'0 0 2px' }}>Part of:</p>
                 <p style={{ color:'white', fontSize:'15px', fontWeight:800, letterSpacing:'0.3px', margin:0 }}>MIKALA GLOBAL GROUP</p>
               </div>
             </div>
 
-            <p style={{ color:'rgba(255,255,255,0.55)', fontSize:'13px', lineHeight:1.8, margin:'0 0 10px', display:'flex', gap:'8px' }}>
+            <p style={{ color:'rgba(255,255,255,0.68)', fontSize:'13px', lineHeight:1.8, margin:'0 0 10px', display:'flex', gap:'8px' }}>
               <span>📍</span><span>{ADDRESS}</span>
             </p>
             <a href={WA} target="_blank" rel="noreferrer" style={{ color:'rgba(255,255,255,0.8)', fontSize:'13px', lineHeight:1.8, margin:'0 0 18px', display:'flex', gap:'8px', textDecoration:'none' }}>
@@ -115,20 +125,20 @@ export default async function Footer() {
             </div>
           </div>
 
-          {COLS.map(col => (
+          {cols.map(col => (
             <div key={col.title}>
               <h4 style={{ fontWeight:700, fontSize:'14px', marginBottom:'16px', color:'white' }}>{col.title}</h4>
               {col.links.map(l => (
                 <div key={l.l} style={{ marginBottom:'8px' }}>
-                  <Link href={l.h} style={{ color:'rgba(255,255,255,0.55)', fontSize:'13px', textDecoration:'none' }}>{l.l}</Link>
+                  <Link href={l.h} style={{ color:'rgba(255,255,255,0.68)', fontSize:'13px', textDecoration:'none' }}>{l.l}</Link>
                 </div>
               ))}
             </div>
           ))}
         </div>
         <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:'20px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
-          <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'12px', margin:0 }}>Copyright © 2026 mikalaglobalmedika.com. All Rights Reserved</p>
-          <p style={{ color:'rgba(255,255,255,0.35)', fontSize:'12px', margin:0, fontStyle:'italic' }}>With Love We Serve ❤️</p>
+          <p style={{ color:'rgba(255,255,255,0.45)', fontSize:'12px', margin:0 }}>Copyright © 2026 mikalaglobalmedika.com. All Rights Reserved</p>
+          <p style={{ color:'rgba(255,255,255,0.45)', fontSize:'12px', margin:0, fontStyle:'italic' }}>With Love We Serve ❤️</p>
         </div>
       </div>
 

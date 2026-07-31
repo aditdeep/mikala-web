@@ -1,6 +1,7 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+html { zoom: 1.05; }
+body { font-family: 'Futura', 'Jost', 'Century Gothic', 'Trebuchet MS', system-ui, -apple-system, sans-serif; }
 
 /* Glass effect utilities */
 .glass {
