@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { Headphones, Search, Eye, X, Plus, CheckCircle, Clock, AlertCircle, Users, HeartPulse, MessageSquare, BarChart2, UserPlus, Check, Briefcase } from 'lucide-react';
+import { Headphones, Search, Eye, X, Plus, CheckCircle, Clock, AlertCircle, Users, HeartPulse, MessageSquare, BarChart2, UserPlus, Check, Briefcase, TrendingUp, XCircle, Repeat, Download, FileText } from 'lucide-react';
 import { usePagination } from '@/lib/usePagination';
 import Pagination from '@/components/Pagination';
 
@@ -16,11 +16,18 @@ const statusMap: any = {
 
 const TABS = [
   { key:'layanan',  label:'Layanan',  icon: HeartPulse },
-  { key:'orders',   label:'Orders',   icon: Briefcase },
+  { key:'leads',    label:'Leads',    icon: Briefcase },
   { key:'klien',    label:'Klien',    icon: Users },
   { key:'pasien',   label:'Pasien',   icon: UserPlus },
   { key:'feedback', label:'Feedback', icon: MessageSquare },
   { key:'report',   label:'Report',   icon: BarChart2 },
+];
+
+const CC_SUBTABS = [
+  { key:'layanan',  label:'Layanan' },
+  { key:'leads',    label:'Leads' },
+  { key:'deal',     label:'Deal' },
+  { key:'exchange', label:'Exchange' },
 ];
 
 export default function CustomerCarePage() {
@@ -43,7 +50,7 @@ export default function CustomerCarePage() {
   const [assignMitraId, setAssignMitraId] = useState('');
   const [savingAssign, setSavingAssign] = useState(false);
 
-  // Orders state
+  // Orders state (dipakai juga oleh tombol Assign di tab Layanan)
   const [orders, setOrders] = useState<any[]>([]);
   const [showFormOrder, setShowFormOrder] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
@@ -52,6 +59,11 @@ export default function CustomerCarePage() {
     klien_id:'', pasien_id:'', mitra_id:'', layanan_type:'homecare_harian',
     tanggal_mulai:'', tanggal_selesai:'', lokasi:'', harga_per_shift:'0', total_shift:'1', deskripsi:''
   });
+
+  // Leads pipeline dashboard state
+  const [ccSubTab, setCcSubTab] = useState('layanan');
+  const [leadsSummary, setLeadsSummary] = useState<any>(null);
+  const [loadingLeads, setLoadingLeads] = useState(false);
 
   // Form pasien
   const [showFormPasien, setShowFormPasien] = useState(false);
@@ -79,7 +91,7 @@ export default function CustomerCarePage() {
     if (activeTab === 'pasien') fetchPasien();
     if (activeTab === 'feedback') fetchFeedback();
     if (activeTab === 'report') fetchReport();
-    if (activeTab === 'orders') fetchOrders();
+    if (activeTab === 'leads') fetchLeadsSummary();
   }, [activeTab]);
 
   const fetchAll = () => {
@@ -101,6 +113,13 @@ export default function CustomerCarePage() {
     apiClient.get('/internal/mitra-list?status=available').then((r: any) => {
       setMitraList(Array.isArray(r.data?.data) ? r.data.data : []);
     }).catch(() => {});
+  };
+
+  const fetchLeadsSummary = () => {
+    setLoadingLeads(true);
+    apiClient.get('/internal/cc/leads/summary').then((r: any) => {
+      setLeadsSummary(r.data?.data || null);
+    }).catch(() => setLeadsSummary(null)).finally(() => setLoadingLeads(false));
   };
 
   const fetchPasien = () => {
@@ -211,10 +230,8 @@ export default function CustomerCarePage() {
   };
 
   const layananFiltered = layanan.filter((l:any) => JSON.stringify(l).toLowerCase().includes(search.toLowerCase()));
-  const ordersFiltered = orders.filter((o:any) => JSON.stringify(o).toLowerCase().includes(search.toLowerCase()));
   const klienFiltered = klien.filter((k:any) => JSON.stringify(k).toLowerCase().includes(search.toLowerCase()));
   const layananPg = usePagination(layananFiltered, 20, [search, activeTab]);
-  const ordersPg = usePagination(ordersFiltered, 20, [search, activeTab]);
   const klienPg = usePagination(klienFiltered, 20, [search, activeTab]);
 
   const inp = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
@@ -227,10 +244,15 @@ export default function CustomerCarePage() {
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Customer Care</h1>
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>Kelola layanan, klien & pasien</p>
         </div>
-        {activeTab === 'orders' && (
-          <button onClick={() => { setShowFormOrder(true); fetchOrders(); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-            <Plus size={15}/>Buat Order
-          </button>
+        {activeTab === 'leads' && (
+          <div style={{ display:'flex', gap:'8px' }}>
+            <button onClick={() => alert('Form tambah Leads akan hadir di update berikutnya.')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+              <Plus size={15}/>Leads
+            </button>
+            <button onClick={() => alert('Halaman Laporan akan hadir di update berikutnya.')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+              <FileText size={15}/>Laporan
+            </button>
+          </div>
         )}
         {activeTab === 'klien' && (
           <button onClick={() => setShowFormKlien(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
@@ -345,59 +367,93 @@ export default function CustomerCarePage() {
         </div>
       )}
 
-      {/* TAB ORDERS */}
-      {activeTab === 'orders' && (
+      {/* TAB LEADS (dashboard pipeline: Layanan / Leads / Deal / Exchange) */}
+      {activeTab === 'leads' && (
         <div className="space-y-3">
-          <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px' }}>
-            <Search size={16} style={{ color:'var(--text3)' }} />
-            <input placeholder="Cari order..." value={search} onChange={e => setSearch(e.target.value)} style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:'13px', width:'100%' }} />
+          {/* Summary cards */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px,1fr))', gap:'12px' }}>
+            {[
+              { icon: Briefcase,  label:'Total Leads', value: leadsSummary?.total_leads ?? 0, gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)' },
+              { icon: TrendingUp, label:'Deal',        value: leadsSummary?.total_deal ?? 0,  gradient:'linear-gradient(135deg, #10b981, #059669)' },
+              { icon: XCircle,    label:'Loss',        value: leadsSummary?.total_loss ?? 0,  gradient:'linear-gradient(135deg, #ef4444, #b91c1c)' },
+            ].map(s => {
+              const Icon = s.icon;
+              return (
+                <div key={s.label} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                    <div style={{ width:'40px', height:'40px', borderRadius:'12px', background:s.gradient, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <Icon size={18} color="white" />
+                    </div>
+                    <div>
+                      <p style={{ color:'var(--text3)', fontSize:'11px' }}>{s.label}</p>
+                      <p style={{ fontWeight:700, fontSize:'20px', color:'var(--text)' }}>{s.value}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <div style={cardStyle}>
-            <div style={{ overflowX:'auto' }}>
-              <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'600px' }}>
-                <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['No','Order #','Klien','Mitra','Layanan','Tgl Mulai','Status','Aksi'].map(h => (
-                    <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                  ))}
-                </tr></thead>
-                <tbody>
-                  {ordersPg.paged.map((item: any, i: number) => {
-                    const s = statusMap[item.status] || statusMap.pending;
-                    const Icon = s.icon;
-                    return (
-                      <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(ordersPg.page-1)*ordersPg.perPage+i+1}</td>
-                        <td style={{ padding:'12px 16px', fontWeight:600, fontSize:'13px', color:'var(--text)' }}>#{item.id}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.klien?.nama_lengkap||item.klien?.user?.name||'-'}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name||<span style={{color:'#f59e0b'}}>Belum assign</span>}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', textTransform:'capitalize' }}>{(item.tipe_layanan||item.layanan_type||'-').replace(/_/g,' ')}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.tanggal_mulai ? new Date(item.tanggal_mulai).toLocaleDateString('id-ID') : '-'}</td>
-                        <td style={{ padding:'12px 16px' }}>
-                          <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
-                            <Icon size={11}/>{s.label}
-                          </span>
-                        </td>
-                        <td style={{ padding:'12px 16px' }}>
-                          <div style={{ display:'flex', gap:'6px' }}>
-                          <button onClick={() => setDetail(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', cursor:'pointer' }}>
-                            <Eye size={12}/>Detail
-                          </button>
-                          {!item.mitra_id && (
-                            <button onClick={() => { setAssignOrderId(item.id); setShowAssign(true); fetchOrders(); }} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer' }}>
-                              Assign
-                            </button>
-                          )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <Pagination page={ordersPg.page} totalPages={ordersPg.totalPages} total={ordersPg.total} onPageChange={ordersPg.setPage} label="order" />
-              {orders.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada order</div>}
+
+          {/* Sub-tabs Layanan / Leads / Deal / Exchange */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'8px' }}>
+            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+              {CC_SUBTABS.map(t => (
+                <button key={t.key} onClick={() => setCcSubTab(t.key)}
+                  style={{ padding:'7px 14px', borderRadius:'10px', fontSize:'12px', fontWeight:600, cursor:'pointer', background: ccSubTab===t.key ? 'rgba(236,72,153,0.15)' : 'var(--glass)', color: ccSubTab===t.key ? '#ec4899' : 'var(--text2)', border: ccSubTab===t.key ? '1px solid rgba(236,72,153,0.3)' : '1px solid var(--border)' }}>
+                  {t.label}
+                </button>
+              ))}
             </div>
+            <button onClick={() => alert('Export .xls akan hadir di update berikutnya.')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+              <Download size={13}/>.xls
+            </button>
           </div>
+
+          {/* Sub-tab: Layanan (breakdown per jenis layanan x tier) */}
+          {ccSubTab === 'layanan' && (
+            <div style={cardStyle}>
+              {loadingLeads ? (
+                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'600px' }}>
+                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                      {['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange'].map(h => (
+                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {(leadsSummary?.by_layanan || []).map((row: any, i: number) => (
+                        <tr key={i} style={{ borderBottom:'1px solid var(--border)' }}>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{row.layanan_nama}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.tier_nama || '-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.leads}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'#10b981', fontWeight:600 }}>{row.deal}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'#ef4444', fontWeight:600 }}>{row.loss}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.exchange}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {(!leadsSummary?.by_layanan || leadsSummary.by_layanan.length === 0) && (
+                    <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data layanan</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sub-tab: Leads / Deal / Exchange - coming soon (Stage 2) */}
+          {ccSubTab !== 'layanan' && (
+            <div style={{...cardStyle, textAlign:'center', padding:'48px 20px', color:'var(--text3)'}}>
+              <Repeat size={32} style={{ opacity:0.3, margin:'0 auto 12px' }}/>
+              <p style={{ fontWeight:600, fontSize:'14px', color:'var(--text2)', marginBottom:'4px' }}>
+                Tab {CC_SUBTABS.find(t => t.key===ccSubTab)?.label} segera hadir
+              </p>
+              <p style={{ fontSize:'12px' }}>Fitur ini sedang dalam pengembangan tahap berikutnya.</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -892,12 +948,12 @@ export default function CustomerCarePage() {
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'480px', padding:'24px', maxHeight:'85vh', overflowY:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'16px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>
-                {activeTab === 'orders' || activeTab === 'layanan' ? 'Detail Order' : 'Detail'}
+                {activeTab === 'layanan' ? 'Detail Order' : 'Detail'}
               </h2>
               <button onClick={() => setDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
             </div>
 
-            {(activeTab === 'orders' || activeTab === 'layanan') ? (
+            {(activeTab === 'layanan') ? (
               <div>
                 {/* Order header */}
                 <div style={{ background:'linear-gradient(135deg, #ec4899, #8b5cf6)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
