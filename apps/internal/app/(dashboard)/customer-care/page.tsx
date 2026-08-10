@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
 import { Headphones, Search, Eye, X, Plus, CheckCircle, Clock, AlertCircle, Users, HeartPulse, MessageSquare, BarChart2, UserPlus, Check, Briefcase, TrendingUp, XCircle, Repeat, Download, FileText } from 'lucide-react';
 import { usePagination } from '@/lib/usePagination';
@@ -143,6 +144,7 @@ function exportRowsToXls(filename: string, headers: string[], rows: (string|numb
 }
 
 export default function CustomerCarePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('layanan');
   const [layanan, setLayanan] = useState<any[]>([]);
   const [klien, setKlien] = useState<any[]>([]);
@@ -521,7 +523,7 @@ export default function CustomerCarePage() {
             <button onClick={() => { setShowFormLead(true); if (cmsLayananList.length === 0) fetchCmsLayananCatalog(); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
               <Plus size={15}/>Leads
             </button>
-            <button onClick={() => alert('Halaman Laporan akan hadir di update berikutnya.')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <button onClick={() => router.push('/customer-care/laporan')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
               <FileText size={15}/>Laporan
             </button>
           </div>
