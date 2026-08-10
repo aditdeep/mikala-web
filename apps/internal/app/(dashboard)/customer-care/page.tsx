@@ -36,6 +36,112 @@ const CC_SUBTABS = [
   { key:'exchange', label:'Exchange' },
 ];
 
+function buildLeadDetailRows(item: any) {
+  return [
+    { label:'Jenis Layanan', value: (item.layanan?.nama || '-') + (item.tier_nama ? ' · '+item.tier_nama : '') },
+    { label:'Klien Terdaftar', value: item.klien?.nama_lengkap || item.klien?.user?.name || '-' },
+    { label:'Nama Leads (Cust/PJ)', value: item.nama_leads || '-' },
+    { label:'Kontak', value: item.kontak || '-' },
+    { label:'Nama Pasien (Klien)', value: item.nama_pasien || '-' },
+    { label:'Sumber', value: item.sumber || '-' },
+    { label:'Catatan', value: item.catatan || '-' },
+    { label:'Mitra', value: item.mitra?.user?.name || '-' },
+    ...(item.status === 1 ? [{ label:'Tanggal Deal', value: item.deal_at ? new Date(item.deal_at).toLocaleString('id-ID') : '-' }] : []),
+    ...(item.status === 2 ? [
+      { label:'Tanggal Batal', value: item.batal_at ? new Date(item.batal_at).toLocaleString('id-ID') : '-' },
+      { label:'Alasan Batal', value: item.alasan_batal || '-' },
+    ] : []),
+    { label:'Dibuat oleh', value: (item.creator?.name || '-') + (item.created_at ? ' · '+new Date(item.created_at).toLocaleString('id-ID') : '') },
+  ];
+}
+
+function buildExchangeDetailRows(item: any) {
+  return [
+    { label:'Leads Terkait', value: (item.lead?.nama_leads || '-') + (item.lead?.nomor ? ' ('+item.lead.nomor+')' : '') },
+    { label:'Jenis Layanan', value: (item.lead?.layanan?.nama || '-') + (item.lead?.tier_nama ? ' · '+item.lead.tier_nama : '') },
+    { label:'Mitra Lama', value: item.mitra_lama?.user?.name || '-' },
+    { label:'Mitra Baru', value: item.mitra_baru?.user?.name || '-' },
+    { label:'Alasan Exchange', value: item.alasan || '-' },
+    { label:'Tanggal Exchange', value: item.exchanged_at ? new Date(item.exchanged_at).toLocaleString('id-ID') : '-' },
+    { label:'Dicatat oleh', value: (item.creator?.name || '-') + (item.created_at ? ' · '+new Date(item.created_at).toLocaleString('id-ID') : '') },
+  ];
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function escapePdfText(s: string): string {
+  return String(s ?? '').replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+}
+
+function wrapPdfLine(line: string, maxLen: number): string[] {
+  if (line.length <= maxLen) return [line];
+  const words = line.split(' ');
+  const out: string[] = [];
+  let cur = '';
+  words.forEach(w => {
+    if ((cur + ' ' + w).trim().length > maxLen) { if (cur) out.push(cur); cur = w; }
+    else { cur = (cur + ' ' + w).trim(); }
+  });
+  if (cur) out.push(cur);
+  return out;
+}
+
+function buildSimplePdfBlob(title: string, subtitle: string, rows: { label: string; value: string }[]): Blob {
+  const rawLines: string[] = [title, subtitle, ''];
+  rows.forEach(r => rawLines.push((r.label + ': ' + (r.value || '-'))));
+  rawLines.push('');
+  rawLines.push('Dicetak: ' + new Date().toLocaleString('id-ID'));
+
+  const wrapped: string[] = [];
+  rawLines.forEach(l => wrapped.push(...wrapPdfLine(l, 90)));
+
+  const startY = 800;
+  const lineHeight = 16;
+  let ops = 'BT\n/F1 11 Tf\n50 ' + startY + ' Td\n';
+  wrapped.forEach((line, i) => {
+    const text = escapePdfText(line);
+    if (i === 0) ops += '(' + text + ') Tj\n';
+    else ops += '0 -' + lineHeight + ' Td\n(' + text + ') Tj\n';
+  });
+  ops += 'ET';
+
+  const objects: string[] = [];
+  objects[1] = '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n';
+  objects[2] = '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n';
+  objects[3] = '3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 595 842] /Contents 5 0 R >>\nendobj\n';
+  objects[4] = '4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n';
+  objects[5] = '5 0 obj\n<< /Length ' + ops.length + ' >>\nstream\n' + ops + '\nendstream\nendobj\n';
+
+  let pdf = '%PDF-1.4\n';
+  const offsets: number[] = [0];
+  for (let i = 1; i <= 5; i++) { offsets.push(pdf.length); pdf += objects[i]; }
+  const xrefStart = pdf.length;
+  pdf += 'xref\n0 6\n0000000000 65535 f \n';
+  for (let i = 1; i <= 5; i++) pdf += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+  pdf += 'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xrefStart + '\n%%EOF';
+
+  const bytes = new Uint8Array(pdf.length);
+  for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
+  return new Blob([bytes], { type: 'application/pdf' });
+}
+
+function exportRowsToXls(filename: string, headers: string[], rows: (string|number)[][]) {
+  const esc = (s: any) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let html = '<table><thead><tr>' + headers.map(h => '<th>'+esc(h)+'</th>').join('') + '</tr></thead><tbody>';
+  rows.forEach(r => { html += '<tr>' + r.map(c => '<td>'+esc(c)+'</td>').join('') + '</tr>'; });
+  html += '</tbody></table>';
+  downloadBlob(new Blob(['﻿', html], { type: 'application/vnd.ms-excel' }), filename);
+}
+
 export default function CustomerCarePage() {
   const [activeTab, setActiveTab] = useState('layanan');
   const [layanan, setLayanan] = useState<any[]>([]);
@@ -264,6 +370,23 @@ export default function CustomerCarePage() {
       fetchExchangeList();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal mencatat Exchange'); }
     finally { setSavingExchange(false); }
+  };
+
+  const handleExportXls = () => {
+    const stamp = new Date().toISOString().slice(0,10);
+    if (ccSubTab === 'layanan') {
+      const rows = (leadsSummary?.by_layanan || []).map((r: any, i: number) => [i+1, r.layanan_nama, r.tier_nama||'-', r.leads, r.deal, r.loss, r.exchange]);
+      exportRowsToXls('cc-layanan-'+stamp+'.xls', ['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange'], rows);
+    } else if (ccSubTab === 'leads') {
+      const rows = leadsList.map((item: any, i: number) => [i+1, item.nomor||'-', (item.layanan?.nama||'-')+(item.tier_nama?' · '+item.tier_nama:''), item.nama_leads||'-', item.kontak||'-', item.sumber||'-', (leadStatusMap[item.status]?.label)||'-']);
+      exportRowsToXls('cc-leads-'+stamp+'.xls', ['No','Nomor','Jenis Layanan','Nama Leads','Kontak','Sumber','Status'], rows);
+    } else if (ccSubTab === 'deal') {
+      const rows = dealLeadsList.map((item: any, i: number) => [i+1, item.nomor||'-', (item.layanan?.nama||'-')+(item.tier_nama?' · '+item.tier_nama:''), item.nama_leads||'-', item.mitra?.user?.name||'Belum assign', item.deal_at?new Date(item.deal_at).toLocaleDateString('id-ID'):'-']);
+      exportRowsToXls('cc-deal-'+stamp+'.xls', ['No','Nomor','Jenis Layanan','Nama Leads','Mitra','Tgl Deal'], rows);
+    } else if (ccSubTab === 'exchange') {
+      const rows = exchangeList.map((item: any, i: number) => [i+1, item.nomor||'-', item.lead?.nama_leads||'-', item.mitra_lama?.user?.name||'-', item.mitra_baru?.user?.name||'-', item.alasan||'-', item.exchanged_at?new Date(item.exchanged_at).toLocaleDateString('id-ID'):'-']);
+      exportRowsToXls('cc-exchange-'+stamp+'.xls', ['No','Nomor','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'], rows);
+    }
   };
 
   const fetchPasien = () => {
@@ -553,7 +676,7 @@ export default function CustomerCarePage() {
                 </button>
               ))}
             </div>
-            <button onClick={() => alert('Export .xls akan hadir di update berikutnya.')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+            <button onClick={handleExportXls} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
               <Download size={13}/>.xls
             </button>
           </div>
@@ -1219,28 +1342,17 @@ export default function CustomerCarePage() {
                     <span style={{ display:'inline-block', marginTop:'8px', background:'rgba(255,255,255,0.2)', color:'white', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>
                   </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-                    {[
-                      { label:'Jenis Layanan', value: (item.layanan?.nama || '-') + (item.tier_nama ? ' · '+item.tier_nama : '') },
-                      { label:'Klien Terdaftar', value: item.klien?.nama_lengkap || item.klien?.user?.name || '-' },
-                      { label:'Nama Leads (Cust/PJ)', value: item.nama_leads || '-' },
-                      { label:'Kontak', value: item.kontak || '-' },
-                      { label:'Nama Pasien (Klien)', value: item.nama_pasien || '-' },
-                      { label:'Sumber', value: item.sumber || '-' },
-                      { label:'Catatan', value: item.catatan || '-' },
-                      { label:'Mitra', value: item.mitra?.user?.name || '-' },
-                      ...(item.status === 1 ? [{ label:'Tanggal Deal', value: item.deal_at ? new Date(item.deal_at).toLocaleString('id-ID') : '-' }] : []),
-                      ...(item.status === 2 ? [
-                        { label:'Tanggal Batal', value: item.batal_at ? new Date(item.batal_at).toLocaleString('id-ID') : '-' },
-                        { label:'Alasan Batal', value: item.alasan_batal || '-' },
-                      ] : []),
-                      { label:'Dibuat oleh', value: (item.creator?.name || '-') + (item.created_at ? ' · '+new Date(item.created_at).toLocaleString('id-ID') : '') },
-                    ].map(row => (
+                    {buildLeadDetailRows(item).map(row => (
                       <div key={row.label}>
                         <p style={{ color:'var(--text3)', fontSize:'11px' }}>{row.label}</p>
                         <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:600 }}>{row.value}</p>
                       </div>
                     ))}
                   </div>
+                  <button onClick={() => downloadBlob(buildSimplePdfBlob('Detail Leads — '+(item.nomor||item.id), 'Mikala Global Medika', buildLeadDetailRows(item)), 'leads-'+(item.nomor||item.id)+'.pdf')}
+                    style={{ marginTop:'16px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+                    <Download size={14}/>Download PDF
+                  </button>
                 </div>
               );
             })() : (() => {
@@ -1252,21 +1364,17 @@ export default function CustomerCarePage() {
                     <p style={{ color:'white', fontWeight:700, fontSize:'16px' }}>{item.nomor || '#'+item.id}</p>
                   </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-                    {[
-                      { label:'Leads Terkait', value: (item.lead?.nama_leads || '-') + (item.lead?.nomor ? ' ('+item.lead.nomor+')' : '') },
-                      { label:'Jenis Layanan', value: (item.lead?.layanan?.nama || '-') + (item.lead?.tier_nama ? ' · '+item.lead.tier_nama : '') },
-                      { label:'Mitra Lama', value: item.mitra_lama?.user?.name || '-' },
-                      { label:'Mitra Baru', value: item.mitra_baru?.user?.name || '-' },
-                      { label:'Alasan Exchange', value: item.alasan || '-' },
-                      { label:'Tanggal Exchange', value: item.exchanged_at ? new Date(item.exchanged_at).toLocaleString('id-ID') : '-' },
-                      { label:'Dicatat oleh', value: (item.creator?.name || '-') + (item.created_at ? ' · '+new Date(item.created_at).toLocaleString('id-ID') : '') },
-                    ].map(row => (
+                    {buildExchangeDetailRows(item).map(row => (
                       <div key={row.label}>
                         <p style={{ color:'var(--text3)', fontSize:'11px' }}>{row.label}</p>
                         <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:600 }}>{row.value}</p>
                       </div>
                     ))}
                   </div>
+                  <button onClick={() => downloadBlob(buildSimplePdfBlob('Detail Exchange — '+(item.nomor||item.id), 'Mikala Global Medika', buildExchangeDetailRows(item)), 'exchange-'+(item.nomor||item.id)+'.pdf')}
+                    style={{ marginTop:'16px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+                    <Download size={14}/>Download PDF
+                  </button>
                 </div>
               );
             })()}
