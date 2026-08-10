@@ -23,6 +23,12 @@ const TABS = [
   { key:'report',   label:'Report',   icon: BarChart2 },
 ];
 
+const leadStatusMap: any = {
+  0: { label:'Proses', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)', icon: Clock },
+  1: { label:'Deal',   color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', icon: CheckCircle },
+  2: { label:'Batal',  color:'#ef4444', bg:'rgba(239,68,68,0.15)',  border:'rgba(239,68,68,0.3)',  icon: XCircle },
+};
+
 const CC_SUBTABS = [
   { key:'layanan',  label:'Layanan' },
   { key:'leads',    label:'Leads' },
@@ -64,6 +70,24 @@ export default function CustomerCarePage() {
   const [ccSubTab, setCcSubTab] = useState('layanan');
   const [leadsSummary, setLeadsSummary] = useState<any>(null);
   const [loadingLeads, setLoadingLeads] = useState(false);
+  const [cmsLayananList, setCmsLayananList] = useState<any[]>([]);
+  const [leadsList, setLeadsList] = useState<any[]>([]);
+  const [loadingLeadsList, setLoadingLeadsList] = useState(false);
+
+  // Form tambah Leads
+  const [showFormLead, setShowFormLead] = useState(false);
+  const [formLead, setFormLead] = useState({ cms_layanan_id:'', tier_nama:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
+  const [savingLead, setSavingLead] = useState(false);
+
+  // Modal Deal
+  const [dealTarget, setDealTarget] = useState<any>(null);
+  const [dealMitraId, setDealMitraId] = useState('');
+  const [savingDeal, setSavingDeal] = useState(false);
+
+  // Modal Batal (Loss)
+  const [batalTarget, setBatalTarget] = useState<any>(null);
+  const [alasanBatal, setAlasanBatal] = useState('');
+  const [savingBatal, setSavingBatal] = useState(false);
 
   // Form pasien
   const [showFormPasien, setShowFormPasien] = useState(false);
@@ -91,8 +115,12 @@ export default function CustomerCarePage() {
     if (activeTab === 'pasien') fetchPasien();
     if (activeTab === 'feedback') fetchFeedback();
     if (activeTab === 'report') fetchReport();
-    if (activeTab === 'leads') fetchLeadsSummary();
+    if (activeTab === 'leads') { fetchLeadsSummary(); fetchCmsLayananCatalog(); }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'leads' && ccSubTab === 'leads') fetchLeadsList();
+  }, [activeTab, ccSubTab]);
 
   const fetchAll = () => {
     setLoading(true);
@@ -120,6 +148,70 @@ export default function CustomerCarePage() {
     apiClient.get('/internal/cc/leads/summary').then((r: any) => {
       setLeadsSummary(r.data?.data || null);
     }).catch(() => setLeadsSummary(null)).finally(() => setLoadingLeads(false));
+    if (mitraList.length === 0) fetchOrders();
+  };
+
+  const fetchCmsLayananCatalog = () => {
+    apiClient.get('/cms/layanan').then((r: any) => {
+      setCmsLayananList(Array.isArray(r.data?.data) ? r.data.data : []);
+    }).catch(() => {});
+  };
+
+  const fetchLeadsList = () => {
+    setLoadingLeadsList(true);
+    apiClient.get('/internal/cc/leads').then((r: any) => {
+      setLeadsList(Array.isArray(r.data?.data) ? r.data.data : []);
+    }).catch(() => setLeadsList([])).finally(() => setLoadingLeadsList(false));
+  };
+
+  const getTiersFor = (cmsLayananId: string | number) => {
+    const l = cmsLayananList.find((x: any) => String(x.id) === String(cmsLayananId));
+    if (!l || !l.tier_data) return [];
+    try {
+      const parsed = typeof l.tier_data === 'string' ? JSON.parse(l.tier_data) : l.tier_data;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  };
+
+  const handleCreateLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingLead(true);
+    try {
+      await apiClient.post('/internal/cc/leads', formLead);
+      setShowFormLead(false);
+      setFormLead({ cms_layanan_id:'', tier_nama:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
+      fetchLeadsList();
+      fetchLeadsSummary();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menambahkan leads'); }
+    finally { setSavingLead(false); }
+  };
+
+  const handleMarkDeal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dealTarget) return;
+    setSavingDeal(true);
+    try {
+      await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined });
+      setDealTarget(null);
+      setDealMitraId('');
+      fetchLeadsList();
+      fetchLeadsSummary();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Deal'); }
+    finally { setSavingDeal(false); }
+  };
+
+  const handleMarkBatal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!batalTarget) return;
+    setSavingBatal(true);
+    try {
+      await apiClient.patch('/internal/cc/leads/'+batalTarget.id+'/batal', { alasan_batal: alasanBatal });
+      setBatalTarget(null);
+      setAlasanBatal('');
+      fetchLeadsList();
+      fetchLeadsSummary();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Batal'); }
+    finally { setSavingBatal(false); }
   };
 
   const fetchPasien = () => {
@@ -246,7 +338,7 @@ export default function CustomerCarePage() {
         </div>
         {activeTab === 'leads' && (
           <div style={{ display:'flex', gap:'8px' }}>
-            <button onClick={() => alert('Form tambah Leads akan hadir di update berikutnya.')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <button onClick={() => { setShowFormLead(true); if (cmsLayananList.length === 0) fetchCmsLayananCatalog(); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
               <Plus size={15}/>Leads
             </button>
             <button onClick={() => alert('Halaman Laporan akan hadir di update berikutnya.')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
@@ -444,8 +536,67 @@ export default function CustomerCarePage() {
             </div>
           )}
 
-          {/* Sub-tab: Leads / Deal / Exchange - coming soon (Stage 2) */}
-          {ccSubTab !== 'layanan' && (
+          {/* Sub-tab: Leads (daftar leads masuk + aksi Deal/Batal) */}
+          {ccSubTab === 'leads' && (
+            <div style={cardStyle}>
+              {loadingLeadsList ? (
+                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
+                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                      {['No','Nomor','Jenis Layanan','Nama Leads','Kontak','Sumber','Status','Aksi'].map(h => (
+                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {leadsList.map((item: any, i: number) => {
+                        const s = leadStatusMap[item.status] ?? leadStatusMap[0];
+                        const Icon = s.icon;
+                        return (
+                          <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
+                              {item.layanan?.nama || '-'}{item.tier_nama ? ' · '+item.tier_nama : ''}
+                            </td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nama_leads||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.sumber||'-'}</td>
+                            <td style={{ padding:'12px 16px' }}>
+                              <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
+                                <Icon size={11}/>{s.label}
+                              </span>
+                            </td>
+                            <td style={{ padding:'12px 16px' }}>
+                              {item.status === 0 ? (
+                                <div style={{ display:'flex', gap:'6px' }}>
+                                  <button onClick={() => setDealTarget(item)} style={{ padding:'5px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                    Deal
+                                  </button>
+                                  <button onClick={() => setBatalTarget(item)} style={{ padding:'5px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                    Batal
+                                  </button>
+                                </div>
+                              ) : (
+                                <span style={{ fontSize:'12px', color:'var(--text3)' }}>
+                                  {item.status === 1 ? (item.mitra?.user?.name ? 'Mitra: '+item.mitra.user.name : '-') : (item.alasan_batal || '-')}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {leadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads masuk</div>}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sub-tab: Deal / Exchange - coming soon (Stage berikutnya) */}
+          {(ccSubTab === 'deal' || ccSubTab === 'exchange') && (
             <div style={{...cardStyle, textAlign:'center', padding:'48px 20px', color:'var(--text3)'}}>
               <Repeat size={32} style={{ opacity:0.3, margin:'0 auto 12px' }}/>
               <p style={{ fontWeight:600, fontSize:'14px', color:'var(--text2)', marginBottom:'4px' }}>
@@ -713,6 +864,123 @@ export default function CustomerCarePage() {
                 <button type="button" onClick={() => setShowAssign(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={savingAssign} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #3b82f6, #2563eb)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {savingAssign ? 'Menyimpan...' : 'Assign Mitra'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Form Tambah Leads */}
+      {showFormLead && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', overflowY:'auto' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'480px', padding:'24px', margin:'auto' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tambah Leads Baru</h2>
+              <button onClick={() => setShowFormLead(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <form onSubmit={handleCreateLead} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jenis Layanan</label>
+                  <select value={formLead.cms_layanan_id} onChange={e => setFormLead(f => ({ ...f, cms_layanan_id: e.target.value, tier_nama:'' }))} style={inp}>
+                    <option value="">-- Pilih Layanan --</option>
+                    {cmsLayananList.map((l: any) => (
+                      <option key={l.id} value={l.id}>{l.nama}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tier</label>
+                  <select value={formLead.tier_nama} onChange={e => setFormLead(f => ({ ...f, tier_nama: e.target.value }))} style={inp} disabled={!formLead.cms_layanan_id || getTiersFor(formLead.cms_layanan_id).length === 0}>
+                    <option value="">-- Tanpa Tier --</option>
+                    {getTiersFor(formLead.cms_layanan_id).map((t: any, i: number) => (
+                      <option key={i} value={t.nama}>{t.nama}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Leads (Cust/PJ) *</label>
+                <input required value={formLead.nama_leads} onChange={e => setFormLead(f => ({ ...f, nama_leads: e.target.value }))} style={inp} placeholder="Nama penanggung jawab" />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. Kontak/WA *</label>
+                  <input required value={formLead.kontak} onChange={e => setFormLead(f => ({ ...f, kontak: e.target.value }))} style={inp} placeholder="0812xxxxxxx" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Sumber</label>
+                  <select value={formLead.sumber} onChange={e => setFormLead(f => ({ ...f, sumber: e.target.value }))} style={inp}>
+                    {['WhatsApp','Instagram','Telepon','Website','Referral','Lainnya'].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Pasien (Klien)</label>
+                <input value={formLead.nama_pasien} onChange={e => setFormLead(f => ({ ...f, nama_pasien: e.target.value }))} style={inp} placeholder="Opsional" />
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Catatan</label>
+                <textarea value={formLead.catatan} onChange={e => setFormLead(f => ({ ...f, catatan: e.target.value }))} style={{...inp, minHeight:'70px', resize:'vertical'}} placeholder="Opsional" />
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => setShowFormLead(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={savingLead} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {savingLead ? 'Menyimpan...' : 'Simpan Leads'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Deal */}
+      {dealTarget && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'400px', padding:'24px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tandai Deal — {dealTarget.nama_leads}</h2>
+              <button onClick={() => { setDealTarget(null); setDealMitraId(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <form onSubmit={handleMarkDeal} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Assign Mitra (opsional)</label>
+                <select value={dealMitraId} onChange={e => setDealMitraId(e.target.value)} style={inp}>
+                  <option value="">-- Belum Assign --</option>
+                  {mitraList.map((m: any) => (
+                    <option key={m.id} value={m.id}>{m.user?.name} ({m.status})</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => { setDealTarget(null); setDealMitraId(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={savingDeal} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {savingDeal ? 'Menyimpan...' : 'Tandai Deal'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Batal (Loss) */}
+      {batalTarget && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'400px', padding:'24px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tandai Batal — {batalTarget.nama_leads}</h2>
+              <button onClick={() => { setBatalTarget(null); setAlasanBatal(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <form onSubmit={handleMarkBatal} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alasan Batal *</label>
+                <textarea required value={alasanBatal} onChange={e => setAlasanBatal(e.target.value)} style={{...inp, minHeight:'80px', resize:'vertical'}} placeholder="Jelaskan alasan leads batal/loss" />
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => { setBatalTarget(null); setAlasanBatal(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={savingBatal} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #ef4444, #b91c1c)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {savingBatal ? 'Menyimpan...' : 'Tandai Batal'}
                 </button>
               </div>
             </form>
