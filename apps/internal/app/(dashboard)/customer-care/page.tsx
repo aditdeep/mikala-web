@@ -101,6 +101,9 @@ export default function CustomerCarePage() {
   const [exchangeAlasan, setExchangeAlasan] = useState('');
   const [savingExchange, setSavingExchange] = useState(false);
 
+  // Modal Detail Leads/Deal/Exchange
+  const [leadDetail, setLeadDetail] = useState<{ type: 'lead'|'exchange'; item: any }|null>(null);
+
   // Form pasien
   const [showFormPasien, setShowFormPasien] = useState(false);
   const [formPasien, setFormPasien] = useState({ klien_id:'', nama_lengkap:'', tanggal_lahir:'', jenis_kelamin:'L', golongan_darah:'', alamat:'', riwayat_penyakit:'', alergi:'', kontak_darurat_nama:'', kontak_darurat_phone:'', kontak_darurat_relasi:'keluarga' });
@@ -614,20 +617,21 @@ export default function CustomerCarePage() {
                               </span>
                             </td>
                             <td style={{ padding:'12px 16px' }}>
-                              {item.status === 0 ? (
-                                <div style={{ display:'flex', gap:'6px' }}>
-                                  <button onClick={() => setDealTarget(item)} style={{ padding:'5px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                    Deal
-                                  </button>
-                                  <button onClick={() => setBatalTarget(item)} style={{ padding:'5px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                    Batal
-                                  </button>
-                                </div>
-                              ) : (
-                                <span style={{ fontSize:'12px', color:'var(--text3)' }}>
-                                  {item.status === 1 ? (item.mitra?.user?.name ? 'Mitra: '+item.mitra.user.name : '-') : (item.alasan_batal || '-')}
-                                </span>
-                              )}
+                              <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                                <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                  <Eye size={12}/>Detail
+                                </button>
+                                {item.status === 0 && (
+                                  <>
+                                    <button onClick={() => setDealTarget(item)} style={{ padding:'5px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                      Deal
+                                    </button>
+                                    <button onClick={() => setBatalTarget(item)} style={{ padding:'5px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                      Batal
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         );
@@ -665,9 +669,14 @@ export default function CustomerCarePage() {
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name || <span style={{color:'#f59e0b'}}>Belum assign</span>}</td>
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.deal_at ? new Date(item.deal_at).toLocaleDateString('id-ID') : '-'}</td>
                           <td style={{ padding:'12px 16px' }}>
-                            <button onClick={() => setExchangeTarget(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'8px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                              <Repeat size={12}/>Exchange
-                            </button>
+                            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                              <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                <Eye size={12}/>Detail
+                              </button>
+                              <button onClick={() => setExchangeTarget(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'8px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                <Repeat size={12}/>Exchange
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -688,7 +697,7 @@ export default function CustomerCarePage() {
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
                     <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['No','Nomor','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'].map(h => (
+                      {['No','Nomor','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal','Aksi'].map(h => (
                         <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                       ))}
                     </tr></thead>
@@ -704,6 +713,11 @@ export default function CustomerCarePage() {
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_baru?.user?.name || '-'}</td>
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alasan||'-'}</td>
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.exchanged_at ? new Date(item.exchanged_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td style={{ padding:'12px 16px' }}>
+                            <button onClick={() => setLeadDetail({ type:'exchange', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                              <Eye size={12}/>Detail
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1128,6 +1142,82 @@ export default function CustomerCarePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Detail Leads / Deal / Exchange */}
+      {leadDetail && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'480px', padding:'24px', maxHeight:'85vh', overflowY:'auto' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'16px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>
+                {leadDetail.type === 'exchange' ? 'Detail Exchange' : 'Detail Leads'}
+              </h2>
+              <button onClick={() => setLeadDetail(null)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+
+            {leadDetail.type === 'lead' ? (() => {
+              const item = leadDetail.item;
+              const s = leadStatusMap[item.status] ?? leadStatusMap[0];
+              return (
+                <div>
+                  <div style={{ background:'linear-gradient(135deg, #ec4899, #8b5cf6)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
+                    <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px' }}>Nomor Leads</p>
+                    <p style={{ color:'white', fontWeight:700, fontSize:'16px' }}>{item.nomor || '#'+item.id}</p>
+                    <span style={{ display:'inline-block', marginTop:'8px', background:'rgba(255,255,255,0.2)', color:'white', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                    {[
+                      { label:'Jenis Layanan', value: (item.layanan?.nama || '-') + (item.tier_nama ? ' · '+item.tier_nama : '') },
+                      { label:'Nama Leads (Cust/PJ)', value: item.nama_leads || '-' },
+                      { label:'Kontak', value: item.kontak || '-' },
+                      { label:'Nama Pasien (Klien)', value: item.nama_pasien || '-' },
+                      { label:'Sumber', value: item.sumber || '-' },
+                      { label:'Catatan', value: item.catatan || '-' },
+                      { label:'Mitra', value: item.mitra?.user?.name || '-' },
+                      ...(item.status === 1 ? [{ label:'Tanggal Deal', value: item.deal_at ? new Date(item.deal_at).toLocaleString('id-ID') : '-' }] : []),
+                      ...(item.status === 2 ? [
+                        { label:'Tanggal Batal', value: item.batal_at ? new Date(item.batal_at).toLocaleString('id-ID') : '-' },
+                        { label:'Alasan Batal', value: item.alasan_batal || '-' },
+                      ] : []),
+                      { label:'Dibuat oleh', value: (item.creator?.name || '-') + (item.created_at ? ' · '+new Date(item.created_at).toLocaleString('id-ID') : '') },
+                    ].map(row => (
+                      <div key={row.label}>
+                        <p style={{ color:'var(--text3)', fontSize:'11px' }}>{row.label}</p>
+                        <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:600 }}>{row.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })() : (() => {
+              const item = leadDetail.item;
+              return (
+                <div>
+                  <div style={{ background:'linear-gradient(135deg, #8b5cf6, #7c3aed)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
+                    <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px' }}>Nomor Exchange</p>
+                    <p style={{ color:'white', fontWeight:700, fontSize:'16px' }}>{item.nomor || '#'+item.id}</p>
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                    {[
+                      { label:'Leads Terkait', value: (item.lead?.nama_leads || '-') + (item.lead?.nomor ? ' ('+item.lead.nomor+')' : '') },
+                      { label:'Jenis Layanan', value: (item.lead?.layanan?.nama || '-') + (item.lead?.tier_nama ? ' · '+item.lead.tier_nama : '') },
+                      { label:'Mitra Lama', value: item.mitra_lama?.user?.name || '-' },
+                      { label:'Mitra Baru', value: item.mitra_baru?.user?.name || '-' },
+                      { label:'Alasan Exchange', value: item.alasan || '-' },
+                      { label:'Tanggal Exchange', value: item.exchanged_at ? new Date(item.exchanged_at).toLocaleString('id-ID') : '-' },
+                      { label:'Dicatat oleh', value: (item.creator?.name || '-') + (item.created_at ? ' · '+new Date(item.created_at).toLocaleString('id-ID') : '') },
+                    ].map(row => (
+                      <div key={row.label}>
+                        <p style={{ color:'var(--text3)', fontSize:'11px' }}>{row.label}</p>
+                        <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:600 }}>{row.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
