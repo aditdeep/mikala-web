@@ -89,6 +89,18 @@ export default function CustomerCarePage() {
   const [alasanBatal, setAlasanBatal] = useState('');
   const [savingBatal, setSavingBatal] = useState(false);
 
+  // Deal & Exchange tab
+  const [dealLeadsList, setDealLeadsList] = useState<any[]>([]);
+  const [loadingDealList, setLoadingDealList] = useState(false);
+  const [exchangeList, setExchangeList] = useState<any[]>([]);
+  const [loadingExchangeList, setLoadingExchangeList] = useState(false);
+
+  // Modal Log Exchange
+  const [exchangeTarget, setExchangeTarget] = useState<any>(null);
+  const [exchangeMitraId, setExchangeMitraId] = useState('');
+  const [exchangeAlasan, setExchangeAlasan] = useState('');
+  const [savingExchange, setSavingExchange] = useState(false);
+
   // Form pasien
   const [showFormPasien, setShowFormPasien] = useState(false);
   const [formPasien, setFormPasien] = useState({ klien_id:'', nama_lengkap:'', tanggal_lahir:'', jenis_kelamin:'L', golongan_darah:'', alamat:'', riwayat_penyakit:'', alergi:'', kontak_darurat_nama:'', kontak_darurat_phone:'', kontak_darurat_relasi:'keluarga' });
@@ -119,7 +131,10 @@ export default function CustomerCarePage() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === 'leads' && ccSubTab === 'leads') fetchLeadsList();
+    if (activeTab !== 'leads') return;
+    if (ccSubTab === 'leads') fetchLeadsList();
+    if (ccSubTab === 'deal') fetchDealLeads();
+    if (ccSubTab === 'exchange') fetchExchangeList();
   }, [activeTab, ccSubTab]);
 
   const fetchAll = () => {
@@ -212,6 +227,36 @@ export default function CustomerCarePage() {
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Batal'); }
     finally { setSavingBatal(false); }
+  };
+
+  const fetchDealLeads = () => {
+    setLoadingDealList(true);
+    apiClient.get('/internal/cc/leads?status=1').then((r: any) => {
+      setDealLeadsList(Array.isArray(r.data?.data) ? r.data.data : []);
+    }).catch(() => setDealLeadsList([])).finally(() => setLoadingDealList(false));
+    if (mitraList.length === 0) fetchOrders();
+  };
+
+  const fetchExchangeList = () => {
+    setLoadingExchangeList(true);
+    apiClient.get('/internal/cc/leads-exchange').then((r: any) => {
+      setExchangeList(Array.isArray(r.data?.data) ? r.data.data : []);
+    }).catch(() => setExchangeList([])).finally(() => setLoadingExchangeList(false));
+  };
+
+  const handleLogExchange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!exchangeTarget) return;
+    setSavingExchange(true);
+    try {
+      await apiClient.post('/internal/cc/leads/'+exchangeTarget.id+'/exchange', { mitra_baru_id: exchangeMitraId, alasan: exchangeAlasan });
+      setExchangeTarget(null);
+      setExchangeMitraId('');
+      setExchangeAlasan('');
+      fetchDealLeads();
+      fetchExchangeList();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal mencatat Exchange'); }
+    finally { setSavingExchange(false); }
   };
 
   const fetchPasien = () => {
@@ -595,14 +640,77 @@ export default function CustomerCarePage() {
             </div>
           )}
 
-          {/* Sub-tab: Deal / Exchange - coming soon (Stage berikutnya) */}
-          {(ccSubTab === 'deal' || ccSubTab === 'exchange') && (
-            <div style={{...cardStyle, textAlign:'center', padding:'48px 20px', color:'var(--text3)'}}>
-              <Repeat size={32} style={{ opacity:0.3, margin:'0 auto 12px' }}/>
-              <p style={{ fontWeight:600, fontSize:'14px', color:'var(--text2)', marginBottom:'4px' }}>
-                Tab {CC_SUBTABS.find(t => t.key===ccSubTab)?.label} segera hadir
-              </p>
-              <p style={{ fontSize:'12px' }}>Fitur ini sedang dalam pengembangan tahap berikutnya.</p>
+          {/* Sub-tab: Deal (leads yang sudah closing) */}
+          {ccSubTab === 'deal' && (
+            <div style={cardStyle}>
+              {loadingDealList ? (
+                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
+                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                      {['No','Nomor','Jenis Layanan','Nama Leads','Mitra','Tgl Deal','Aksi'].map(h => (
+                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {dealLeadsList.map((item: any, i: number) => (
+                        <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
+                            {item.layanan?.nama || '-'}{item.tier_nama ? ' · '+item.tier_nama : ''}
+                          </td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nama_leads||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name || <span style={{color:'#f59e0b'}}>Belum assign</span>}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.deal_at ? new Date(item.deal_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td style={{ padding:'12px 16px' }}>
+                            <button onClick={() => setExchangeTarget(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'8px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                              <Repeat size={12}/>Exchange
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {dealLeadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads Deal</div>}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sub-tab: Exchange (histori tukar mitra) */}
+          {ccSubTab === 'exchange' && (
+            <div style={cardStyle}>
+              {loadingExchangeList ? (
+                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
+                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                      {['No','Nomor','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'].map(h => (
+                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {exchangeList.map((item: any, i: number) => (
+                        <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
+                            {item.lead?.nama_leads || '-'} <span style={{color:'var(--text3)', fontWeight:400}}>({item.lead?.nomor||'-'})</span>
+                          </td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_lama?.user?.name || '-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_baru?.user?.name || '-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alasan||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.exchanged_at ? new Date(item.exchanged_at).toLocaleDateString('id-ID') : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {exchangeList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada histori exchange</div>}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -981,6 +1089,42 @@ export default function CustomerCarePage() {
                 <button type="button" onClick={() => { setBatalTarget(null); setAlasanBatal(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={savingBatal} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #ef4444, #b91c1c)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {savingBatal ? 'Menyimpan...' : 'Tandai Batal'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Log Exchange */}
+      {exchangeTarget && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'420px', padding:'24px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Exchange Mitra — {exchangeTarget.nama_leads}</h2>
+              <button onClick={() => { setExchangeTarget(null); setExchangeMitraId(''); setExchangeAlasan(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <p style={{ color:'var(--text3)', fontSize:'12px', marginBottom:'14px' }}>
+              Mitra saat ini: <strong style={{color:'var(--text2)'}}>{exchangeTarget.mitra?.user?.name || 'Belum assign'}</strong>
+            </p>
+            <form onSubmit={handleLogExchange} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Mitra Baru *</label>
+                <select required value={exchangeMitraId} onChange={e => setExchangeMitraId(e.target.value)} style={inp}>
+                  <option value="">-- Pilih Mitra Baru --</option>
+                  {mitraList.map((m: any) => (
+                    <option key={m.id} value={m.id}>{m.user?.name} ({m.status})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alasan Exchange *</label>
+                <textarea required value={exchangeAlasan} onChange={e => setExchangeAlasan(e.target.value)} style={{...inp, minHeight:'80px', resize:'vertical'}} placeholder="Jelaskan alasan penggantian mitra" />
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => { setExchangeTarget(null); setExchangeMitraId(''); setExchangeAlasan(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={savingExchange} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #8b5cf6, #7c3aed)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {savingExchange ? 'Menyimpan...' : 'Catat Exchange'}
                 </button>
               </div>
             </form>
