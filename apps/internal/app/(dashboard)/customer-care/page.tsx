@@ -76,8 +76,10 @@ export default function CustomerCarePage() {
 
   // Form tambah Leads
   const [showFormLead, setShowFormLead] = useState(false);
-  const [formLead, setFormLead] = useState({ cms_layanan_id:'', tier_nama:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
+  const [formLead, setFormLead] = useState({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
   const [savingLead, setSavingLead] = useState(false);
+  const [klienSearch, setKlienSearch] = useState('');
+  const [showKlienResults, setShowKlienResults] = useState(false);
 
   // Modal Deal
   const [dealTarget, setDealTarget] = useState<any>(null);
@@ -197,7 +199,9 @@ export default function CustomerCarePage() {
     try {
       await apiClient.post('/internal/cc/leads', formLead);
       setShowFormLead(false);
-      setFormLead({ cms_layanan_id:'', tier_nama:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
+      setFormLead({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
+      setKlienSearch('');
+      setShowKlienResults(false);
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menambahkan leads'); }
@@ -376,6 +380,11 @@ export default function CustomerCarePage() {
 
   const inp = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
   const cardStyle = { background:'var(--glass)', backdropFilter:'blur(20px)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden' };
+
+  const selectedKlienForLead = klien.find((k: any) => String(k.id) === String(formLead.klien_id));
+  const klienSearchResults = klienSearch.trim().length >= 2
+    ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(klienSearch.trim().toLowerCase())).slice(0, 8)
+    : [];
 
   return (
     <div className="space-y-4">
@@ -1022,6 +1031,48 @@ export default function CustomerCarePage() {
                   </select>
                 </div>
               </div>
+              <div style={{ position:'relative' }}>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Cari Klien Terdaftar (opsional)</label>
+                {selectedKlienForLead ? (
+                  <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                    <span style={{ color:'var(--text)', fontWeight:600 }}>
+                      {selectedKlienForLead.nama_lengkap || selectedKlienForLead.user?.name} — {selectedKlienForLead.user?.phone || 'no telp -'}
+                    </span>
+                    <button type="button" onClick={() => setFormLead(f => ({ ...f, klien_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}>
+                      <X size={14}/>
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      value={klienSearch}
+                      onChange={e => { setKlienSearch(e.target.value); setShowKlienResults(true); }}
+                      onFocus={() => setShowKlienResults(true)}
+                      onBlur={() => setTimeout(() => setShowKlienResults(false), 150)}
+                      style={inp}
+                      placeholder="Ketik nama atau no. telp klien..."
+                    />
+                    {showKlienResults && klienSearch.trim().length >= 2 && (
+                      <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
+                        {klienSearchResults.length === 0 ? (
+                          <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Klien tidak ditemukan</div>
+                        ) : klienSearchResults.map((k: any) => (
+                          <div key={k.id}
+                            onMouseDown={() => {
+                              setFormLead(f => ({ ...f, klien_id: k.id, nama_leads: k.nama_lengkap || k.user?.name || f.nama_leads, kontak: k.user?.phone || f.kontak }));
+                              setKlienSearch('');
+                              setShowKlienResults(false);
+                            }}
+                            style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
+                            <div style={{ fontWeight:600 }}>{k.nama_lengkap || k.user?.name || '-'}</div>
+                            <div style={{ fontSize:'11px', color:'var(--text3)' }}>{k.user?.phone || k.user?.email || '-'}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Leads (Cust/PJ) *</label>
                 <input required value={formLead.nama_leads} onChange={e => setFormLead(f => ({ ...f, nama_leads: e.target.value }))} style={inp} placeholder="Nama penanggung jawab" />
@@ -1170,6 +1221,7 @@ export default function CustomerCarePage() {
                   <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                     {[
                       { label:'Jenis Layanan', value: (item.layanan?.nama || '-') + (item.tier_nama ? ' · '+item.tier_nama : '') },
+                      { label:'Klien Terdaftar', value: item.klien?.nama_lengkap || item.klien?.user?.name || '-' },
                       { label:'Nama Leads (Cust/PJ)', value: item.nama_leads || '-' },
                       { label:'Kontak', value: item.kontak || '-' },
                       { label:'Nama Pasien (Klien)', value: item.nama_pasien || '-' },
