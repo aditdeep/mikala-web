@@ -25,9 +25,18 @@ const TABS = [
 ];
 
 const leadStatusMap: any = {
-  0: { label:'Proses', color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)', icon: Clock },
-  1: { label:'Deal',   color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', icon: CheckCircle },
-  2: { label:'Batal',  color:'#ef4444', bg:'rgba(239,68,68,0.15)',  border:'rgba(239,68,68,0.3)',  icon: XCircle },
+  0: { label:'Proses',  color:'#f59e0b', bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.3)', icon: Clock },
+  1: { label:'Deal',    color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', icon: CheckCircle },
+  2: { label:'Batal',   color:'#ef4444', bg:'rgba(239,68,68,0.15)',  border:'rgba(239,68,68,0.3)',  icon: XCircle },
+  3: { label:'Gantung', color:'#6b7280', bg:'rgba(107,114,128,0.15)', border:'rgba(107,114,128,0.3)', icon: Clock },
+};
+
+const REFERENSI_TIPE_OPTIONS = ['Keluarga', 'Teman', 'Mitra', 'Website', 'Sosmed', 'Iklan', 'Institusi B2B'];
+const REFERENSI_SUB_OPTIONS: Record<string, string[]> = {
+  Website: ['Web MGM', 'Web MGA', 'Web Lainnya'],
+  Sosmed: ['Instagram', 'Facebook', 'TikTok', 'YouTube', 'X', 'Lainnya'],
+  Iklan: ['Instagram', 'Facebook', 'TikTok', 'YouTube', 'X', 'Lainnya'],
+  'Institusi B2B': ['Fuji Academy', 'Tentrem Jiwa', 'Lainnya'],
 };
 
 // Status tampilan: Deal yang sudah pernah Exchange ditampilkan sebagai "Exchange" (sesuai dokumen)
@@ -45,24 +54,60 @@ const CC_SUBTABS = [
   { key:'exchange', label:'Exchange' },
 ];
 
+function parseJsonArraySafe(v: any): string[] {
+  if (!v) return [];
+  try {
+    const parsed = typeof v === 'string' ? JSON.parse(v) : v;
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  } catch { return []; }
+}
+
 function buildLeadDetailRows(item: any) {
+  const alatMedis = parseJsonArraySafe(item.alat_medis);
+  const alasanStatus = parseJsonArraySafe(item.alasan_status);
+  const referensiLabel = [item.referensi_tipe, item.referensi_sub].filter(Boolean).join(' · ')
+    || item.referensi_klien?.nama_lengkap || item.referensi_mitra?.user?.name || item.nama_referensi || '-';
   return [
+    { label:'No. Order', value: item.nomor || '-' },
+    ...(item.nik ? [{ label:'NIK', value: item.nik }] : []),
     { label:'Jenis Layanan', value: (item.layanan?.nama || '-') + (item.tier_nama ? ' · '+item.tier_nama : '') },
     { label:'Klien Terdaftar (akun)', value: item.klien?.nama_lengkap || item.klien?.user?.name || '-' },
     { label:'Nama Cust/PJ', value: item.nama_leads || '-' },
     { label:'No WA Cust/PJ', value: item.kontak || '-' },
+    { label:'No. Rumah', value: item.no_rumah || '-' },
+    { label:'No. KTP Cust/PJ', value: item.no_ktp_cust_pj || '-' },
+    { label:'Hubungan dengan Pasien', value: item.hubungan_dengan_pasien || '-' },
+    { label:'Email Cust/PJ', value: item.email_cust_pj || '-' },
     { label:'Alamat Cust/PJ', value: item.alamat_cust_pj || '-' },
     { label:'Nama Klien', value: item.nama_pasien || '-' },
+    { label:'Tgl Lahir Klien', value: item.tanggal_lahir_klien ? new Date(item.tanggal_lahir_klien).toLocaleDateString('id-ID') : '-' },
+    { label:'Jenis Kelamin', value: item.jenis_kelamin_klien === 'L' ? 'Laki-laki' : item.jenis_kelamin_klien === 'P' ? 'Perempuan' : '-' },
+    { label:'TB / BB', value: (item.tinggi_badan || '-') + ' cm / ' + (item.berat_badan || '-') + ' kg' },
     { label:'Alamat Klien', value: item.alamat_klien || '-' },
     { label:'Diagnosis Awal', value: item.diagnosis_awal || '-' },
+    { label:'Deskripsi Diagnosa', value: item.deskripsi_diagnosa || '-' },
     { label:'Alat Pendukung', value: item.alat_pendukung || '-' },
+    { label:'Alat Medis', value: alatMedis.length ? alatMedis.join(', ') : '-' },
     { label:'Sumber', value: item.sumber || '-' },
+    { label:'Referensi', value: referensiLabel },
     { label:'Catatan', value: item.catatan || '-' },
     { label:'Mitra', value: item.mitra?.user?.name || '-' },
-    ...(item.status === 1 ? [{ label:'Tanggal Deal', value: item.deal_at ? new Date(item.deal_at).toLocaleString('id-ID') : '-' }] : []),
+    ...(item.status === 1 ? [
+      { label:'Tanggal Deal', value: item.deal_at ? new Date(item.deal_at).toLocaleString('id-ID') : '-' },
+      { label:'Kesadaran', value: item.kesadaran || '-' },
+      { label:'Komunikasi', value: item.komunikasi || '-' },
+      { label:'Kelemahan', value: item.kelemahan || '-' },
+      { label:'Mobilisasi', value: item.mobilisasi || '-' },
+      { label:'Jasa Disetujui', value: item.jasa_disetujui || '-' },
+      { label:'Honor Mitra', value: item.honor_mitra || '-' },
+      { label:'Biaya Admin', value: item.biaya_admin || '-' },
+    ] : []),
     ...(item.status === 2 ? [
       { label:'Tanggal Batal', value: item.batal_at ? new Date(item.batal_at).toLocaleString('id-ID') : '-' },
       { label:'Alasan Batal', value: item.alasan_batal || '-' },
+    ] : []),
+    ...(item.status === 3 ? [
+      { label:'Alasan Gantung', value: alasanStatus.length ? alasanStatus.join('; ') : '-' },
     ] : []),
     { label:'Dibuat oleh', value: (item.creator?.name || '-') + (item.created_at ? ' · '+new Date(item.created_at).toLocaleString('id-ID') : '') },
   ];
@@ -196,20 +241,43 @@ export default function CustomerCarePage() {
 
   // Form tambah Leads
   const [showFormLead, setShowFormLead] = useState(false);
-  const [formLead, setFormLead] = useState({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', alamat_cust_pj:'', nama_pasien:'', alamat_klien:'', diagnosis_awal:'', alat_pendukung:'', sumber:'WhatsApp', catatan:'' });
+  const DEFAULT_FORM_LEAD = {
+    cms_layanan_id:'', tier_nama:'', klien_id:'',
+    // Cust/PJ
+    nama_leads:'', kontak:'', no_rumah:'', alamat_cust_pj:'', no_ktp_cust_pj:'', hubungan_dengan_pasien:'', email_cust_pj:'',
+    // Klien / Pasien
+    nama_pasien:'', alamat_klien:'', alamat_klien_2:'', tanggal_lahir_klien:'', no_wa_klien:'', tinggi_badan:'', berat_badan:'', jenis_kelamin_klien:'',
+    diagnosis_awal:'', deskripsi_diagnosa:'', alat_pendukung:'', alat_medis:['','','','',''],
+    // Referensi
+    sumber:'WhatsApp', referensi_tipe:'', referensi_sub:'', referensi_klien_id:'', referensi_mitra_id:'', nama_referensi:'', kontak_referensi:'',
+    catatan:'',
+  };
+  const [formLead, setFormLead] = useState<any>(DEFAULT_FORM_LEAD);
   const [savingLead, setSavingLead] = useState(false);
   const [klienSearch, setKlienSearch] = useState('');
   const [showKlienResults, setShowKlienResults] = useState(false);
+  const [referensiSearch, setReferensiSearch] = useState('');
+  const [showReferensiResults, setShowReferensiResults] = useState(false);
 
   // Modal Deal
   const [dealTarget, setDealTarget] = useState<any>(null);
   const [dealMitraId, setDealMitraId] = useState('');
+  const [dealForm, setDealForm] = useState({
+    mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'',
+    kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
+    jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'',
+  });
   const [savingDeal, setSavingDeal] = useState(false);
 
   // Modal Batal (Loss)
   const [batalTarget, setBatalTarget] = useState<any>(null);
   const [alasanBatal, setAlasanBatal] = useState('');
   const [savingBatal, setSavingBatal] = useState(false);
+
+  // Modal Gantung (on-hold)
+  const [gantungTarget, setGantungTarget] = useState<any>(null);
+  const [alasanGantung, setAlasanGantung] = useState('');
+  const [savingGantung, setSavingGantung] = useState(false);
 
   // Deal & Exchange tab
   const [dealLeadsList, setDealLeadsList] = useState<any[]>([]);
@@ -317,11 +385,14 @@ export default function CustomerCarePage() {
     e.preventDefault();
     setSavingLead(true);
     try {
-      await apiClient.post('/internal/cc/leads', formLead);
+      const payload = { ...formLead, alat_medis: (formLead.alat_medis || []).filter((x: string) => x && x.trim()) };
+      await apiClient.post('/internal/cc/leads', payload);
       setShowFormLead(false);
-      setFormLead({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', alamat_cust_pj:'', nama_pasien:'', alamat_klien:'', diagnosis_awal:'', alat_pendukung:'', sumber:'WhatsApp', catatan:'' });
+      setFormLead(DEFAULT_FORM_LEAD);
       setKlienSearch('');
       setShowKlienResults(false);
+      setReferensiSearch('');
+      setShowReferensiResults(false);
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menambahkan leads'); }
@@ -333,9 +404,10 @@ export default function CustomerCarePage() {
     if (!dealTarget) return;
     setSavingDeal(true);
     try {
-      await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined });
+      await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined, ...dealForm });
       setDealTarget(null);
       setDealMitraId('');
+      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'' });
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Deal'); }
@@ -354,6 +426,20 @@ export default function CustomerCarePage() {
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Batal'); }
     finally { setSavingBatal(false); }
+  };
+
+  const handleMarkGantung = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gantungTarget) return;
+    setSavingGantung(true);
+    try {
+      await apiClient.patch('/internal/cc/leads/'+gantungTarget.id+'/gantung', { alasan_status: alasanGantung ? [alasanGantung] : [] });
+      setGantungTarget(null);
+      setAlasanGantung('');
+      fetchLeadsList();
+      fetchLeadsSummary();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Gantung'); }
+    finally { setSavingGantung(false); }
   };
 
   const fetchDealLeads = () => {
@@ -523,6 +609,11 @@ export default function CustomerCarePage() {
     ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(klienSearch.trim().toLowerCase())).slice(0, 8)
     : [];
 
+  const selectedReferensiKlien = klien.find((k: any) => String(k.id) === String(formLead.referensi_klien_id));
+  const referensiSearchResults = referensiSearch.trim().length >= 2
+    ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(referensiSearch.trim().toLowerCase())).slice(0, 8)
+    : [];
+
   return (
     <div className="space-y-4">
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'10px' }}>
@@ -555,29 +646,6 @@ export default function CustomerCarePage() {
             <Plus size={15}/>Tambah Feedback
           </button>
         )}
-      </div>
-
-      {/* Stats */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:'12px' }}>
-        {[
-          { icon: HeartPulse, label:'Total Layanan', value: layanan.length, gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)' },
-          { icon: Users, label:'Total Klien', value: klien.length, gradient:'linear-gradient(135deg, #7c3aed, #4f46e5)' },
-        ].map(s => {
-          const Icon = s.icon;
-          return (
-            <div key={s.label} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-                <div style={{ width:'40px', height:'40px', borderRadius:'12px', background:s.gradient, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <Icon size={18} color="white" />
-                </div>
-                <div>
-                  <p style={{ color:'var(--text3)', fontSize:'11px' }}>{s.label}</p>
-                  <p style={{ fontWeight:700, fontSize:'20px', color:'var(--text)' }}>{s.value}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
       </div>
 
       {/* Tabs */}
@@ -767,11 +835,16 @@ export default function CustomerCarePage() {
                                 <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                                   <Eye size={12}/>Detail
                                 </button>
-                                {item.status === 0 && (
+                                {(item.status === 0 || item.status === 3) && (
                                   <>
                                     <button onClick={() => setDealTarget(item)} style={{ padding:'5px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                                       Deal
                                     </button>
+                                    {item.status === 0 && (
+                                      <button onClick={() => setGantungTarget(item)} style={{ padding:'5px 12px', background:'rgba(107,114,128,0.1)', border:'1px solid rgba(107,114,128,0.2)', borderRadius:'8px', color:'#6b7280', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                                        Gantung
+                                      </button>
+                                    )}
                                     <button onClick={() => setBatalTarget(item)} style={{ padding:'5px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                                       Batal
                                     </button>
@@ -1141,7 +1214,7 @@ export default function CustomerCarePage() {
       {/* Modal Form Tambah Leads */}
       {showFormLead && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', overflowY:'auto' }}>
-          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'480px', padding:'24px', margin:'auto' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'560px', padding:'24px', margin:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tambah Leads Baru</h2>
               <button onClick={() => setShowFormLead(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
@@ -1209,50 +1282,172 @@ export default function CustomerCarePage() {
                   </>
                 )}
               </div>
-              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Data Cust/PJ (Penanggung Jawab)</p>
-              <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Cust/PJ *</label>
-                <input required value={formLead.nama_leads} onChange={e => setFormLead(f => ({ ...f, nama_leads: e.target.value }))} style={inp} placeholder="Nama penanggung jawab" />
-              </div>
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Referensi</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. WA Cust/PJ *</label>
-                  <input required value={formLead.kontak} onChange={e => setFormLead(f => ({ ...f, kontak: e.target.value }))} style={inp} placeholder="0812xxxxxxx" />
-                </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Sumber</label>
                   <select value={formLead.sumber} onChange={e => setFormLead(f => ({ ...f, sumber: e.target.value }))} style={inp}>
                     {['WhatsApp','Instagram','Telepon','Website','Referral','Lainnya'].map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tipe Referensi</label>
+                  <select value={formLead.referensi_tipe} onChange={e => setFormLead(f => ({ ...f, referensi_tipe: e.target.value, referensi_sub:'', referensi_klien_id:'', referensi_mitra_id:'', nama_referensi:'', kontak_referensi:'' }))} style={inp}>
+                    <option value="">-- Pilih --</option>
+                    {REFERENSI_TIPE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+              </div>
+              {REFERENSI_SUB_OPTIONS[formLead.referensi_tipe] && (
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Sub Referensi</label>
+                  <select value={formLead.referensi_sub} onChange={e => setFormLead(f => ({ ...f, referensi_sub: e.target.value }))} style={inp}>
+                    <option value="">-- Pilih --</option>
+                    {REFERENSI_SUB_OPTIONS[formLead.referensi_tipe].map((o: string) => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+              )}
+              {(formLead.referensi_tipe === 'Keluarga' || formLead.referensi_tipe === 'Teman') && (
+                <div style={{ position:'relative' }}>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Klien Referensi (jika sudah terdaftar)</label>
+                  {selectedReferensiKlien ? (
+                    <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                      <span style={{ color:'var(--text)', fontWeight:600 }}>{selectedReferensiKlien.nama_lengkap || selectedReferensiKlien.user?.name}</span>
+                      <button type="button" onClick={() => setFormLead((f: any) => ({ ...f, referensi_klien_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}><X size={14}/></button>
+                    </div>
+                  ) : (
+                    <>
+                      <input value={referensiSearch} onChange={e => { setReferensiSearch(e.target.value); setShowReferensiResults(true); }} onFocus={() => setShowReferensiResults(true)} onBlur={() => setTimeout(() => setShowReferensiResults(false), 150)} style={inp} placeholder="Ketik nama klien referensi..." />
+                      {showReferensiResults && referensiSearch.trim().length >= 2 && (
+                        <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
+                          {referensiSearchResults.length === 0 ? (
+                            <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Klien tidak ditemukan</div>
+                          ) : referensiSearchResults.map((k: any) => (
+                            <div key={k.id} onMouseDown={() => { setFormLead((f: any) => ({ ...f, referensi_klien_id: k.id, nama_referensi: k.nama_lengkap || k.user?.name || '' })); setReferensiSearch(''); setShowReferensiResults(false); }} style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
+                              <div style={{ fontWeight:600 }}>{k.nama_lengkap || k.user?.name || '-'}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <p style={{ color:'var(--text3)', fontSize:'11px', marginTop:'6px' }}>Atau isi manual jika belum terdaftar:</p>
+                  <input value={formLead.nama_referensi} onChange={e => setFormLead((f: any) => ({ ...f, nama_referensi: e.target.value }))} style={{...inp, marginTop:'6px'}} placeholder="Nama referensi" />
+                </div>
+              )}
+              {formLead.referensi_tipe === 'Mitra' && (
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Mitra Referensi</label>
+                  <select value={formLead.referensi_mitra_id} onChange={e => setFormLead((f: any) => ({ ...f, referensi_mitra_id: e.target.value }))} style={inp}>
+                    <option value="">-- Pilih Mitra --</option>
+                    {mitraList.map((m: any) => <option key={m.id} value={m.id}>{m.user?.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {(formLead.referensi_tipe === 'Institusi B2B') && (
+                <input value={formLead.nama_referensi} onChange={e => setFormLead((f: any) => ({ ...f, nama_referensi: e.target.value }))} style={inp} placeholder="Nama institusi (jika Lainnya)" />
+              )}
+
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'8px' }}>Data Cust/PJ (Penanggung Jawab)</p>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Cust/PJ *</label>
+                <input required value={formLead.nama_leads} onChange={e => setFormLead((f: any) => ({ ...f, nama_leads: e.target.value }))} style={inp} placeholder="Nama penanggung jawab" />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. WA Cust/PJ *</label>
+                  <input required value={formLead.kontak} onChange={e => setFormLead((f: any) => ({ ...f, kontak: e.target.value }))} style={inp} placeholder="0812xxxxxxx" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. Rumah</label>
+                  <input value={formLead.no_rumah} onChange={e => setFormLead((f: any) => ({ ...f, no_rumah: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. KTP Cust/PJ</label>
+                  <input value={formLead.no_ktp_cust_pj} onChange={e => setFormLead((f: any) => ({ ...f, no_ktp_cust_pj: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Hubungan dengan Pasien</label>
+                  <input value={formLead.hubungan_dengan_pasien} onChange={e => setFormLead((f: any) => ({ ...f, hubungan_dengan_pasien: e.target.value }))} style={inp} placeholder="Cth: Anak, Suami, Istri" />
+                </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Email Cust/PJ</label>
+                <input type="email" value={formLead.email_cust_pj} onChange={e => setFormLead((f: any) => ({ ...f, email_cust_pj: e.target.value }))} style={inp} placeholder="Opsional" />
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alamat Cust/PJ</label>
-                <textarea value={formLead.alamat_cust_pj} onChange={e => setFormLead(f => ({ ...f, alamat_cust_pj: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Opsional" />
+                <textarea value={formLead.alamat_cust_pj} onChange={e => setFormLead((f: any) => ({ ...f, alamat_cust_pj: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Opsional" />
               </div>
 
               <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'8px' }}>Data Klien (Pasien)</p>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Klien</label>
-                <input value={formLead.nama_pasien} onChange={e => setFormLead(f => ({ ...f, nama_pasien: e.target.value }))} style={inp} placeholder="Opsional, bila berbeda dari Cust/PJ" />
+                <input value={formLead.nama_pasien} onChange={e => setFormLead((f: any) => ({ ...f, nama_pasien: e.target.value }))} style={inp} placeholder="Opsional, bila berbeda dari Cust/PJ" />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tgl Lahir</label>
+                  <input type="date" value={formLead.tanggal_lahir_klien} onChange={e => setFormLead((f: any) => ({ ...f, tanggal_lahir_klien: e.target.value }))} style={inp} />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. WA Klien</label>
+                  <input value={formLead.no_wa_klien} onChange={e => setFormLead((f: any) => ({ ...f, no_wa_klien: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jenis Kelamin</label>
+                  <select value={formLead.jenis_kelamin_klien} onChange={e => setFormLead((f: any) => ({ ...f, jenis_kelamin_klien: e.target.value }))} style={inp}>
+                    <option value="">-- Pilih --</option>
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tinggi Badan</label>
+                  <input value={formLead.tinggi_badan} onChange={e => setFormLead((f: any) => ({ ...f, tinggi_badan: e.target.value }))} style={inp} placeholder="cm" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Berat Badan</label>
+                  <input value={formLead.berat_badan} onChange={e => setFormLead((f: any) => ({ ...f, berat_badan: e.target.value }))} style={inp} placeholder="kg" />
+                </div>
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alamat Klien</label>
-                <textarea value={formLead.alamat_klien} onChange={e => setFormLead(f => ({ ...f, alamat_klien: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Opsional" />
+                <textarea value={formLead.alamat_klien} onChange={e => setFormLead((f: any) => ({ ...f, alamat_klien: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Opsional" />
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alamat Klien 2 (opsional)</label>
+                <textarea value={formLead.alamat_klien_2} onChange={e => setFormLead((f: any) => ({ ...f, alamat_klien_2: e.target.value }))} style={{...inp, minHeight:'40px', resize:'vertical'}} placeholder="Opsional" />
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Diagnosis Awal</label>
-                  <input value={formLead.diagnosis_awal} onChange={e => setFormLead(f => ({ ...f, diagnosis_awal: e.target.value }))} style={inp} placeholder="Opsional" />
+                  <input value={formLead.diagnosis_awal} onChange={e => setFormLead((f: any) => ({ ...f, diagnosis_awal: e.target.value }))} style={inp} placeholder="Opsional" />
                 </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alat Pendukung</label>
-                  <input value={formLead.alat_pendukung} onChange={e => setFormLead(f => ({ ...f, alat_pendukung: e.target.value }))} style={inp} placeholder="Opsional" />
+                  <input value={formLead.alat_pendukung} onChange={e => setFormLead((f: any) => ({ ...f, alat_pendukung: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Deskripsi Diagnosa</label>
+                <textarea value={formLead.deskripsi_diagnosa} onChange={e => setFormLead((f: any) => ({ ...f, deskripsi_diagnosa: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Opsional" />
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alat Medis (maks 5)</label>
+                <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                  {[0,1,2,3,4].map(i => (
+                    <input key={i} value={formLead.alat_medis[i] || ''} onChange={e => setFormLead((f: any) => { const arr = [...f.alat_medis]; arr[i] = e.target.value; return { ...f, alat_medis: arr }; })} style={inp} placeholder={`Alat Medis ${i+1} (opsional)`} />
+                  ))}
                 </div>
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Catatan</label>
-                <textarea value={formLead.catatan} onChange={e => setFormLead(f => ({ ...f, catatan: e.target.value }))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Opsional" />
+                <textarea value={formLead.catatan} onChange={e => setFormLead((f: any) => ({ ...f, catatan: e.target.value }))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Opsional" />
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => setShowFormLead(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
@@ -1267,8 +1462,8 @@ export default function CustomerCarePage() {
 
       {/* Modal Deal */}
       {dealTarget && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
-          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'400px', padding:'24px' }}>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', overflowY:'auto' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'520px', padding:'24px', margin:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tandai Deal — {dealTarget.nama_leads}</h2>
               <button onClick={() => { setDealTarget(null); setDealMitraId(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
@@ -1283,6 +1478,77 @@ export default function CustomerCarePage() {
                   ))}
                 </select>
               </div>
+
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Data Mitra (Finansial)</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>NIM Mitra</label>
+                  <input value={dealForm.mitra_nim} onChange={e => setDealForm(f => ({ ...f, mitra_nim: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Biaya Admin</label>
+                  <input value={dealForm.biaya_admin} onChange={e => setDealForm(f => ({ ...f, biaya_admin: e.target.value }))} style={inp} placeholder="Rp" />
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Honor Mitra</label>
+                  <input value={dealForm.honor_mitra} onChange={e => setDealForm(f => ({ ...f, honor_mitra: e.target.value }))} style={inp} placeholder="Rp" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Uang Cuti Mitra</label>
+                  <input value={dealForm.uang_cuti_mitra} onChange={e => setDealForm(f => ({ ...f, uang_cuti_mitra: e.target.value }))} style={inp} placeholder="Rp" />
+                </div>
+              </div>
+
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Kondisi Klinis Klien</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Kesadaran</label>
+                  <input value={dealForm.kesadaran} onChange={e => setDealForm(f => ({ ...f, kesadaran: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Komunikasi</label>
+                  <input value={dealForm.komunikasi} onChange={e => setDealForm(f => ({ ...f, komunikasi: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Kelemahan</label>
+                  <input value={dealForm.kelemahan} onChange={e => setDealForm(f => ({ ...f, kelemahan: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Mobilisasi</label>
+                  <input value={dealForm.mobilisasi} onChange={e => setDealForm(f => ({ ...f, mobilisasi: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Negosiasi Jasa</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Diminta</label>
+                  <input value={dealForm.jasa_diminta} onChange={e => setDealForm(f => ({ ...f, jasa_diminta: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disarankan</label>
+                  <input value={dealForm.jasa_disarankan} onChange={e => setDealForm(f => ({ ...f, jasa_disarankan: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disetujui</label>
+                <input value={dealForm.jasa_disetujui} onChange={e => setDealForm(f => ({ ...f, jasa_disetujui: e.target.value }))} style={inp} placeholder="Digunakan sebagai kolom 'Gaji' pada kontrak" />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Pembantu</label>
+                  <input value={dealForm.pembantu} onChange={e => setDealForm(f => ({ ...f, pembantu: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Cara Mencuci Baju</label>
+                  <input value={dealForm.cara_mencuci_baju} onChange={e => setDealForm(f => ({ ...f, cara_mencuci_baju: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => { setDealTarget(null); setDealMitraId(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={savingDeal} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
@@ -1311,6 +1577,30 @@ export default function CustomerCarePage() {
                 <button type="button" onClick={() => { setBatalTarget(null); setAlasanBatal(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={savingBatal} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #ef4444, #b91c1c)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {savingBatal ? 'Menyimpan...' : 'Tandai Batal'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Gantung (on-hold) */}
+      {gantungTarget && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'400px', padding:'24px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tandai Gantung — {gantungTarget.nama_leads}</h2>
+              <button onClick={() => { setGantungTarget(null); setAlasanGantung(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <form onSubmit={handleMarkGantung} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alasan Gantung</label>
+                <textarea value={alasanGantung} onChange={e => setAlasanGantung(e.target.value)} style={{...inp, minHeight:'80px', resize:'vertical'}} placeholder="Opsional, jelaskan alasan leads digantung/on-hold" />
+              </div>
+              <div style={{ display:'flex', gap:'10px' }}>
+                <button type="button" onClick={() => { setGantungTarget(null); setAlasanGantung(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={savingGantung} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #6b7280, #4b5563)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+                  {savingGantung ? 'Menyimpan...' : 'Tandai Gantung'}
                 </button>
               </div>
             </form>
