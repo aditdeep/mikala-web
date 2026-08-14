@@ -30,6 +30,14 @@ const leadStatusMap: any = {
   2: { label:'Batal',  color:'#ef4444', bg:'rgba(239,68,68,0.15)',  border:'rgba(239,68,68,0.3)',  icon: XCircle },
 };
 
+// Status tampilan: Deal yang sudah pernah Exchange ditampilkan sebagai "Exchange" (sesuai dokumen)
+function getLeadStatusDisplay(item: any) {
+  if (item.status === 1 && (item.exchanges_count > 0)) {
+    return { label:'Exchange', color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)', icon: Repeat };
+  }
+  return leadStatusMap[item.status] ?? leadStatusMap[0];
+}
+
 const CC_SUBTABS = [
   { key:'layanan',  label:'Layanan' },
   { key:'leads',    label:'Leads' },
@@ -40,10 +48,14 @@ const CC_SUBTABS = [
 function buildLeadDetailRows(item: any) {
   return [
     { label:'Jenis Layanan', value: (item.layanan?.nama || '-') + (item.tier_nama ? ' · '+item.tier_nama : '') },
-    { label:'Klien Terdaftar', value: item.klien?.nama_lengkap || item.klien?.user?.name || '-' },
-    { label:'Nama Leads (Cust/PJ)', value: item.nama_leads || '-' },
-    { label:'Kontak', value: item.kontak || '-' },
-    { label:'Nama Pasien (Klien)', value: item.nama_pasien || '-' },
+    { label:'Klien Terdaftar (akun)', value: item.klien?.nama_lengkap || item.klien?.user?.name || '-' },
+    { label:'Nama Cust/PJ', value: item.nama_leads || '-' },
+    { label:'No WA Cust/PJ', value: item.kontak || '-' },
+    { label:'Alamat Cust/PJ', value: item.alamat_cust_pj || '-' },
+    { label:'Nama Klien', value: item.nama_pasien || '-' },
+    { label:'Alamat Klien', value: item.alamat_klien || '-' },
+    { label:'Diagnosis Awal', value: item.diagnosis_awal || '-' },
+    { label:'Alat Pendukung', value: item.alat_pendukung || '-' },
     { label:'Sumber', value: item.sumber || '-' },
     { label:'Catatan', value: item.catatan || '-' },
     { label:'Mitra', value: item.mitra?.user?.name || '-' },
@@ -184,7 +196,7 @@ export default function CustomerCarePage() {
 
   // Form tambah Leads
   const [showFormLead, setShowFormLead] = useState(false);
-  const [formLead, setFormLead] = useState({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
+  const [formLead, setFormLead] = useState({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', alamat_cust_pj:'', nama_pasien:'', alamat_klien:'', diagnosis_awal:'', alat_pendukung:'', sumber:'WhatsApp', catatan:'' });
   const [savingLead, setSavingLead] = useState(false);
   const [klienSearch, setKlienSearch] = useState('');
   const [showKlienResults, setShowKlienResults] = useState(false);
@@ -307,7 +319,7 @@ export default function CustomerCarePage() {
     try {
       await apiClient.post('/internal/cc/leads', formLead);
       setShowFormLead(false);
-      setFormLead({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', nama_pasien:'', sumber:'WhatsApp', catatan:'' });
+      setFormLead({ cms_layanan_id:'', tier_nama:'', klien_id:'', nama_leads:'', kontak:'', alamat_cust_pj:'', nama_pasien:'', alamat_klien:'', diagnosis_awal:'', alat_pendukung:'', sumber:'WhatsApp', catatan:'' });
       setKlienSearch('');
       setShowKlienResults(false);
       fetchLeadsList();
@@ -380,11 +392,11 @@ export default function CustomerCarePage() {
       const rows = (leadsSummary?.by_layanan || []).map((r: any, i: number) => [i+1, r.layanan_nama, r.tier_nama||'-', r.leads, r.deal, r.loss, r.exchange]);
       exportRowsToXls('cc-layanan-'+stamp+'.xls', ['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange'], rows);
     } else if (ccSubTab === 'leads') {
-      const rows = leadsList.map((item: any, i: number) => [i+1, item.nomor||'-', (item.layanan?.nama||'-')+(item.tier_nama?' · '+item.tier_nama:''), item.nama_leads||'-', item.kontak||'-', item.sumber||'-', (leadStatusMap[item.status]?.label)||'-']);
-      exportRowsToXls('cc-leads-'+stamp+'.xls', ['No','Nomor','Jenis Layanan','Nama Leads','Kontak','Sumber','Status'], rows);
+      const rows = leadsList.map((item: any, i: number) => [i+1, item.nomor||'-', item.created_at?new Date(item.created_at).toLocaleDateString('id-ID'):'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', getLeadStatusDisplay(item).label]);
+      exportRowsToXls('cc-leads-'+stamp+'.xls', ['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'], rows);
     } else if (ccSubTab === 'deal') {
-      const rows = dealLeadsList.map((item: any, i: number) => [i+1, item.nomor||'-', (item.layanan?.nama||'-')+(item.tier_nama?' · '+item.tier_nama:''), item.nama_leads||'-', item.mitra?.user?.name||'Belum assign', item.deal_at?new Date(item.deal_at).toLocaleDateString('id-ID'):'-']);
-      exportRowsToXls('cc-deal-'+stamp+'.xls', ['No','Nomor','Jenis Layanan','Nama Leads','Mitra','Tgl Deal'], rows);
+      const rows = dealLeadsList.map((item: any) => [item.nomor||'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', item.diagnosis_awal||'-']);
+      exportRowsToXls('cc-deal-'+stamp+'.xls', ['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal'], rows);
     } else if (ccSubTab === 'exchange') {
       const rows = exchangeList.map((item: any, i: number) => [i+1, item.nomor||'-', item.lead?.nama_leads||'-', item.mitra_lama?.user?.name||'-', item.mitra_baru?.user?.name||'-', item.alasan||'-', item.exchanged_at?new Date(item.exchanged_at).toLocaleDateString('id-ID'):'-']);
       exportRowsToXls('cc-exchange-'+stamp+'.xls', ['No','Nomor','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'], rows);
@@ -725,26 +737,26 @@ export default function CustomerCarePage() {
                 <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
               ) : (
                 <div style={{ overflowX:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'980px' }}>
                     <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['No','Nomor','Jenis Layanan','Nama Leads','Kontak','Sumber','Status','Aksi'].map(h => (
+                      {['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status','Aksi'].map(h => (
                         <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                       ))}
                     </tr></thead>
                     <tbody>
                       {leadsList.map((item: any, i: number) => {
-                        const s = leadStatusMap[item.status] ?? leadStatusMap[0];
+                        const s = getLeadStatusDisplay(item);
                         const Icon = s.icon;
                         return (
                           <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
                             <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
                             <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
-                              {item.layanan?.nama || '-'}{item.tier_nama ? ' · '+item.tier_nama : ''}
-                            </td>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nama_leads||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_klien||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_leads||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
                             <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.sumber||'-'}</td>
                             <td style={{ padding:'12px 16px' }}>
                               <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
                                 <Icon size={11}/>{s.label}
@@ -785,23 +797,22 @@ export default function CustomerCarePage() {
                 <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
               ) : (
                 <div style={{ overflowX:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'980px' }}>
                     <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['No','Nomor','Jenis Layanan','Nama Leads','Mitra','Tgl Deal','Aksi'].map(h => (
+                      {['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal','Aksi'].map(h => (
                         <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                       ))}
                     </tr></thead>
                     <tbody>
                       {dealLeadsList.map((item: any, i: number) => (
                         <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
-                            {item.layanan?.nama || '-'}{item.tier_nama ? ' · '+item.tier_nama : ''}
-                          </td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nama_leads||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name || <span style={{color:'#f59e0b'}}>Belum assign</span>}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.deal_at ? new Date(item.deal_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', fontWeight:600 }}>{item.nomor||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_klien||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_leads||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.diagnosis_awal||'-'}</td>
                           <td style={{ padding:'12px 16px' }}>
                             <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
                               <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
@@ -1184,7 +1195,7 @@ export default function CustomerCarePage() {
                         ) : klienSearchResults.map((k: any) => (
                           <div key={k.id}
                             onMouseDown={() => {
-                              setFormLead(f => ({ ...f, klien_id: k.id, nama_leads: k.nama_lengkap || k.user?.name || f.nama_leads, kontak: k.user?.phone || f.kontak }));
+                              setFormLead(f => ({ ...f, klien_id: k.id, nama_leads: k.nama_lengkap || k.user?.name || f.nama_leads, kontak: k.user?.phone || f.kontak, alamat_cust_pj: k.alamat || f.alamat_cust_pj }));
                               setKlienSearch('');
                               setShowKlienResults(false);
                             }}
@@ -1198,13 +1209,14 @@ export default function CustomerCarePage() {
                   </>
                 )}
               </div>
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Data Cust/PJ (Penanggung Jawab)</p>
               <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Leads (Cust/PJ) *</label>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Cust/PJ *</label>
                 <input required value={formLead.nama_leads} onChange={e => setFormLead(f => ({ ...f, nama_leads: e.target.value }))} style={inp} placeholder="Nama penanggung jawab" />
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. Kontak/WA *</label>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. WA Cust/PJ *</label>
                   <input required value={formLead.kontak} onChange={e => setFormLead(f => ({ ...f, kontak: e.target.value }))} style={inp} placeholder="0812xxxxxxx" />
                 </div>
                 <div>
@@ -1215,12 +1227,32 @@ export default function CustomerCarePage() {
                 </div>
               </div>
               <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Pasien (Klien)</label>
-                <input value={formLead.nama_pasien} onChange={e => setFormLead(f => ({ ...f, nama_pasien: e.target.value }))} style={inp} placeholder="Opsional" />
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alamat Cust/PJ</label>
+                <textarea value={formLead.alamat_cust_pj} onChange={e => setFormLead(f => ({ ...f, alamat_cust_pj: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Opsional" />
+              </div>
+
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'8px' }}>Data Klien (Pasien)</p>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama Klien</label>
+                <input value={formLead.nama_pasien} onChange={e => setFormLead(f => ({ ...f, nama_pasien: e.target.value }))} style={inp} placeholder="Opsional, bila berbeda dari Cust/PJ" />
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alamat Klien</label>
+                <textarea value={formLead.alamat_klien} onChange={e => setFormLead(f => ({ ...f, alamat_klien: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Opsional" />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Diagnosis Awal</label>
+                  <input value={formLead.diagnosis_awal} onChange={e => setFormLead(f => ({ ...f, diagnosis_awal: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alat Pendukung</label>
+                  <input value={formLead.alat_pendukung} onChange={e => setFormLead(f => ({ ...f, alat_pendukung: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Catatan</label>
-                <textarea value={formLead.catatan} onChange={e => setFormLead(f => ({ ...f, catatan: e.target.value }))} style={{...inp, minHeight:'70px', resize:'vertical'}} placeholder="Opsional" />
+                <textarea value={formLead.catatan} onChange={e => setFormLead(f => ({ ...f, catatan: e.target.value }))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Opsional" />
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => setShowFormLead(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
@@ -1335,7 +1367,7 @@ export default function CustomerCarePage() {
 
             {leadDetail.type === 'lead' ? (() => {
               const item = leadDetail.item;
-              const s = leadStatusMap[item.status] ?? leadStatusMap[0];
+              const s = getLeadStatusDisplay(item);
               return (
                 <div>
                   <div style={{ background:'linear-gradient(135deg, #ec4899, #8b5cf6)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
