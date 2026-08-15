@@ -640,6 +640,32 @@ export default function CustomerCarePage() {
         )}
       </div>
 
+      {/* Summary cards Leads - di atas SEMUA tabs (bukan cuma milik konten tab Leads) */}
+      {activeTab === 'leads' && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px,1fr))', gap:'12px' }}>
+          {[
+            { icon: Briefcase,  label:'Total Leads', value: leadsSummary?.total_leads ?? 0, gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)' },
+            { icon: TrendingUp, label:'Deal',        value: leadsSummary?.total_deal ?? 0,  gradient:'linear-gradient(135deg, #10b981, #059669)' },
+            { icon: XCircle,    label:'Loss',        value: leadsSummary?.total_loss ?? 0,  gradient:'linear-gradient(135deg, #ef4444, #b91c1c)' },
+          ].map(s => {
+            const Icon = s.icon;
+            return (
+              <div key={s.label} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                  <div style={{ width:'40px', height:'40px', borderRadius:'12px', background:s.gradient, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <Icon size={18} color="white" />
+                  </div>
+                  <div>
+                    <p style={{ color:'var(--text3)', fontSize:'11px' }}>{s.label}</p>
+                    <p style={{ fontWeight:700, fontSize:'20px', color:'var(--text)' }}>{s.value}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
         {TABS.map(t => {
@@ -713,33 +739,9 @@ export default function CustomerCarePage() {
         </div>
       )}
 
-      {/* TAB LEADS (unified: card summary di atas, lalu 1 tabel Leads, Status = link ke Detail) */}
+      {/* TAB LEADS (unified: 1 tabel Leads, Status = link ke Detail; card summary sudah dipindah ke atas tabs) */}
       {activeTab === 'leads' && (
         <div className="space-y-3">
-          {/* Summary cards - paling atas */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px,1fr))', gap:'12px' }}>
-            {[
-              { icon: Briefcase,  label:'Total Leads', value: leadsSummary?.total_leads ?? 0, gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)' },
-              { icon: TrendingUp, label:'Deal',        value: leadsSummary?.total_deal ?? 0,  gradient:'linear-gradient(135deg, #10b981, #059669)' },
-              { icon: XCircle,    label:'Loss',        value: leadsSummary?.total_loss ?? 0,  gradient:'linear-gradient(135deg, #ef4444, #b91c1c)' },
-            ].map(s => {
-              const Icon = s.icon;
-              return (
-                <div key={s.label} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-                    <div style={{ width:'40px', height:'40px', borderRadius:'12px', background:s.gradient, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                      <Icon size={18} color="white" />
-                    </div>
-                    <div>
-                      <p style={{ color:'var(--text3)', fontSize:'11px' }}>{s.label}</p>
-                      <p style={{ fontWeight:700, fontSize:'20px', color:'var(--text)' }}>{s.value}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
           {/* Filter status + export (gantikan baris sub-tab) */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'8px' }}>
             <select value={leadsStatusFilter} onChange={e => setLeadsStatusFilter(e.target.value)} style={{ ...inp, width:'auto', minWidth:'170px' }}>
