@@ -238,6 +238,7 @@ export default function CustomerCarePage() {
   const [cmsLayananList, setCmsLayananList] = useState<any[]>([]);
   const [leadsList, setLeadsList] = useState<any[]>([]);
   const [loadingLeadsList, setLoadingLeadsList] = useState(false);
+  const [leadsStatusFilter, setLeadsStatusFilter] = useState('');
 
   // Form tambah Leads
   const [showFormLead, setShowFormLead] = useState(false);
@@ -325,10 +326,11 @@ export default function CustomerCarePage() {
 
   useEffect(() => {
     if (activeTab !== 'leads') return;
-    if (ccSubTab === 'leads') fetchLeadsList();
-    if (ccSubTab === 'deal') fetchDealLeads();
-    if (ccSubTab === 'exchange') fetchExchangeList();
-  }, [activeTab, ccSubTab]);
+    // Tabel Leads unified: butuh leadsList (tabel utama) + exchangeList (buat riwayat Exchange di popup Detail)
+    fetchLeadsList();
+    fetchExchangeList();
+    if (mitraList.length === 0) fetchOrders();
+  }, [activeTab]);
 
   const fetchAll = () => {
     setLoading(true);
@@ -474,19 +476,9 @@ export default function CustomerCarePage() {
 
   const handleExportXls = () => {
     const stamp = new Date().toISOString().slice(0,10);
-    if (ccSubTab === 'layanan') {
-      const rows = (leadsSummary?.by_layanan || []).map((r: any, i: number) => [i+1, r.layanan_nama, r.tier_nama||'-', r.leads, r.deal, r.loss, r.exchange]);
-      exportRowsToXls('cc-layanan-'+stamp+'.xls', ['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange'], rows);
-    } else if (ccSubTab === 'leads') {
-      const rows = leadsList.map((item: any, i: number) => [i+1, item.nomor||'-', item.created_at?new Date(item.created_at).toLocaleDateString('id-ID'):'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', getLeadStatusDisplay(item).label]);
-      exportRowsToXls('cc-leads-'+stamp+'.xls', ['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'], rows);
-    } else if (ccSubTab === 'deal') {
-      const rows = dealLeadsList.map((item: any) => [item.nomor||'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', item.diagnosis_awal||'-']);
-      exportRowsToXls('cc-deal-'+stamp+'.xls', ['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal'], rows);
-    } else if (ccSubTab === 'exchange') {
-      const rows = exchangeList.map((item: any, i: number) => [i+1, item.nomor||'-', item.lead?.nama_leads||'-', item.mitra_lama?.user?.name||'-', item.mitra_baru?.user?.name||'-', item.alasan||'-', item.exchanged_at?new Date(item.exchanged_at).toLocaleDateString('id-ID'):'-']);
-      exportRowsToXls('cc-exchange-'+stamp+'.xls', ['No','Nomor','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'], rows);
-    }
+    const source = leadsStatusFilter === '' ? leadsList : leadsList.filter((item: any) => String(item.status) === leadsStatusFilter);
+    const rows = source.map((item: any, i: number) => [i+1, item.nomor||'-', item.created_at?new Date(item.created_at).toLocaleDateString('id-ID'):'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', getLeadStatusDisplay(item).label]);
+    exportRowsToXls('cc-leads-'+stamp+'.xls', ['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'], rows);
   };
 
   const fetchPasien = () => {
@@ -721,10 +713,10 @@ export default function CustomerCarePage() {
         </div>
       )}
 
-      {/* TAB LEADS (dashboard pipeline: Layanan / Leads / Deal / Exchange) */}
+      {/* TAB LEADS (unified: card summary di atas, lalu 1 tabel Leads, Status = link ke Detail) */}
       {activeTab === 'leads' && (
         <div className="space-y-3">
-          {/* Summary cards */}
+          {/* Summary cards - paling atas */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px,1fr))', gap:'12px' }}>
             {[
               { icon: Briefcase,  label:'Total Leads', value: leadsSummary?.total_leads ?? 0, gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)' },
@@ -748,203 +740,60 @@ export default function CustomerCarePage() {
             })}
           </div>
 
-          {/* Sub-tabs Layanan / Leads / Deal / Exchange */}
+          {/* Filter status + export (gantikan baris sub-tab) */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'8px' }}>
-            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-              {CC_SUBTABS.map(t => (
-                <button key={t.key} onClick={() => setCcSubTab(t.key)}
-                  style={{ padding:'7px 14px', borderRadius:'10px', fontSize:'12px', fontWeight:600, cursor:'pointer', background: ccSubTab===t.key ? 'rgba(236,72,153,0.15)' : 'var(--glass)', color: ccSubTab===t.key ? '#ec4899' : 'var(--text2)', border: ccSubTab===t.key ? '1px solid rgba(236,72,153,0.3)' : '1px solid var(--border)' }}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
+            <select value={leadsStatusFilter} onChange={e => setLeadsStatusFilter(e.target.value)} style={{ ...inp, width:'auto', minWidth:'170px' }}>
+              <option value="">Semua Status</option>
+              <option value="0">Proses</option>
+              <option value="1">Deal</option>
+              <option value="2">Batal</option>
+              <option value="3">Gantung</option>
+            </select>
             <button onClick={handleExportXls} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
               <Download size={13}/>.xls
             </button>
           </div>
 
-          {/* Sub-tab: Layanan (breakdown per jenis layanan x tier) */}
-          {ccSubTab === 'layanan' && (
-            <div style={cardStyle}>
-              {loadingLeads ? (
-                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
-              ) : (
-                <div style={{ overflowX:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'600px' }}>
-                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange'].map(h => (
-                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {(leadsSummary?.by_layanan || []).map((row: any, i: number) => (
-                        <tr key={i} style={{ borderBottom:'1px solid var(--border)' }}>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{row.layanan_nama}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.tier_nama || '-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.leads}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'#10b981', fontWeight:600 }}>{row.deal}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'#ef4444', fontWeight:600 }}>{row.loss}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.exchange}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {(!leadsSummary?.by_layanan || leadsSummary.by_layanan.length === 0) && (
-                    <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data layanan</div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Sub-tab: Leads (daftar leads masuk + aksi Deal/Batal) */}
-          {ccSubTab === 'leads' && (
-            <div style={cardStyle}>
-              {loadingLeadsList ? (
-                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
-              ) : (
-                <div style={{ overflowX:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'980px' }}>
-                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status','Aksi'].map(h => (
-                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {leadsList.map((item: any, i: number) => {
-                        const s = getLeadStatusDisplay(item);
-                        const Icon = s.icon;
-                        return (
-                          <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_klien||'-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_leads||'-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
-                            <td style={{ padding:'12px 16px' }}>
-                              <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
-                                <Icon size={11}/>{s.label}
-                              </span>
-                            </td>
-                            <td style={{ padding:'12px 16px' }}>
-                              <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                                <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                  <Eye size={12}/>Detail
-                                </button>
-                                {(item.status === 0 || item.status === 3) && (
-                                  <>
-                                    <button onClick={() => setDealTarget(item)} style={{ padding:'5px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                      Deal
-                                    </button>
-                                    {item.status === 0 && (
-                                      <button onClick={() => setGantungTarget(item)} style={{ padding:'5px 12px', background:'rgba(107,114,128,0.1)', border:'1px solid rgba(107,114,128,0.2)', borderRadius:'8px', color:'#6b7280', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                        Gantung
-                                      </button>
-                                    )}
-                                    <button onClick={() => setBatalTarget(item)} style={{ padding:'5px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                      Batal
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                  {leadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads masuk</div>}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Sub-tab: Deal (leads yang sudah closing) */}
-          {ccSubTab === 'deal' && (
-            <div style={cardStyle}>
-              {loadingDealList ? (
-                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
-              ) : (
-                <div style={{ overflowX:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'980px' }}>
-                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal','Aksi'].map(h => (
-                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {dealLeadsList.map((item: any, i: number) => (
+          {/* Tabel Leads unified */}
+          <div style={cardStyle}>
+            {loadingLeadsList ? (
+              <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
+            ) : (
+              <div style={{ overflowX:'auto' }}>
+                <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
+                  <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                    {['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'].map(h => (
+                      <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody>
+                    {leadsList.filter((item: any) => leadsStatusFilter === '' || String(item.status) === leadsStatusFilter).map((item: any, i: number) => {
+                      const s = getLeadStatusDisplay(item);
+                      const Icon = s.icon;
+                      return (
                         <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', fontWeight:600 }}>{item.nomor||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
+                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</td>
                           <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_klien||'-'}</td>
                           <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_leads||'-'}</td>
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
                           <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.diagnosis_awal||'-'}</td>
                           <td style={{ padding:'12px 16px' }}>
-                            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                              <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                <Eye size={12}/>Detail
-                              </button>
-                              <button onClick={() => setExchangeTarget(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'8px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                                <Repeat size={12}/>Exchange
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {dealLeadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads Deal</div>}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Sub-tab: Exchange (histori tukar mitra) */}
-          {ccSubTab === 'exchange' && (
-            <div style={cardStyle}>
-              {loadingExchangeList ? (
-                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
-              ) : (
-                <div style={{ overflowX:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
-                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['No','Nomor','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal','Aksi'].map(h => (
-                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {exchangeList.map((item: any, i: number) => (
-                        <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
-                            {item.lead?.nama_leads || '-'} <span style={{color:'var(--text3)', fontWeight:400}}>({item.lead?.nomor||'-'})</span>
-                          </td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_lama?.user?.name || '-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_baru?.user?.name || '-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alasan||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.exchanged_at ? new Date(item.exchanged_at).toLocaleDateString('id-ID') : '-'}</td>
-                          <td style={{ padding:'12px 16px' }}>
-                            <button onClick={() => setLeadDetail({ type:'exchange', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                              <Eye size={12}/>Detail
+                            <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
+                              <Icon size={11}/>{s.label}
                             </button>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {exchangeList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada histori exchange</div>}
-                </div>
-              )}
-            </div>
-          )}
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {leadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads masuk</div>}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -1658,6 +1507,7 @@ export default function CustomerCarePage() {
             {leadDetail.type === 'lead' ? (() => {
               const item = leadDetail.item;
               const s = getLeadStatusDisplay(item);
+              const relatedExchanges = exchangeList.filter((e: any) => String(e.lead_id ?? e.lead?.id) === String(item.id));
               return (
                 <div>
                   <div style={{ background:'linear-gradient(135deg, #ec4899, #8b5cf6)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
@@ -1665,6 +1515,31 @@ export default function CustomerCarePage() {
                     <p style={{ color:'white', fontWeight:700, fontSize:'16px' }}>{item.nomor || '#'+item.id}</p>
                     <span style={{ display:'inline-block', marginTop:'8px', background:'rgba(255,255,255,0.2)', color:'white', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>
                   </div>
+
+                  {/* Aksi status - dipindah ke dalam popup, gantikan kolom Aksi di tabel */}
+                  {(item.status === 0 || item.status === 3) && (
+                    <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', marginBottom:'16px' }}>
+                      <button onClick={() => { setLeadDetail(null); setDealTarget(item); }} style={{ flex:1, padding:'8px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                        Tandai Deal
+                      </button>
+                      {item.status === 0 && (
+                        <button onClick={() => { setLeadDetail(null); setGantungTarget(item); }} style={{ flex:1, padding:'8px 12px', background:'rgba(107,114,128,0.1)', border:'1px solid rgba(107,114,128,0.2)', borderRadius:'10px', color:'#6b7280', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                          Tandai Gantung
+                        </button>
+                      )}
+                      <button onClick={() => { setLeadDetail(null); setBatalTarget(item); }} style={{ flex:1, padding:'8px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'10px', color:'#ef4444', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                        Tandai Batal
+                      </button>
+                    </div>
+                  )}
+                  {item.status === 1 && (
+                    <div style={{ marginBottom:'16px' }}>
+                      <button onClick={() => { setLeadDetail(null); setExchangeTarget(item); }} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'10px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                        <Repeat size={13}/>Log Exchange
+                      </button>
+                    </div>
+                  )}
+
                   <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                     {buildLeadDetailRows(item).map(row => (
                       <div key={row.label}>
@@ -1673,6 +1548,33 @@ export default function CustomerCarePage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Exchange Historis - hanya muncul kalau lead ini sudah punya riwayat Exchange */}
+                  {relatedExchanges.length > 0 && (
+                    <div style={{ marginTop:'16px' }}>
+                      <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginBottom:'8px' }}>Exchange Historis</p>
+                      <div style={{ overflowX:'auto', border:'1px solid var(--border)', borderRadius:'10px' }}>
+                        <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'420px' }}>
+                          <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                            {['Tanggal','NIM','Nama Mitra','Alasan'].map(h => (
+                              <th key={h} style={{ padding:'8px 10px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                            ))}
+                          </tr></thead>
+                          <tbody>
+                            {relatedExchanges.map((e: any, i: number) => (
+                              <tr key={e.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                                <td style={{ padding:'8px 10px', fontSize:'12px', color:'var(--text2)' }}>{e.exchanged_at ? new Date(e.exchanged_at).toLocaleDateString('id-ID') : '-'}</td>
+                                <td style={{ padding:'8px 10px', fontSize:'12px', color:'var(--text2)' }}>{e.nomor||'-'}</td>
+                                <td style={{ padding:'8px 10px', fontSize:'12px', fontWeight:600, color:'var(--text)' }}>{e.mitra_baru?.user?.name||'-'}</td>
+                                <td style={{ padding:'8px 10px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{e.alasan||'-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
                   <button onClick={() => downloadBlob(buildSimplePdfBlob('Detail Leads — '+(item.nomor||item.id), 'Mikala Global Medika', buildLeadDetailRows(item)), 'leads-'+(item.nomor||item.id)+'.pdf')}
                     style={{ marginTop:'16px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
                     <Download size={14}/>Download PDF
