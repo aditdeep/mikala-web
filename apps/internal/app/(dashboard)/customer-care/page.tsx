@@ -15,13 +15,13 @@ const statusMap: any = {
   on_hold:     { label:'Ditahan',      color:'#8b5cf6', bg:'rgba(139,92,246,0.15)',  border:'rgba(139,92,246,0.3)',  icon: Clock },
 };
 
+// Tabs utama sesuai file mockup: Layanan / Leads / Deal / Exchange (Klien/Pasien/Feedback/Report
+// dihapus dari sini -- Report sekarang cukup lewat tombol "Laporan" ke /customer-care/laporan)
 const TABS = [
   { key:'layanan',  label:'Layanan',  icon: HeartPulse },
   { key:'leads',    label:'Leads',    icon: Briefcase },
-  { key:'klien',    label:'Klien',    icon: Users },
-  { key:'pasien',   label:'Pasien',   icon: UserPlus },
-  { key:'feedback', label:'Feedback', icon: MessageSquare },
-  { key:'report',   label:'Report',   icon: BarChart2 },
+  { key:'deal',     label:'Deal',     icon: TrendingUp },
+  { key:'exchange', label:'Exchange', icon: Repeat },
 ];
 
 const leadStatusMap: any = {
@@ -239,6 +239,7 @@ export default function CustomerCarePage() {
   const [leadsList, setLeadsList] = useState<any[]>([]);
   const [loadingLeadsList, setLoadingLeadsList] = useState(false);
   const [leadsStatusFilter, setLeadsStatusFilter] = useState('');
+  const [layananDrillFilter, setLayananDrillFilter] = useState<{ layanan_id: any; tier_nama: string|null; label: string }|null>(null);
 
   // Form tambah Leads
   const [showFormLead, setShowFormLead] = useState(false);
@@ -318,17 +319,11 @@ export default function CustomerCarePage() {
 
   useEffect(() => { fetchAll(); fetchLeadsSummary(); }, []);
   useEffect(() => {
-    if (activeTab === 'pasien') fetchPasien();
-    if (activeTab === 'feedback') fetchFeedback();
-    if (activeTab === 'report') fetchReport();
     if (activeTab === 'leads') fetchCmsLayananCatalog();
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (activeTab !== 'leads') return;
-    // Tabel Leads unified: butuh leadsList (tabel utama) + exchangeList (buat riwayat Exchange di popup Detail)
-    fetchLeadsList();
-    fetchExchangeList();
+    if (activeTab === 'deal') fetchDealLeads();
+    // exchange & leads keduanya butuh exchangeList (tabel Exchange sendiri + Exchange Historis di popup Detail Leads/Deal)
+    if (activeTab === 'leads' || activeTab === 'deal' || activeTab === 'exchange') fetchExchangeList();
+    if (activeTab === 'leads' || activeTab === 'deal') fetchLeadsList();
     if (mitraList.length === 0) fetchOrders();
   }, [activeTab]);
 
@@ -476,9 +471,24 @@ export default function CustomerCarePage() {
 
   const handleExportXls = () => {
     const stamp = new Date().toISOString().slice(0,10);
-    const source = leadsStatusFilter === '' ? leadsList : leadsList.filter((item: any) => String(item.status) === leadsStatusFilter);
-    const rows = source.map((item: any, i: number) => [i+1, item.nomor||'-', item.created_at?new Date(item.created_at).toLocaleDateString('id-ID'):'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', getLeadStatusDisplay(item).label]);
-    exportRowsToXls('cc-leads-'+stamp+'.xls', ['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'], rows);
+    if (activeTab === 'layanan') {
+      const rows = (leadsSummary?.by_layanan || []).map((r: any, i: number) => [i+1, r.layanan_nama, r.tier_nama||'-', r.leads, r.deal, r.loss, r.exchange]);
+      exportRowsToXls('cc-layanan-'+stamp+'.xls', ['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange'], rows);
+    } else if (activeTab === 'deal') {
+      const rows = dealLeadsList.map((item: any) => [item.nik||item.nomor||'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', item.diagnosis_awal||'-']);
+      exportRowsToXls('cc-deal-'+stamp+'.xls', ['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal'], rows);
+    } else if (activeTab === 'exchange') {
+      const rows = exchangeList.map((item: any, i: number) => [i+1, item.nomor||'-', item.lead?.nama_leads||'-', item.mitra_lama?.user?.name||'-', item.mitra_baru?.user?.name||'-', item.alasan||'-', item.exchanged_at?new Date(item.exchanged_at).toLocaleDateString('id-ID'):'-']);
+      exportRowsToXls('cc-exchange-'+stamp+'.xls', ['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'], rows);
+    } else {
+      const source = leadsList.filter((item: any) => {
+        if (leadsStatusFilter !== '' && String(item.status) !== leadsStatusFilter) return false;
+        if (layananDrillFilter && (String(item.cms_layanan_id) !== String(layananDrillFilter.layanan_id) || (item.tier_nama || null) !== (layananDrillFilter.tier_nama || null))) return false;
+        return true;
+      });
+      const rows = source.map((item: any, i: number) => [i+1, item.nomor||'-', item.created_at?new Date(item.created_at).toLocaleDateString('id-ID'):'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', getLeadStatusDisplay(item).label]);
+      exportRowsToXls('cc-leads-'+stamp+'.xls', ['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'], rows);
+    }
   };
 
   const fetchPasien = () => {
@@ -613,31 +623,15 @@ export default function CustomerCarePage() {
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Customer Care</h1>
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>Kelola layanan, klien & pasien</p>
         </div>
-        {activeTab === 'leads' && (
-          <div style={{ display:'flex', gap:'8px' }}>
-            <button onClick={() => { setShowFormLead(true); if (cmsLayananList.length === 0) fetchCmsLayananCatalog(); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-              <Plus size={15}/>Leads
-            </button>
-            <button onClick={() => router.push('/customer-care/laporan')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-              <FileText size={15}/>Laporan
-            </button>
-          </div>
-        )}
-        {activeTab === 'klien' && (
-          <button onClick={() => setShowFormKlien(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-            <Plus size={15}/>Daftarkan Klien
+        {/* +Leads & Laporan tampil di semua 4 tabs (Layanan/Leads/Deal/Exchange), sesuai file */}
+        <div style={{ display:'flex', gap:'8px' }}>
+          <button onClick={() => { setShowFormLead(true); if (cmsLayananList.length === 0) fetchCmsLayananCatalog(); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <Plus size={15}/>Leads
           </button>
-        )}
-        {activeTab === 'pasien' && (
-          <button onClick={() => setShowFormPasien(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-            <Plus size={15}/>Daftarkan Pasien
+          <button onClick={() => router.push('/customer-care/laporan')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <FileText size={15}/>Laporan
           </button>
-        )}
-        {activeTab === 'feedback' && (
-          <button onClick={() => setShowFormFeedback(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-            <Plus size={15}/>Tambah Feedback
-          </button>
-        )}
+        </div>
       </div>
 
       {/* Summary cards Leads - selalu tampil, di semua tabs (Layanan/Leads/Klien/Pasien/Feedback/Report), bukan cuma milik tab Leads */}
@@ -677,127 +671,213 @@ export default function CustomerCarePage() {
         })}
       </div>
 
-      {/* Search */}
-      {['layanan','klien'].includes(activeTab) && (
-        <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px' }}>
-          <Search size={16} style={{ color:'var(--text3)' }} />
-          <input placeholder={'Cari '+activeTab+'...'} value={search} onChange={e => setSearch(e.target.value)} style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:'13px', width:'100%' }} />
-        </div>
-      )}
-
-      {/* TAB LAYANAN */}
+      {/* TAB LAYANAN (breakdown Leads/Deal/Loss/Exchange per Jenis Layanan x Tier, sesuai file) */}
       {activeTab === 'layanan' && (
         <div style={cardStyle}>
-          {loading ? (
+          {loadingLeads ? (
             <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
           ) : (
             <div style={{ overflowX:'auto' }}>
-              <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'500px' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
                 <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['No','Tipe Layanan','Klien','Mitra','Status','Aksi'].map(h => (
+                  {['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange','Action'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
-                  {layananPg.paged.map((item: any, i: number) => {
-                    const s = statusMap[item.status] || statusMap.pending;
-                    const Icon = s.icon;
-                    return (
-                      <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(layananPg.page-1)*layananPg.perPage+i+1}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.tipe_layanan?.replace(/_/g,' ')||'-'}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.klien?.nama_lengkap||item.klien?.user?.name||'-'}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name||'-'}</td>
-                        <td style={{ padding:'12px 16px' }}>
-                          <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
-                            <Icon size={11}/>{s.label}
-                          </span>
-                        </td>
-                        <td style={{ padding:'12px 16px' }}>
-                          <div style={{ display:'flex', gap:'6px' }}>
-                          <button onClick={() => setDetail(item)} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', cursor:'pointer' }}>
-                            <Eye size={12}/>Detail
-                          </button>
-                          {!item.mitra_id && (
-                            <button onClick={() => { setAssignOrderId(item.id); setShowAssign(true); fetchOrders(); }} style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer' }}>
-                              Assign
-                            </button>
-                          )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {(leadsSummary?.by_layanan || []).map((row: any, i: number) => (
+                    <tr key={i} style={{ borderBottom:'1px solid var(--border)' }}>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{row.layanan_nama}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.tier_nama || '-'}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.leads}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'#10b981', fontWeight:600 }}>{row.deal}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'#ef4444', fontWeight:600 }}>{row.loss}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.exchange}</td>
+                      <td style={{ padding:'12px 16px' }}>
+                        <button onClick={() => { setLayananDrillFilter({ layanan_id: row.layanan_id, tier_nama: row.tier_nama, label: row.layanan_nama + (row.tier_nama ? ' · '+row.tier_nama : '') }); setLeadsStatusFilter(''); setActiveTab('leads'); }}
+                          style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                          <Eye size={12}/>Detail
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-              <Pagination page={layananPg.page} totalPages={layananPg.totalPages} total={layananPg.total} onPageChange={layananPg.setPage} label="layanan" />
-              {layanan.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data layanan</div>}
+              {(!leadsSummary?.by_layanan || leadsSummary.by_layanan.length === 0) && (
+                <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data layanan</div>
+              )}
             </div>
           )}
         </div>
       )}
 
       {/* TAB LEADS (unified: 1 tabel Leads, Status = link ke Detail; card summary sudah dipindah ke atas tabs) */}
-      {activeTab === 'leads' && (
+      {activeTab === 'leads' && (() => {
+        const filteredLeads = leadsList.filter((item: any) => {
+          if (leadsStatusFilter !== '' && String(item.status) !== leadsStatusFilter) return false;
+          if (layananDrillFilter && (String(item.cms_layanan_id) !== String(layananDrillFilter.layanan_id) || (item.tier_nama || null) !== (layananDrillFilter.tier_nama || null))) return false;
+          return true;
+        });
+        return (
+          <div className="space-y-3">
+            {/* Filter status + export (gantikan baris sub-tab) */}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'8px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
+                <select value={leadsStatusFilter} onChange={e => setLeadsStatusFilter(e.target.value)} style={{ ...inp, width:'auto', minWidth:'170px' }}>
+                  <option value="">Semua Status</option>
+                  <option value="0">Proses</option>
+                  <option value="1">Deal</option>
+                  <option value="2">Batal</option>
+                  <option value="3">Gantung</option>
+                </select>
+                {layananDrillFilter && (
+                  <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', padding:'6px 10px', fontSize:'12px', color:'#ec4899', fontWeight:600 }}>
+                    {layananDrillFilter.label}
+                    <button onClick={() => setLayananDrillFilter(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'#ec4899', display:'flex' }}><X size={12}/></button>
+                  </span>
+                )}
+              </div>
+              <button onClick={handleExportXls} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                <Download size={13}/>.xls
+              </button>
+            </div>
+
+            {/* Tabel Leads unified */}
+            <div style={cardStyle}>
+              {loadingLeadsList ? (
+                <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
+                    <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                      {['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'].map(h => (
+                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {filteredLeads.map((item: any, i: number) => {
+                        const s = getLeadStatusDisplay(item);
+                        const Icon = s.icon;
+                        return (
+                          <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_klien||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_leads||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
+                            <td style={{ padding:'12px 16px' }}>
+                              <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
+                                <Icon size={11}/>{s.label}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {filteredLeads.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads masuk</div>}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* TAB DEAL (leads yang sudah closing) */}
+      {activeTab === 'deal' && (
         <div className="space-y-3">
-          {/* Filter status + export (gantikan baris sub-tab) */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'8px' }}>
-            <select value={leadsStatusFilter} onChange={e => setLeadsStatusFilter(e.target.value)} style={{ ...inp, width:'auto', minWidth:'170px' }}>
-              <option value="">Semua Status</option>
-              <option value="0">Proses</option>
-              <option value="1">Deal</option>
-              <option value="2">Batal</option>
-              <option value="3">Gantung</option>
-            </select>
+          <div style={{ display:'flex', justifyContent:'flex-end' }}>
             <button onClick={handleExportXls} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
               <Download size={13}/>.xls
             </button>
           </div>
-
-          {/* Tabel Leads unified */}
           <div style={cardStyle}>
-            {loadingLeadsList ? (
+            {loadingDealList ? (
               <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
             ) : (
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                    {['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'].map(h => (
+                    {['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal'].map(h => (
                       <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
-                    {leadsList.filter((item: any) => leadsStatusFilter === '' || String(item.status) === leadsStatusFilter).map((item: any, i: number) => {
-                      const s = getLeadStatusDisplay(item);
-                      const Icon = s.icon;
-                      return (
-                        <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_klien||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_leads||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
-                          <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
-                          <td style={{ padding:'12px 16px' }}>
-                            <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
-                              <Icon size={11}/>{s.label}
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {dealLeadsList.map((item: any, i: number) => (
+                      <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px' }}>
+                          <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:700, color:'#ec4899', textDecoration:'underline', padding:0 }}>
+                            {item.nik || item.nomor || '-'}
+                          </button>
+                        </td>
+                        <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_klien||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_leads||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.diagnosis_awal||'-'}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
-                {leadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads masuk</div>}
+                {dealLeadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads Deal</div>}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* TAB KLIEN */}
+      {/* TAB EXCHANGE (histori tukar mitra) */}
+      {activeTab === 'exchange' && (
+        <div className="space-y-3">
+          <div style={{ display:'flex', justifyContent:'flex-end' }}>
+            <button onClick={handleExportXls} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+              <Download size={13}/>.xls
+            </button>
+          </div>
+          <div style={cardStyle}>
+            {loadingExchangeList ? (
+              <div style={{ padding:'20px' }}>{[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'10px', height:'52px', marginBottom:'8px' }} />)}</div>
+            ) : (
+              <div style={{ overflowX:'auto' }}>
+                <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
+                  <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                    {['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'].map(h => (
+                      <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
+                    ))}
+                  </tr></thead>
+                  <tbody>
+                    {exchangeList.map((item: any, i: number) => (
+                      <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                        <td style={{ padding:'12px 16px' }}>
+                          <button onClick={() => setLeadDetail({ type:'exchange', item })} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:700, color:'#8b5cf6', textDecoration:'underline', padding:0 }}>
+                            {item.nomor || '-'}
+                          </button>
+                        </td>
+                        <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
+                          {item.lead?.nama_leads || '-'} <span style={{color:'var(--text3)', fontWeight:400}}>({item.lead?.nomor||'-'})</span>
+                        </td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_lama?.user?.name || '-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_baru?.user?.name || '-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alasan||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.exchanged_at ? new Date(item.exchanged_at).toLocaleDateString('id-ID') : '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {exchangeList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada histori exchange</div>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB KLIEN (nonaktif dari nav utama - kode dibiarkan, tidak lagi punya tombol akses) */}
       {activeTab === 'klien' && (
         <div style={cardStyle}>
           {loading ? (
