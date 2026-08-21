@@ -29,6 +29,64 @@ const emptyForm = {
   referrer_mitra_id: undefined as number | undefined,
 };
 
+// Parse balik data yang di-encode ke dalam field `pengalaman` (lihat handleSubmit) supaya
+// form Edit tidak menampilkan kosong -- sebelumnya ini menyebabkan data "Data Tambahan"
+// (usia, tempat lahir, TB/BB, vaksin, agama, dst) hilang/tertimpa blank tiap kali disimpan ulang.
+function parsePengalamanBlob(raw: string) {
+  const result: any = {
+    pengalaman_pelatihan: '', pengalaman: '',
+    usia: '', tempat_lahir: '', tinggi: '', berat: '', vaksin: '',
+    agama: 'Islam', status_nikah: 'Belum Menikah', takut_hewan: 'Tidak takut semua hewan',
+    bisa_memasak: '3', tipe_pekerjaan: 'Perawat Homecare', suku: '',
+  };
+  if (!raw) return result;
+
+  const pelatihanMatch = raw.match(/PELATIHAN:\s*([\s\S]*?)\n\nPENGALAMAN KERJA:/);
+  const kerjaMatch = raw.match(/PENGALAMAN KERJA:\s*([\s\S]*?)\n\nDATA TAMBAHAN:/);
+  const tambahanMatch = raw.match(/DATA TAMBAHAN:\s*([\s\S]*)$/);
+
+  if (pelatihanMatch) result.pengalaman_pelatihan = pelatihanMatch[1].trim();
+  if (kerjaMatch) result.pengalaman = kerjaMatch[1].trim();
+
+  if (tambahanMatch) {
+    const tambahan = tambahanMatch[1];
+    const grab = (label: string) => {
+      const m = tambahan.match(new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\s*([^,]*)'));
+      return m ? m[1].trim() : '';
+    };
+    result.usia = grab('Usia');
+    result.tempat_lahir = grab('Tempat Lahir');
+    result.tinggi = grab('TB').replace(/cm$/i, '').trim();
+    result.berat = grab('BB').replace(/kg$/i, '').trim();
+    result.vaksin = grab('Vaksin');
+    result.agama = grab('Agama') || 'Islam';
+    result.status_nikah = grab('Status Nikah') || 'Belum Menikah';
+    result.takut_hewan = grab('Takut Hewan') || 'Tidak takut semua hewan';
+    result.bisa_memasak = grab('Memasak').replace(/\/5$/, '').trim() || '3';
+    result.tipe_pekerjaan = grab('Tipe Pekerjaan') || 'Perawat Homecare';
+    result.suku = grab('Suku');
+  } else if (!pelatihanMatch && !kerjaMatch) {
+    // Format lama / manual, sebelum skema "DATA TAMBAHAN" ada -- anggap semua teks sebagai pengalaman kerja
+    result.pengalaman = raw;
+  }
+  return result;
+}
+
+// Parse balik alamat gabungan "alamat, kelurahan, kecamatan, kota, provinsi" (lihat handleSubmit)
+// supaya kelurahan/kecamatan tidak hilang & tidak terduplikasi tiap kali form Edit disimpan ulang.
+function parseAlamatBlob(rawAlamat: string, kota: string, provinsi: string) {
+  let sisa = rawAlamat || '';
+  const suffix = `, ${kota || ''}, ${provinsi || ''}`;
+  if (kota && provinsi && sisa.endsWith(suffix)) {
+    sisa = sisa.slice(0, -suffix.length);
+  }
+  const parts = sisa.split(',').map(p => p.trim());
+  return {
+    alamat: parts[0] || '',
+    kelurahan: parts[1] || '',
+    kecamatan: parts[2] || '',
+  };
+}
 
 // ── SumberInline — komponen inline untuk form rekrutmen ──────────────────────
 function SumberInline({ form, setForm }: { form: any; setForm: any }) {
@@ -215,8 +273,14 @@ export default function RekrutmenPage() {
   const handleEdit = (item: any) => {
     setEditItem(item);
     const user = item.user || {};
+    // Data usia/tempat lahir/TB/BB/vaksin/agama/dst disimpan ter-encode di dalam field `pengalaman`
+    // (lihat handleSubmit) -- harus di-parse balik di sini, kalau tidak field2 itu tampil kosong
+    // di form Edit dan akan HILANG (ketimpa blank) begitu form disimpan ulang.
+    const parsedPengalaman = parsePengalamanBlob(item.pengalaman || '');
+    const parsedAlamat = parseAlamatBlob(item.alamat || '', item.kota || '', item.provinsi || '');
     setForm({
       ...emptyForm,
+      ...parsedPengalaman,
       name: item.nama_lengkap || user.name || '',
       email: user.email || '',
       password: '',
@@ -225,12 +289,16 @@ export default function RekrutmenPage() {
       pendidikan: item.pendidikan_terakhir || '',
       kota: item.kota || '',
       provinsi: item.provinsi || '',
-      alamat: item.alamat || '',
+      alamat: parsedAlamat.alamat,
+      kelurahan: parsedAlamat.kelurahan,
+      kecamatan: parsedAlamat.kecamatan,
       tanggal_lahir: item.tanggal_lahir?.split('T')[0] || '',
       jenis_kelamin: item.jenis_kelamin || 'L',
-      pengalaman: item.pengalaman || '',
-      pengalaman_pelatihan: '',
       payment_type: item.payment_type || 'cash',
+      sumber_tipe: item.sumber_tipe || 'sendiri',
+      sumber_detail: item.sumber_detail || '',
+      lembaga_id: item.lembaga_id ?? undefined,
+      referrer_mitra_id: item.referrer_mitra_id ?? undefined,
     });
     setShowModal(true);
     setErrorMsg('');

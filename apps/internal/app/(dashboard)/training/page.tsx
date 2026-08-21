@@ -387,8 +387,9 @@ const [tempRating, setTempRating] = useState(5);
                 </div>
               </div>
 
-              {/* Materi per kategori */}
-              {['Dasar','PHC'].map(kat => {
+              {/* Materi per kategori -- daftar kategori datang dari backend (sudah difilter
+                  sesuai tipe_pekerjaan mitra: CG-only cuma dapat "Dasar", PHC dapat Dasar+PHC) */}
+              {(checklistMitra.by_kategori?.map((k: any) => k.kategori) || []).map((kat: string) => {
                 const katData = checklistMitra.by_kategori?.find((k: any) => k.kategori === kat);
                 const items = katData?.materi || [];
                 const isOpen = openKat.includes(kat);

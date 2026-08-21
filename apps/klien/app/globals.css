@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --bg-primary: #f0fff8;
     --text-primary: #0f2a1e;
     --text-secondary: #6b7280;
@@ -19,6 +20,7 @@
     --glass-border: rgba(255,255,255,0.8);
   }
   .dark {
+    color-scheme: dark;
     --bg-primary: #0a1a12;
     --text-primary: #f0fff8;
     --text-secondary: #6ee7b7;
@@ -37,4 +39,10 @@
     min-height: 100vh;
     transition: background 0.3s, color 0.3s;
   }
+}
+
+/* Fix: dropdown popup putih bikin teks pilihan gak kelihatan di dark mode */
+select, select option {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
