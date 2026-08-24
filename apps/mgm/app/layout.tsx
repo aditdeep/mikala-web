@@ -2,6 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Script from "next/script";
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
+
+async function getGtmId(): Promise<string> {
+  try {
+    const res = await fetch(`${API}/cms/settings`, { next: { revalidate: 60 } });
+    const json = await res.json();
+    return json?.data?.gtm_id || '';
+  } catch {
+    return '';
+  }
+}
+
 export const metadata: Metadata = {
   title: "Mikala Global Medika – Layanan Homecare 24 Jam",
   description: "Penyedia layanan homecare terpercaya. Perawat medis, caregiver, babysitter, dokter visit, medikal evakuasi di Bekasi dan sekitarnya.",
@@ -23,15 +35,31 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const gtmId = await getGtmId();
+
   return (
     <html lang="id">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" />
+        {/* Google Tag Manager — ID diatur lewat CMS Web MGM > Settings */}
+        {gtmId && (
+          <Script id="gtm-head" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+            var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+            j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${gtmId}');
+          ` }} />
+        )}
       </head>
       <body style={{ margin:0, padding:0, fontFamily:"'Futura', 'Jost', 'Century Gothic', 'Trebuchet MS', Arial, sans-serif" }}>
+        {gtmId && (
+          <noscript>
+            <iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`} height="0" width="0" style={{ display:'none', visibility:'hidden' }} />
+          </noscript>
+        )}
         {children}
         {/* Google Translate — hidden widget, custom button di Navbar */}
         <Script id="google-translate-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
