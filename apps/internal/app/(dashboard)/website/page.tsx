@@ -597,7 +597,7 @@ export default function WebsitePage() {
               { key:'stats_mitra', label:'Jumlah Mitra', type:'number' },
               { key:'video_title', label:'Judul Video Profil', type:'text' },
               { key:'video_url', label:'URL Video YouTube', type:'text' },
-              { key:'gtm_id', label:'Google Tag Manager ID (GTM-XXXXXXX)', type:'text' },
+              { key:'google_ads_id', label:'Google Ads Conversion ID (AW-XXXXXXXXX)', type:'text' },
             ].map(f => (
               <div key={f.key}>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>{f.label}</label>

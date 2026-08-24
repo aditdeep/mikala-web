@@ -4,11 +4,11 @@ import Script from "next/script";
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 
-async function getGtmId(): Promise<string> {
+async function getGoogleAdsId(): Promise<string> {
   try {
     const res = await fetch(`${API}/cms/settings`, { next: { revalidate: 60 } });
     const json = await res.json();
-    return json?.data?.gtm_id || '';
+    return json?.data?.google_ads_id || '';
   } catch {
     return '';
   }
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const gtmId = await getGtmId();
+  const googleAdsId = await getGoogleAdsId();
 
   return (
     <html lang="id">
@@ -44,22 +44,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" />
-        {/* Google Tag Manager — ID diatur lewat CMS Web MGM > Settings */}
-        {gtmId && (
-          <Script id="gtm-head" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
-            var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
-            j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','${gtmId}');
-          ` }} />
+        {/* Google Ads Conversion Tag (gtag.js) — AW-xxxxxxxxx diatur lewat CMS Web MGM > Settings.
+            Ini BUKAN Google Tag Manager (GTM-xxxxxxx) -- beda produk, beda snippet. */}
+        {googleAdsId && (
+          <>
+            <Script id="google-ads-lib" strategy="afterInteractive" src={`https://www.googletagmanager.com/gtag/js?id=${googleAdsId}`} />
+            <Script id="google-ads-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${googleAdsId}');
+            ` }} />
+          </>
         )}
       </head>
       <body style={{ margin:0, padding:0, fontFamily:"'Futura', 'Jost', 'Century Gothic', 'Trebuchet MS', Arial, sans-serif" }}>
-        {gtmId && (
-          <noscript>
-            <iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`} height="0" width="0" style={{ display:'none', visibility:'hidden' }} />
-          </noscript>
-        )}
         {children}
         {/* Google Translate — hidden widget, custom button di Navbar */}
         <Script id="google-translate-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
