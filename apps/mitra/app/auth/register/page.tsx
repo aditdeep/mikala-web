@@ -241,7 +241,12 @@ export default function RegisterPage() {
         nik: form.nik, tanggal_lahir: form.tanggal_lahir, jenis_kelamin: form.jenis_kelamin,
         alamat: form.alamat, kota: form.kota, provinsi: form.provinsi,
         pendidikan: form.pendidikan, tipe_pekerjaan: form.tipe_pekerjaan,
-        pengalaman: `PELATIHAN: ${form.pengalaman_pelatihan}\nPENGALAMAN: ${form.pengalaman}`,
+        // FIX: sebelumnya digabung jadi satu blob teks (dan backend-nya diam2 tidak menyimpan
+        // vaksin/tinggi/berat/tipe_pekerjaan sama sekali) -- sekarang dikirim sbg field terpisah,
+        // masing2 punya kolom sendiri di backend.
+        pengalaman_pelatihan: form.pengalaman_pelatihan,
+        pengalaman: form.pengalaman,
+        agama: form.agama, status_nikah: form.status_nikah,
         vaksin: form.vaksin, tinggi: form.tinggi, berat: form.berat,
         sumber_tipe: form.sumber_tipe,
         sumber_detail: form.sumber_detail,

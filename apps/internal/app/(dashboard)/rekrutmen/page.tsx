@@ -10,6 +10,20 @@ const TIPE_PEKERJAAN = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysit
 const AGAMA = ['Islam','Kristen Protestan','Kristen Katolik','Hindu','Budha','Konghucu'];
 const HEWAN = ['Tidak takut semua hewan','Anjing','Kucing','Yang lain'];
 
+// Hitung usia (tahun) dari tanggal lahir, sampai hari ini -- dipakai supaya Usia tidak perlu
+// diisi manual lagi dan tidak bisa "basi"/tidak sinkron dengan Tanggal Lahir.
+function calcUsia(tanggalLahir: string): number | null {
+  if (!tanggalLahir) return null;
+  const lahir = new Date(tanggalLahir);
+  if (isNaN(lahir.getTime())) return null;
+  const now = new Date();
+  let usia = now.getFullYear() - lahir.getFullYear();
+  const belumUlangTahun = (now.getMonth() < lahir.getMonth()) ||
+    (now.getMonth() === lahir.getMonth() && now.getDate() < lahir.getDate());
+  if (belumUlangTahun) usia--;
+  return usia >= 0 ? usia : null;
+}
+
 const inputStyle = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
 const labelStyle: React.CSSProperties = { color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' };
 const sectionStyle: React.CSSProperties = { background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'14px', padding:'16px', marginBottom:'12px' };
@@ -253,7 +267,21 @@ export default function RekrutmenPage() {
         sumber_detail: form.sumber_detail,
         lembaga_id: form.lembaga_id,
         referrer_mitra_id: form.referrer_mitra_id,
-        pengalaman: `PELATIHAN: ${form.pengalaman_pelatihan}\n\nPENGALAMAN KERJA: ${form.pengalaman}\n\nDATA TAMBAHAN: Usia: ${form.usia}, Tempat Lahir: ${form.tempat_lahir}, TB: ${form.tinggi}cm, BB: ${form.berat}kg, Vaksin: ${form.vaksin}, Agama: ${form.agama}, Status Nikah: ${form.status_nikah}, Takut Hewan: ${form.takut_hewan}, Memasak: ${form.bisa_memasak}/5, Tipe Pekerjaan: ${form.tipe_pekerjaan}, Suku: ${form.suku}`,
+        // FIX: field2 ini dulu digabung jadi satu blob teks di kolom `pengalaman` lalu di-parse
+        // balik pakai regex saat Edit dibuka -- rapuh & gampang gagal. Sekarang dikirim sbg field
+        // terpisah, masing2 punya kolom asli sendiri di backend (lihat RekrutmenController).
+        pengalaman_pelatihan: form.pengalaman_pelatihan,
+        pengalaman: form.pengalaman,
+        tempat_lahir: form.tempat_lahir,
+        tinggi: form.tinggi,
+        berat: form.berat,
+        vaksin: form.vaksin,
+        agama: form.agama,
+        status_nikah: form.status_nikah,
+        takut_hewan: form.takut_hewan,
+        bisa_memasak: form.bisa_memasak,
+        tipe_pekerjaan: form.tipe_pekerjaan,
+        suku: form.suku,
       };
       if (editItem) {
         await apiClient.patch(`/internal/rekrutmen/mitra/${editItem.id}`, payload);
@@ -273,9 +301,10 @@ export default function RekrutmenPage() {
   const handleEdit = (item: any) => {
     setEditItem(item);
     const user = item.user || {};
-    // Data usia/tempat lahir/TB/BB/vaksin/agama/dst disimpan ter-encode di dalam field `pengalaman`
-    // (lihat handleSubmit) -- harus di-parse balik di sini, kalau tidak field2 itu tampil kosong
-    // di form Edit dan akan HILANG (ketimpa blank) begitu form disimpan ulang.
+    // FIX: tinggi/berat/vaksin/tipe_pekerjaan/dll sekarang punya kolom asli sendiri di backend
+    // (lihat migration split_pengalaman_blob_fields_on_mitra + RekrutmenController). Utamakan
+    // kolom asli itu; fallback ke parse blob lama HANYA kalau kolomnya belum keisi -- jaga2 utk
+    // record lama yg belum sempat ke-backfill migration.
     const parsedPengalaman = parsePengalamanBlob(item.pengalaman || '');
     const parsedAlamat = parseAlamatBlob(item.alamat || '', item.kota || '', item.provinsi || '');
     setForm({
@@ -299,6 +328,19 @@ export default function RekrutmenPage() {
       sumber_detail: item.sumber_detail || '',
       lembaga_id: item.lembaga_id ?? undefined,
       referrer_mitra_id: item.referrer_mitra_id ?? undefined,
+      // Kolom asli (prioritas) -- baru fallback ke hasil parse blob kalau masih kosong
+      pengalaman: item.pengalaman || parsedPengalaman.pengalaman,
+      pengalaman_pelatihan: item.pengalaman_pelatihan || parsedPengalaman.pengalaman_pelatihan,
+      tempat_lahir: item.tempat_lahir || parsedPengalaman.tempat_lahir,
+      tinggi: item.tinggi_badan || parsedPengalaman.tinggi,
+      berat: item.berat_badan || parsedPengalaman.berat,
+      vaksin: item.vaksin || parsedPengalaman.vaksin,
+      agama: item.agama || parsedPengalaman.agama,
+      status_nikah: item.status_nikah || parsedPengalaman.status_nikah,
+      takut_hewan: item.takut_hewan || parsedPengalaman.takut_hewan,
+      bisa_memasak: item.bisa_memasak || parsedPengalaman.bisa_memasak,
+      tipe_pekerjaan: item.tipe_pekerjaan || parsedPengalaman.tipe_pekerjaan,
+      suku: item.suku || parsedPengalaman.suku,
     });
     setShowModal(true);
     setErrorMsg('');
@@ -563,6 +605,7 @@ export default function RekrutmenPage() {
               { label:'CV/Dok',     val: showDetail.cv_file ? '✓ Ada' : '-' },
               { label:'NIK',        val: showDetail.nik },
               { label:'Tgl Lahir',  val: showDetail.tanggal_lahir },
+              { label:'Usia',       val: calcUsia(showDetail.tanggal_lahir) != null ? `${calcUsia(showDetail.tanggal_lahir)} tahun` : '-' },
               { label:'Kelamin',    val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
               { label:'Kota',       val: showDetail.kota },
               { label:'Pendidikan', val: showDetail.pendidikan_terakhir },
@@ -849,9 +892,12 @@ export default function RekrutmenPage() {
                     <input required value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} />
                   </div>
                   <div><label style={labelStyle}>NIK *</label><input required value={form.nik} onChange={e => set('nik', e.target.value)} style={inputStyle} /></div>
-                  <div><label style={labelStyle}>Usia *</label><input required type="number" value={form.usia} onChange={e => set('usia', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Tempat Lahir *</label><input required value={form.tempat_lahir} onChange={e => set('tempat_lahir', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Tanggal Lahir *</label><input required type="date" value={form.tanggal_lahir} onChange={e => set('tanggal_lahir', e.target.value)} style={inputStyle} /></div>
+                  <div>
+                    <label style={labelStyle}>Usia (otomatis dari Tanggal Lahir)</label>
+                    <input readOnly value={calcUsia(form.tanggal_lahir) ?? ''} placeholder="-- isi Tanggal Lahir --" style={{ ...inputStyle, opacity:0.75, cursor:'not-allowed' }} />
+                  </div>
                   <div>
                     <label style={labelStyle}>Jenis Kelamin *</label>
                     <select value={form.jenis_kelamin} onChange={e => set('jenis_kelamin', e.target.value)} style={inputStyle}>

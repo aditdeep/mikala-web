@@ -55,14 +55,19 @@ const [tempRating, setTempRating] = useState(5);
 
   useEffect(() => { fetchData(); }, []);
 
-  const fetchChecklist = async (mitraId: number) => {
-    setLoadingChecklist(true);
+  // FIX: sebelumnya fetchChecklist selalu set loadingChecklist=true, yg bikin seluruh body
+  // checklist (termasuk list materi yg lagi diliat) di-unmount sebentar jadi cuma spinner --
+  // begitu data balik & list muncul lagi, posisi scroll browser ke-reset ke atas. Setelah
+  // toggle ceklis/submit rating, refresh datanya secara "silent" (tanpa spinner/unmount) supaya
+  // posisi scroll di list materi tidak lompat balik ke atas tiap kali habis ceklis satu item.
+  const fetchChecklist = async (mitraId: number, silent: boolean = false) => {
+    if (!silent) setLoadingChecklist(true);
     setSelectedMitraId(mitraId);
     try {
       const r: any = await apiClient.get(`/internal/training/mitra/${mitraId}/progress`);
       setChecklistMitra(r.data);
     } catch {}
-    setLoadingChecklist(false);
+    if (!silent) setLoadingChecklist(false);
   };
 
   const handleCheckClick = (materiId: number, materiNama: string, checked: boolean) => {
@@ -91,7 +96,7 @@ const [tempRating, setTempRating] = useState(5);
         rating: rating,
         tanggal_dapat: tgl, pengajar: pengajar || 'Trainer',
       });
-      fetchChecklist(selectedMitraId);
+      fetchChecklist(selectedMitraId, true);
     } catch {}
     setSavingCheck(null);
   };
