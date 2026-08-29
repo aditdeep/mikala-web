@@ -407,6 +407,7 @@ export default function RekrutmenPage() {
 
   const counts = {
     semua: data.length,
+    pending: data.filter((d: any) => d.status === 'pending').length,
     training: data.filter((d: any) => d.status === 'training').length,
     available: data.filter((d: any) => d.status === 'available').length,
     on_job: data.filter((d: any) => d.status === 'on_job').length,
@@ -414,13 +415,14 @@ export default function RekrutmenPage() {
 
   const statusBadge = (s: string) => {
     const map: any = {
+      pending:     { color:'#94a3b8', bg:'rgba(148,163,184,0.15)', border:'rgba(148,163,184,0.3)', label:'Pending',    icon: Clock },
       training:    { color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)',  label:'Training',  icon: Clock },
       available:   { color:'#10b981', bg:'rgba(16,185,129,0.15)',  border:'rgba(16,185,129,0.3)',  label:'Tersedia',  icon: CheckCircle },
       on_job:      { color:'#3b82f6', bg:'rgba(59,130,246,0.15)',  border:'rgba(59,130,246,0.3)',  label:'On Job',    icon: CheckCircle },
       inactive:    { color:'#ef4444', bg:'rgba(239,68,68,0.15)',   border:'rgba(239,68,68,0.3)',   label:'Nonaktif',  icon: XCircle },
       re_training: { color:'#8b5cf6', bg:'rgba(139,92,246,0.15)', border:'rgba(139,92,246,0.3)', label:'Re-Training',icon: Clock },
     };
-    return map[s] || map.training;
+    return map[s] || map.pending;
   };
 
   const rekrutmenBadge = (s: string) => {
@@ -449,14 +451,14 @@ export default function RekrutmenPage() {
 
       {/* Tabs */}
       <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-        {(['semua','training','available','on_job'] as const).map(tab => (
+        {(['semua','pending','training','available','on_job'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{
             padding:'6px 14px', borderRadius:'10px', fontSize:'12px', fontWeight:600, cursor:'pointer',
             background: activeTab === tab ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : 'var(--glass)',
             color: activeTab === tab ? 'white' : 'var(--text2)',
             border: activeTab === tab ? 'none' : '1px solid var(--border)',
           }}>
-            {tab === 'semua' ? 'Semua' : tab === 'training' ? 'Training' : tab === 'available' ? 'Tersedia' : 'On Job'} ({counts[tab]})
+            {tab === 'semua' ? 'Semua' : tab === 'pending' ? 'Pending' : tab === 'training' ? 'Training' : tab === 'available' ? 'Tersedia' : 'On Job'} ({counts[tab]})
           </button>
         ))}
       </div>
