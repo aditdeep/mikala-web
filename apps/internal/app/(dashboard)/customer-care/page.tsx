@@ -294,7 +294,11 @@ export default function CustomerCarePage() {
   const [exchangeTarget, setExchangeTarget] = useState<any>(null);
   const [exchangeMitraId, setExchangeMitraId] = useState('');
   const [exchangeAlasan, setExchangeAlasan] = useState('');
+  const [exchangeHonorBaru, setExchangeHonorBaru] = useState('');
+  const [exchangeUangCutiBaru, setExchangeUangCutiBaru] = useState('');
+  const [exchangeBiayaTransport, setExchangeBiayaTransport] = useState('');
   const [savingExchange, setSavingExchange] = useState(false);
+  const [downloadingAdendumId, setDownloadingAdendumId] = useState<number|null>(null);
 
   // Kontrak MGM-Klien (1.1/1.2) di popup Detail Leads (Deal step)
   const [kontrakBiayaTransport, setKontrakBiayaTransport] = useState('');
@@ -494,14 +498,32 @@ export default function CustomerCarePage() {
     if (!exchangeTarget) return;
     setSavingExchange(true);
     try {
-      await apiClient.post('/internal/cc/leads/'+exchangeTarget.id+'/exchange', { mitra_baru_id: exchangeMitraId, alasan: exchangeAlasan });
+      await apiClient.post('/internal/cc/leads/'+exchangeTarget.id+'/exchange', {
+        mitra_baru_id: exchangeMitraId,
+        alasan: exchangeAlasan,
+        honor_mitra_baru: exchangeHonorBaru || undefined,
+        uang_cuti_mitra_baru: exchangeUangCutiBaru || undefined,
+        biaya_transport: exchangeBiayaTransport || 0,
+      });
       setExchangeTarget(null);
       setExchangeMitraId('');
       setExchangeAlasan('');
+      setExchangeHonorBaru('');
+      setExchangeUangCutiBaru('');
+      setExchangeBiayaTransport('');
       fetchDealLeads();
       fetchExchangeList();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal mencatat Exchange'); }
     finally { setSavingExchange(false); }
+  };
+
+  const handleDownloadAdendum = async (exchangeId: number, nomor?: string) => {
+    setDownloadingAdendumId(exchangeId);
+    try {
+      const r: any = await apiClient.get('/internal/cc/leads-exchange/'+exchangeId+'/adendum/download', { responseType: 'blob' });
+      downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'adendum-'+(nomor||exchangeId)+'.pdf');
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Adendum'); }
+    finally { setDownloadingAdendumId(null); }
   };
 
   const handleSaveDownloadKontrak = async (item: any) => {
@@ -914,7 +936,7 @@ export default function CustomerCarePage() {
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                    {['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'].map(h => (
+                    {['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal','Adendum'].map(h => (
                       <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                     ))}
                   </tr></thead>
@@ -934,6 +956,12 @@ export default function CustomerCarePage() {
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra_baru?.user?.name || '-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alasan||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.exchanged_at ? new Date(item.exchanged_at).toLocaleDateString('id-ID') : '-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px' }}>
+                          <button onClick={() => handleDownloadAdendum(item.id, item.nomor_adendum)} disabled={downloadingAdendumId === item.id}
+                            style={{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'11px', fontWeight:600, cursor: downloadingAdendumId === item.id ? 'not-allowed' : 'pointer', opacity: downloadingAdendumId === item.id ? 0.6 : 1 }}>
+                            <FileText size={12}/>{downloadingAdendumId === item.id ? '...' : 'PDF'}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1720,7 +1748,7 @@ export default function CustomerCarePage() {
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'420px', padding:'24px' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Exchange Mitra — {exchangeTarget.nama_leads}</h2>
-              <button onClick={() => { setExchangeTarget(null); setExchangeMitraId(''); setExchangeAlasan(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+              <button onClick={() => { setExchangeTarget(null); setExchangeMitraId(''); setExchangeAlasan(''); setExchangeHonorBaru(''); setExchangeUangCutiBaru(''); setExchangeBiayaTransport(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
             </div>
             <p style={{ color:'var(--text3)', fontSize:'12px', marginBottom:'14px' }}>
               Mitra saat ini: <strong style={{color:'var(--text2)'}}>{exchangeTarget.mitra?.user?.name || 'Belum assign'}</strong>
@@ -1739,8 +1767,23 @@ export default function CustomerCarePage() {
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alasan Exchange *</label>
                 <textarea required value={exchangeAlasan} onChange={e => setExchangeAlasan(e.target.value)} style={{...inp, minHeight:'80px', resize:'vertical'}} placeholder="Jelaskan alasan penggantian mitra" />
               </div>
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px' }}>Penyesuaian Biaya (opsional, utk Adendum)</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Biaya Jasa Baru</label>
+                  <input type="number" min="0" value={exchangeHonorBaru} onChange={e => setExchangeHonorBaru(e.target.value)} style={inp} placeholder={'Default: '+(exchangeTarget.honor_mitra||'0')} />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Uang Cuti Baru</label>
+                  <input type="number" min="0" value={exchangeUangCutiBaru} onChange={e => setExchangeUangCutiBaru(e.target.value)} style={inp} placeholder={'Default: '+(exchangeTarget.uang_cuti_mitra||'0')} />
+                </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Biaya Transportasi Mitra Pengganti</label>
+                <input type="number" min="0" value={exchangeBiayaTransport} onChange={e => setExchangeBiayaTransport(e.target.value)} style={inp} placeholder="0" />
+              </div>
               <div style={{ display:'flex', gap:'10px' }}>
-                <button type="button" onClick={() => { setExchangeTarget(null); setExchangeMitraId(''); setExchangeAlasan(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="button" onClick={() => { setExchangeTarget(null); setExchangeMitraId(''); setExchangeAlasan(''); setExchangeHonorBaru(''); setExchangeUangCutiBaru(''); setExchangeBiayaTransport(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={savingExchange} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #8b5cf6, #7c3aed)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {savingExchange ? 'Menyimpan...' : 'Catat Exchange'}
                 </button>
@@ -1852,7 +1895,7 @@ export default function CustomerCarePage() {
                       <div style={{ overflowX:'auto', border:'1px solid var(--border)', borderRadius:'10px' }}>
                         <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'420px' }}>
                           <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                            {['Tanggal','NIM','Nama Mitra','Alasan'].map(h => (
+                            {['Tanggal','NIM','Nama Mitra','Alasan','Adendum'].map(h => (
                               <th key={h} style={{ padding:'8px 10px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                             ))}
                           </tr></thead>
@@ -1863,6 +1906,12 @@ export default function CustomerCarePage() {
                                 <td style={{ padding:'8px 10px', fontSize:'12px', color:'var(--text2)' }}>{e.nomor||'-'}</td>
                                 <td style={{ padding:'8px 10px', fontSize:'12px', fontWeight:600, color:'var(--text)' }}>{e.mitra_baru?.user?.name||'-'}</td>
                                 <td style={{ padding:'8px 10px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{e.alasan||'-'}</td>
+                                <td style={{ padding:'8px 10px', fontSize:'12px' }}>
+                                  <button onClick={() => handleDownloadAdendum(e.id, e.nomor_adendum)} disabled={downloadingAdendumId === e.id}
+                                    style={{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'11px', fontWeight:600, cursor: downloadingAdendumId === e.id ? 'not-allowed' : 'pointer', opacity: downloadingAdendumId === e.id ? 0.6 : 1 }}>
+                                    <FileText size={12}/>{downloadingAdendumId === e.id ? '...' : 'PDF'}
+                                  </button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
