@@ -299,6 +299,7 @@ export default function CustomerCarePage() {
   const [exchangeBiayaTransport, setExchangeBiayaTransport] = useState('');
   const [savingExchange, setSavingExchange] = useState(false);
   const [downloadingAdendumId, setDownloadingAdendumId] = useState<number|null>(null);
+  const [tagihingTransportId, setTagihingTransportId] = useState<number|null>(null);
 
   // Kontrak MGM-Klien (1.1/1.2) di popup Detail Leads (Deal step)
   const [kontrakBiayaTransport, setKontrakBiayaTransport] = useState('');
@@ -525,6 +526,17 @@ export default function CustomerCarePage() {
       downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'adendum-'+(nomor||exchangeId)+'.pdf');
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Adendum'); }
     finally { setDownloadingAdendumId(null); }
+  };
+
+  const handleTagihBiayaTransport = async (exchangeItem: any) => {
+    setTagihingTransportId(exchangeItem.id);
+    try {
+      await apiClient.post('/internal/cc/leads-exchange/'+exchangeItem.id+'/tagih-transport');
+      const r: any = await apiClient.get('/internal/cc/leads-exchange/'+exchangeItem.id+'/invoice-transport/download', { responseType: 'blob' });
+      downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'invoice-transport-'+(exchangeItem.nomor||exchangeItem.id)+'.pdf');
+      fetchExchangeList();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menagih Biaya Transport'); }
+    finally { setTagihingTransportId(null); }
   };
 
   const handleSaveDownloadKontrak = async (item: any) => {
@@ -949,7 +961,7 @@ export default function CustomerCarePage() {
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                    {['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal','Adendum'].map(h => (
+                    {['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal','Adendum','Invoice Transport'].map(h => (
                       <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                     ))}
                   </tr></thead>
@@ -974,6 +986,14 @@ export default function CustomerCarePage() {
                             style={{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'11px', fontWeight:600, cursor: downloadingAdendumId === item.id ? 'not-allowed' : 'pointer', opacity: downloadingAdendumId === item.id ? 0.6 : 1 }}>
                             <FileText size={12}/>{downloadingAdendumId === item.id ? '...' : 'PDF'}
                           </button>
+                        </td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px' }}>
+                          {item.biaya_transport > 0 ? (
+                            <button onClick={() => handleTagihBiayaTransport(item)} disabled={tagihingTransportId === item.id}
+                              style={{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', fontSize:'11px', fontWeight:600, cursor: tagihingTransportId === item.id ? 'not-allowed' : 'pointer', opacity: tagihingTransportId === item.id ? 0.6 : 1 }}>
+                              <FileText size={12}/>{tagihingTransportId === item.id ? '...' : (item.invoice_transport_nomor ? 'Ulang' : 'Tagih')}
+                            </button>
+                          ) : <span style={{ color:'var(--text3)', fontSize:'11px' }}>-</span>}
                         </td>
                       </tr>
                     ))}
