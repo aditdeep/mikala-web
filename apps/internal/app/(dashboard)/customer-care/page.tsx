@@ -300,6 +300,8 @@ export default function CustomerCarePage() {
   const [kontrakBiayaTransport, setKontrakBiayaTransport] = useState('');
   const [kontrakCatatan, setKontrakCatatan] = useState('');
   const [savingKontrak, setSavingKontrak] = useState(false);
+  const [downloadingKontrak2, setDownloadingKontrak2] = useState(false);
+  const [downloadingKontrak3, setDownloadingKontrak3] = useState(false);
 
   // Modal Detail Leads/Deal/Exchange
   const [leadDetail, setLeadDetail] = useState<{ type: 'lead'|'exchange'; item: any }|null>(null);
@@ -515,6 +517,24 @@ export default function CustomerCarePage() {
       fetchLeadsList();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Kontrak'); }
     finally { setSavingKontrak(false); }
+  };
+
+  const handleDownloadKontrak2 = async (item: any) => {
+    setDownloadingKontrak2(true);
+    try {
+      const r: any = await apiClient.get('/internal/cc/leads/'+item.id+'/kontrak2/download', { responseType: 'blob' });
+      downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'kontrak2-'+(item.nomor||item.id)+'.pdf');
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Kontrak 2'); }
+    finally { setDownloadingKontrak2(false); }
+  };
+
+  const handleDownloadKontrak3 = async (item: any) => {
+    setDownloadingKontrak3(true);
+    try {
+      const r: any = await apiClient.get('/internal/cc/leads/'+item.id+'/kontrak3/download', { responseType: 'blob' });
+      downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'kontrak3-'+(item.nomor||item.id)+'.pdf');
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Kontrak 3'); }
+    finally { setDownloadingKontrak3(false); }
   };
 
   const handleExportXls = () => {
@@ -1794,6 +1814,24 @@ export default function CustomerCarePage() {
                           style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor: savingKontrak ? 'not-allowed' : 'pointer', opacity: savingKontrak ? 0.6 : 1 }}>
                           <FileText size={13}/>{savingKontrak ? 'Memproses...' : 'Simpan & Download Kontrak'}
                         </button>
+                      </div>
+
+                      <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                        <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>Kontrak Mitra (Check Out)</p>
+                        {!item.mitra ? (
+                          <p style={{ fontSize:'11px', color:'var(--text3)' }}>Assign Mitra terlebih dahulu untuk generate Kontrak 2 & 3.</p>
+                        ) : (
+                          <>
+                            <button onClick={() => handleDownloadKontrak2(item)} disabled={downloadingKontrak2}
+                              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'10px', color:'#3b82f6', fontSize:'12px', fontWeight:600, cursor: downloadingKontrak2 ? 'not-allowed' : 'pointer', opacity: downloadingKontrak2 ? 0.6 : 1 }}>
+                              <FileText size={13}/>{downloadingKontrak2 ? 'Memproses...' : 'Download Kontrak 2 (MGM-Mitra)'}
+                            </button>
+                            <button onClick={() => handleDownloadKontrak3(item)} disabled={downloadingKontrak3}
+                              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'10px', color:'#3b82f6', fontSize:'12px', fontWeight:600, cursor: downloadingKontrak3 ? 'not-allowed' : 'pointer', opacity: downloadingKontrak3 ? 0.6 : 1 }}>
+                              <FileText size={13}/>{downloadingKontrak3 ? 'Memproses...' : 'Download Kontrak 3 (Mitra-Klien)'}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
