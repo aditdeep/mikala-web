@@ -306,6 +306,7 @@ export default function CustomerCarePage() {
   const [savingKontrak, setSavingKontrak] = useState(false);
   const [downloadingKontrak2, setDownloadingKontrak2] = useState(false);
   const [downloadingKontrak3, setDownloadingKontrak3] = useState(false);
+  const [tagihingAdmin, setTagihingAdmin] = useState(false);
 
   // Modal Detail Leads/Deal/Exchange
   const [leadDetail, setLeadDetail] = useState<{ type: 'lead'|'exchange'; item: any }|null>(null);
@@ -557,6 +558,18 @@ export default function CustomerCarePage() {
       downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'kontrak3-'+(item.nomor||item.id)+'.pdf');
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Kontrak 3'); }
     finally { setDownloadingKontrak3(false); }
+  };
+
+  const handleTagihBiayaAdmin = async (item: any) => {
+    setTagihingAdmin(true);
+    try {
+      await apiClient.post('/internal/cc/leads/'+item.id+'/tagih-admin');
+      const r: any = await apiClient.get('/internal/cc/leads/'+item.id+'/invoice-admin/download', { responseType: 'blob' });
+      downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'invoice-admin-'+(item.nomor||item.id)+'.pdf');
+      fetchDealLeads();
+      fetchLeadsList();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menagih Biaya Admin'); }
+    finally { setTagihingAdmin(false); }
   };
 
   const handleExportXls = () => {
@@ -1875,6 +1888,18 @@ export default function CustomerCarePage() {
                             </button>
                           </>
                         )}
+                      </div>
+
+                      <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                        <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>
+                          Financial — Biaya Admin
+                          {item.invoice_admin_nomor ? <span style={{ color:'var(--text3)', fontWeight:500 }}> — No. {item.invoice_admin_nomor}</span> : null}
+                        </p>
+                        <p style={{ fontSize:'11px', color:'var(--text3)' }}>Tagihan: {item.biaya_admin ? 'Rp ' + Number(item.biaya_admin).toLocaleString('id-ID') : 'Belum diisi'}</p>
+                        <button onClick={() => handleTagihBiayaAdmin(item)} disabled={tagihingAdmin || !item.biaya_admin}
+                          style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'10px', color:'#f59e0b', fontSize:'12px', fontWeight:600, cursor: (tagihingAdmin || !item.biaya_admin) ? 'not-allowed' : 'pointer', opacity: (tagihingAdmin || !item.biaya_admin) ? 0.6 : 1 }}>
+                          <FileText size={13}/>{tagihingAdmin ? 'Memproses...' : (item.invoice_admin_nomor ? 'Download Ulang Invoice' : 'Tagih Biaya Admin')}
+                        </button>
                       </div>
                     </div>
                   )}
