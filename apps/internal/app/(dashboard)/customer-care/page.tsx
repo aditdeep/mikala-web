@@ -293,6 +293,11 @@ export default function CustomerCarePage() {
   const [exchangeAlasan, setExchangeAlasan] = useState('');
   const [savingExchange, setSavingExchange] = useState(false);
 
+  // Kontrak MGM-Klien (1.1/1.2) di popup Detail Leads (Deal step)
+  const [kontrakBiayaTransport, setKontrakBiayaTransport] = useState('');
+  const [kontrakCatatan, setKontrakCatatan] = useState('');
+  const [savingKontrak, setSavingKontrak] = useState(false);
+
   // Modal Detail Leads/Deal/Exchange
   const [leadDetail, setLeadDetail] = useState<{ type: 'lead'|'exchange'; item: any }|null>(null);
 
@@ -326,6 +331,13 @@ export default function CustomerCarePage() {
     if (activeTab === 'leads' || activeTab === 'deal') fetchLeadsList();
     if (mitraList.length === 0) fetchOrders();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (leadDetail?.type === 'lead' && leadDetail.item?.status === 1) {
+      setKontrakBiayaTransport(leadDetail.item.biaya_transport ? String(leadDetail.item.biaya_transport) : '');
+      setKontrakCatatan(leadDetail.item.catatan_revisi_kontrak || '');
+    }
+  }, [leadDetail]);
 
   const fetchAll = () => {
     setLoading(true);
@@ -467,6 +479,21 @@ export default function CustomerCarePage() {
       fetchExchangeList();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal mencatat Exchange'); }
     finally { setSavingExchange(false); }
+  };
+
+  const handleSaveDownloadKontrak = async (item: any) => {
+    setSavingKontrak(true);
+    try {
+      await apiClient.patch('/internal/cc/leads/'+item.id+'/kontrak', {
+        biaya_transport: kontrakBiayaTransport || 0,
+        catatan_revisi_kontrak: kontrakCatatan,
+      });
+      const r: any = await apiClient.get('/internal/cc/leads/'+item.id+'/kontrak/download', { responseType: 'blob' });
+      downloadBlob(new Blob([r.data], { type: 'application/pdf' }), 'kontrak-'+(item.nomor||item.id)+'.pdf');
+      fetchDealLeads();
+      fetchLeadsList();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Kontrak'); }
+    finally { setSavingKontrak(false); }
   };
 
   const handleExportXls = () => {
@@ -1613,10 +1640,31 @@ export default function CustomerCarePage() {
                     </div>
                   )}
                   {item.status === 1 && (
-                    <div style={{ marginBottom:'16px' }}>
+                    <div style={{ marginBottom:'16px', display:'flex', flexDirection:'column', gap:'8px' }}>
                       <button onClick={() => { setLeadDetail(null); setExchangeTarget(item); }} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'10px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                         <Repeat size={13}/>Log Exchange
                       </button>
+
+                      <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                        <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>
+                          Kontrak MGM-Klien ({(item.tier_nama||'').toLowerCase().includes('harian') ? '1.2 Harian' : '1.1 Bulanan'})
+                          {item.nomor_kontrak_klien ? <span style={{ color:'var(--text3)', fontWeight:500 }}> — No. {item.nomor_kontrak_klien}</span> : null}
+                        </p>
+                        <div>
+                          <label style={{ fontSize:'11px', color:'var(--text3)' }}>Biaya Transportasi (jika ada)</label>
+                          <input type="number" min="0" value={kontrakBiayaTransport} onChange={e => setKontrakBiayaTransport(e.target.value)} placeholder="0"
+                            style={{ width:'100%', padding:'8px 10px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'12px', marginTop:'4px' }} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize:'11px', color:'var(--text3)' }}>Catatan / Revisi Kesepakatan Pasal</label>
+                          <textarea value={kontrakCatatan} onChange={e => setKontrakCatatan(e.target.value)} rows={3} placeholder="Opsional, jika ada penyesuaian pasal atas kesepakatan dengan Cust/PJ"
+                            style={{ width:'100%', padding:'8px 10px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'12px', marginTop:'4px', resize:'vertical' }} />
+                        </div>
+                        <button onClick={() => handleSaveDownloadKontrak(item)} disabled={savingKontrak}
+                          style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor: savingKontrak ? 'not-allowed' : 'pointer', opacity: savingKontrak ? 0.6 : 1 }}>
+                          <FileText size={13}/>{savingKontrak ? 'Memproses...' : 'Simpan & Download Kontrak'}
+                        </button>
+                      </div>
                     </div>
                   )}
 
