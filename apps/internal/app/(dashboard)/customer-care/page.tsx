@@ -1891,7 +1891,7 @@ export default function CustomerCarePage() {
                           <label style={{ color:'var(--text3)', fontSize:'11px', display:'block', marginBottom:'4px' }}>Tier</label>
                           <select value={editLeadForm.tier_nama} onChange={e => setEditLeadForm((f: any) => ({ ...f, tier_nama: e.target.value }))} style={inp} disabled={!editLeadForm.cms_layanan_id || getTiersFor(editLeadForm.cms_layanan_id).length === 0}>
                             <option value="">-- Tanpa Tier --</option>
-                            {getTiersFor(editLeadForm.cms_layanan_id).map((t: any, i: number) => <option key={i} value={t.nama}>{t.nama}</option>)}
+                            {getTiersFor(editLeadForm.cms_layanan_id).map((t: any, i: number) => { const val = t.frekuensi ? `${t.nama} - ${t.frekuensi}` : t.nama; return <option key={i} value={val}>{val}</option>; })}
                           </select>
                         </div>
                       </div>
