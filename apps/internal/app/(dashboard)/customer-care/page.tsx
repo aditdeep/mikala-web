@@ -630,8 +630,43 @@ export default function CustomerCarePage() {
       const rows = (leadsSummary?.by_layanan || []).map((r: any, i: number) => [i+1, r.layanan_nama, r.tier_nama||'-', r.leads, r.deal, r.loss, r.exchange]);
       exportRowsToXls('cc-layanan-'+stamp+'.xls', ['No','Jenis Layanan','Tier','Leads','Deal','Loss','Exchange'], rows);
     } else if (activeTab === 'deal') {
-      const rows = dealLeadsList.map((item: any) => [item.nik||item.nomor||'-', item.nama_pasien||'-', item.alamat_klien||'-', item.nama_leads||'-', item.alamat_cust_pj||'-', item.kontak||'-', item.diagnosis_awal||'-']);
-      exportRowsToXls('cc-deal-'+stamp+'.xls', ['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal'], rows);
+      // Kolom mengikuti sheet "Deal" (Form Pemesanan Mitra) di Tabel 2 - Leads.xlsx: sama seperti
+      // kolom Leads, ditambah field khusus tahap Deal (kondisi klinis, negosiasi jasa, data mitra).
+      const rows = dealLeadsList.map((item: any, i: number) => {
+        let almed: string[] = [];
+        try { const parsed = typeof item.alat_medis === 'string' ? JSON.parse(item.alat_medis) : item.alat_medis; almed = Array.isArray(parsed) ? parsed : []; } catch { almed = []; }
+        let alasanStatus: string[] = [];
+        try { const parsed = typeof item.alasan_status === 'string' ? JSON.parse(item.alasan_status) : item.alasan_status; alasanStatus = Array.isArray(parsed) ? parsed : []; } catch { alasanStatus = []; }
+        const usia = calcUsiaFromDob(item.tanggal_lahir_klien);
+        return [
+          i+1,
+          item.nomor_deal||'-', item.nik||'-',
+          item.created_at?new Date(item.created_at).toLocaleDateString('id-ID'):'-', item.creator?.name||'-',
+          item.nama_leads||'-', item.no_ktp_cust_pj||'-', item.alamat_cust_pj||'-', item.no_rumah||'-', item.kontak||'-', item.hubungan_dengan_pasien||'-', item.email_cust_pj||'-',
+          item.nama_pasien||'-', item.tanggal_lahir_klien?new Date(item.tanggal_lahir_klien).toLocaleDateString('id-ID'):'-', item.no_wa_klien||'-', usia!=null?usia:'-', item.tinggi_badan||'-', item.berat_badan||'-', item.jenis_kelamin_klien||'-', item.alamat_klien||'-', item.alamat_klien_2||'-',
+          almed[0]||'-', almed[1]||'-', almed[2]||'-', almed[3]||'-', almed[4]||'-',
+          item.diagnosis_awal||'-', item.deskripsi_diagnosa||'-',
+          item.kesadaran||'-', item.komunikasi||'-', item.kelemahan||'-', item.mobilisasi||'-',
+          item.referensi_tipe||'-', item.nama_referensi||'-', item.kontak_referensi||'-',
+          getLeadStatusDisplay(item).label,
+          alasanStatus[0]||item.alasan_batal||'-', alasanStatus[1]||'-', alasanStatus[2]||'-', alasanStatus[3]||'-', alasanStatus[4]||'-',
+          item.jasa_diminta||'-', item.jasa_disarankan||'-', item.jasa_disetujui||'-', item.pembantu||'-', item.cara_mencuci_baju||'-',
+          item.mitra?.user?.name||'-', item.mitra_nim||'-', item.biaya_admin||'-', item.honor_mitra||'-', item.uang_cuti_mitra||'-',
+        ];
+      });
+      exportRowsToXls('cc-deal-'+stamp+'.xls', [
+        'No','E-Ticket Order Deal','NIK',
+        'Tgl. Order','PIC Leads',
+        'Nama Cust/PJ','No. Identitas (KTP)','Alamat Cust/PJ','No. Rumah','No. Whatsapp','Hubungan Dengan Pasien','E-Mail',
+        'Nama Klien','Tgl. Lahir Klien','No. Whatsapp Klien','Usia','TB','BB','Jenis Kelamin','Alamat Klien/Pasien 1','Alamat Klien/Pasien 2',
+        'Almed 1','Almed 2','Almed 3','Almed 4','Almed 5',
+        'Diagnosa','Deskripsi Diagnosa Klien/Pasien',
+        'Kesadaran','Komunikasi','Kelemahan','Mobilisasi',
+        'Referensi','Nama Referensi','Nomor Telp/WA Referensi',
+        'Status','Alasan/Keterangan Status 1','Alasan/Keterangan Status 2','Alasan/Keterangan Status 3','Alasan/Keterangan Status 4','Alasan/Keterangan Status 5',
+        'Jasa Diminta','Jasa Disarankan','Jasa Disetujui','Pembantu','Cara Mencuci Baju',
+        'Nama Mitra','No. Induk Mitra (NIM)','Biaya Admin','Honor Mitra','Uang Cuti Mitra',
+      ], rows);
     } else if (activeTab === 'exchange') {
       const rows = exchangeList.map((item: any, i: number) => [i+1, item.nomor||'-', item.lead?.nama_leads||'-', item.mitra_lama?.user?.name||'-', item.mitra_baru?.user?.name||'-', item.alasan||'-', item.exchanged_at?new Date(item.exchanged_at).toLocaleDateString('id-ID'):'-']);
       exportRowsToXls('cc-exchange-'+stamp+'.xls', ['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'], rows);
