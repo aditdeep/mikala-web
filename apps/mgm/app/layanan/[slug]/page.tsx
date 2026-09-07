@@ -19,9 +19,8 @@ const defaultLayanan = [
     manfaat: ['Tindakan medis & non-medis', 'Monitoring kondisi 24 jam', 'Laporan perkembangan harian', 'Tersedia untuk rawat inap'],
     wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Medis'),
     tier_data: [
-      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Lulusan SMK Kesehatan / Keperawatan sederajat (fresh graduate), sertifikasi pelatihan keperawatan dasar, non-pengalaman.' },
-      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Lulusan Kesehatan / Keperawatan bersertifikat, berpengalaman 1-3 tahun menangani pasien homecare.' },
-      { nama:'Senior', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Perawat berpengalaman 3+ tahun, terlatih penanganan intensive care & kondisi khusus.' },
+      { nama:'Harian', harga_harian:'Rp 250K - 450K', deskripsi:'Penugasan perawat per hari, cocok untuk kebutuhan jangka pendek atau shift tertentu.' },
+      { nama:'Bulanan', harga_bulanan:'Rp 3.000K - 7.000K', deskripsi:'Penugasan perawat per bulan (live-in), cocok untuk pendampingan jangka panjang.' },
     ],
   },
   {
@@ -32,9 +31,8 @@ const defaultLayanan = [
     manfaat: ['Pendampingan 24 jam', 'Terlatih tangani gangguan mental', 'Koordinasi dengan psikiater', 'Pendekatan humanis & aman'],
     wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Perawat Jiwa'),
     tier_data: [
-      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Lulusan Keperawatan sederajat (fresh graduate), sertifikasi pelatihan dasar kesehatan jiwa, non-pengalaman.' },
-      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Berpengalaman 1-3 tahun menangani pasien dengan gangguan kecemasan, depresi, hingga skizofrenia ringan.' },
-      { nama:'Senior', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Berpengalaman 3+ tahun, terlatih koordinasi dengan psikiater untuk kasus kompleks / intensif.' },
+      { nama:'Harian', harga_harian:'Rp 250K - 450K', deskripsi:'Penugasan perawat jiwa per hari, cocok untuk kebutuhan jangka pendek atau shift tertentu.' },
+      { nama:'Bulanan', harga_bulanan:'Rp 3.000K - 7.000K', deskripsi:'Penugasan perawat jiwa per bulan (live-in), cocok untuk pendampingan jangka panjang.' },
     ],
   },
   {
@@ -45,9 +43,8 @@ const defaultLayanan = [
     manfaat: ['Bantu aktivitas harian', 'Terapi fisik ringan', 'Pendampingan sosial', 'Laporan kondisi ke keluarga'],
     wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Caregiver'),
     tier_data: [
-      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Lulusan SMK Kesehatan / Keperawatan sederajat (fresh graduate), sertifikasi pelatihan keperawatan dasar, non-pengalaman.' },
-      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Berpengalaman 1-3 tahun mendampingi lansia, terlatih bantu aktivitas harian & mobilisasi.' },
-      { nama:'Senior', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Berpengalaman 3+ tahun, terlatih menangani lansia dengan kondisi khusus / ketergantungan tinggi.' },
+      { nama:'Harian', harga_harian:'Rp 250K - 450K', deskripsi:'Penugasan caregiver per hari, cocok untuk kebutuhan jangka pendek atau shift tertentu.' },
+      { nama:'Bulanan', harga_bulanan:'Rp 3.000K - 7.000K', deskripsi:'Penugasan caregiver per bulan (live-in), cocok untuk pendampingan jangka panjang.' },
     ],
   },
   {
@@ -58,9 +55,8 @@ const defaultLayanan = [
     manfaat: ['Spesialis bayi newborn', 'Perawatan ibu nifas', 'Edukasi ASI & MPASI', 'Live-in atau harian'],
     wa_link: 'https://wa.me/6282114488878?text=' + encodeURIComponent('Halo Mikala, saya ingin konsultasi layanan Babysitter'),
     tier_data: [
-      { nama:'Junior', harga_bulanan:'Rp 3.000K - 4.000K', harga_harian:'Rp 250K - 300K', deskripsi:'Fresh graduate, sertifikasi pelatihan dasar perawatan bayi & anak, non-pengalaman.' },
-      { nama:'Medium', harga_bulanan:'Rp 4.000K - 5.500K', harga_harian:'Rp 300K - 375K', deskripsi:'Berpengalaman 1-3 tahun mengasuh anak, terlatih dasar perawatan newborn care.' },
-      { nama:'Senior / Newborn Care', harga_bulanan:'Rp 5.500K - 7.000K', harga_harian:'Rp 375K - 450K', deskripsi:'Berpengalaman 3+ tahun, spesialis newborn care & perawatan ibu nifas.' },
+      { nama:'Harian', harga_harian:'Rp 250K - 450K', deskripsi:'Penugasan babysitter per hari, cocok untuk kebutuhan jangka pendek atau shift tertentu.' },
+      { nama:'Bulanan', harga_bulanan:'Rp 3.000K - 7.000K', deskripsi:'Penugasan babysitter per bulan (live-in), termasuk spesialis newborn care & perawatan ibu nifas.' },
     ],
   },
   {

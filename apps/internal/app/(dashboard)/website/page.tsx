@@ -1081,15 +1081,15 @@ export default function WebsitePage() {
 
               <div style={{ border:'1px solid var(--border)', borderRadius:'12px', padding:'14px' }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Tier Harga (opsional, mis. Junior/Medium/Senior atau A/B/C)</label>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500 }}>Tier Harga (opsional, mis. Harian / Bulanan)</label>
                   <button type="button" onClick={addLayananTier} style={{ display:'flex', alignItems:'center', gap:'4px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', padding:'4px 10px', color:'var(--text)', fontSize:'11px', fontWeight:600, cursor:'pointer' }}><Plus size={12}/> Tambah Tier</button>
                 </div>
-                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'0 0 10px' }}>Jika diisi, kartu tier akan tampil di halaman detail layanan lengkap dengan tombol Konsultasi WhatsApp per tier. Baris harga tidak diberi label otomatis (bukan selalu "Bulanan/Harian") — tulis labelnya sendiri di dalam teks, mis. "Spesialis Per-Sesi: &gt; Rp 2.500.000".</p>
+                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'0 0 10px' }}>Jika diisi, kartu tier akan tampil di halaman detail layanan lengkap dengan tombol Konsultasi WhatsApp per tier. Nama tier "Harian"/"Bulanan" ini juga menentukan jenis kontrak yang dipilih otomatis di Customer Care (kontrak 1.1 Bulanan / 1.2 Harian) — pastikan nama tier mengandung kata "Harian" untuk tarif harian, selain itu dianggap Bulanan.</p>
                 <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                   {layananTiers.map((t, i) => (
                     <div key={i} style={{ background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', padding:'10px', display:'flex', flexDirection:'column', gap:'6px' }}>
                       <div style={{ display:'flex', gap:'6px' }}>
-                        <input value={t.nama} onChange={e => updateLayananTier(i, 'nama', e.target.value)} style={inp} placeholder="Nama Tier (mis. Junior)" />
+                        <input value={t.nama} onChange={e => updateLayananTier(i, 'nama', e.target.value)} style={inp} placeholder="Nama Tier (mis. Harian / Bulanan)" />
                         <button type="button" onClick={() => removeLayananTier(i)} style={{ background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', borderRadius:'6px', width:'32px', flexShrink:0, cursor:'pointer', color:'#dc2626', display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={13}/></button>
                       </div>
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px' }}>
