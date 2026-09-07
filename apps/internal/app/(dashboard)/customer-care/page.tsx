@@ -192,6 +192,17 @@ function buildSimplePdfBlob(title: string, subtitle: string, rows: { label: stri
   return new Blob([bytes], { type: 'application/pdf' });
 }
 
+function calcUsiaFromDob(dob?: string | null): number | null {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return null;
+  const today = new Date();
+  let usia = today.getFullYear() - d.getFullYear();
+  const m = today.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < d.getDate())) usia--;
+  return usia;
+}
+
 function exportRowsToXls(filename: string, headers: string[], rows: (string|number)[][]) {
   const esc = (s: any) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   let html = '<table><thead><tr>' + headers.map(h => '<th>'+esc(h)+'</th>').join('') + '</tr></thead><tbody>';
@@ -260,6 +271,19 @@ export default function CustomerCarePage() {
   const [showKlienResults, setShowKlienResults] = useState(false);
   const [referensiSearch, setReferensiSearch] = useState('');
   const [showReferensiResults, setShowReferensiResults] = useState(false);
+  const [mitraReferensiSearch, setMitraReferensiSearch] = useState('');
+  const [showMitraReferensiResults, setShowMitraReferensiResults] = useState(false);
+
+  // Edit Detail Leads (saat status Proses/Gantung) - berisi field detail lengkap yang
+  // sebelumnya ada di form Tambah Leads (layanan/tier, cari klien, KTP, email, no wa klien, dst).
+  const [editLeadForm, setEditLeadForm] = useState<any>(null);
+  const [savingEditLead, setSavingEditLead] = useState(false);
+  const [editKlienSearch, setEditKlienSearch] = useState('');
+  const [showEditKlienResults, setShowEditKlienResults] = useState(false);
+  const [editReferensiSearch, setEditReferensiSearch] = useState('');
+  const [showEditReferensiResults, setShowEditReferensiResults] = useState(false);
+  const [editMitraReferensiSearch, setEditMitraReferensiSearch] = useState('');
+  const [showEditMitraReferensiResults, setShowEditMitraReferensiResults] = useState(false);
 
   // Modal Deal
   const [dealTarget, setDealTarget] = useState<any>(null);
@@ -344,6 +368,30 @@ export default function CustomerCarePage() {
     if (leadDetail?.type === 'lead' && leadDetail.item?.status === 1) {
       setKontrakBiayaTransport(leadDetail.item.biaya_transport ? String(leadDetail.item.biaya_transport) : '');
       setKontrakCatatan(leadDetail.item.catatan_revisi_kontrak || '');
+    }
+    if (leadDetail?.type === 'lead' && (leadDetail.item?.status === 0 || leadDetail.item?.status === 3)) {
+      const item = leadDetail.item;
+      let almed: string[] = ['','','','',''];
+      try {
+        const parsed = typeof item.alat_medis === 'string' ? JSON.parse(item.alat_medis) : item.alat_medis;
+        if (Array.isArray(parsed)) { parsed.forEach((v: string, i: number) => { if (i < 5) almed[i] = v; }); }
+      } catch {}
+      setEditLeadForm({
+        cms_layanan_id: item.cms_layanan_id || '', tier_nama: item.tier_nama || '', klien_id: item.klien_id || '',
+        nama_leads: item.nama_leads || '', kontak: item.kontak || '', no_rumah: item.no_rumah || '',
+        alamat_cust_pj: item.alamat_cust_pj || '', no_ktp_cust_pj: item.no_ktp_cust_pj || '',
+        hubungan_dengan_pasien: item.hubungan_dengan_pasien || '', email_cust_pj: item.email_cust_pj || '',
+        nama_pasien: item.nama_pasien || '', alamat_klien: item.alamat_klien || '', alamat_klien_2: item.alamat_klien_2 || '',
+        tanggal_lahir_klien: item.tanggal_lahir_klien ? String(item.tanggal_lahir_klien).slice(0,10) : '',
+        no_wa_klien: item.no_wa_klien || '', tinggi_badan: item.tinggi_badan || '', berat_badan: item.berat_badan || '',
+        jenis_kelamin_klien: item.jenis_kelamin_klien || '', diagnosis_awal: item.diagnosis_awal || '',
+        deskripsi_diagnosa: item.deskripsi_diagnosa || '', alat_pendukung: item.alat_pendukung || '', alat_medis: almed,
+        referensi_tipe: item.referensi_tipe || '', referensi_sub: item.referensi_sub || '',
+        referensi_klien_id: item.referensi_klien_id || '', referensi_mitra_id: item.referensi_mitra_id || '',
+        nama_referensi: item.nama_referensi || '', kontak_referensi: item.kontak_referensi || '', catatan: item.catatan || '',
+      });
+    } else if (!leadDetail) {
+      setEditLeadForm(null);
     }
   }, [leadDetail]);
 
@@ -551,6 +599,19 @@ export default function CustomerCarePage() {
     finally { setDownloadingKontrak3(false); }
   };
 
+  const handleSaveEditLead = async (item: any) => {
+    if (!editLeadForm) return;
+    setSavingEditLead(true);
+    try {
+      const payload = { ...editLeadForm, alat_medis: (editLeadForm.alat_medis || []).filter((x: string) => x && x.trim()) };
+      await apiClient.patch('/internal/cc/leads/'+item.id, payload);
+      fetchLeadsList();
+      fetchLeadsSummary();
+      setLeadDetail(null);
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menyimpan perubahan'); }
+    finally { setSavingEditLead(false); }
+  };
+
   const handleTagihBiayaAdmin = async (item: any) => {
     setTagihingAdmin(true);
     try {
@@ -587,14 +648,7 @@ export default function CustomerCarePage() {
         try { const parsed = typeof item.alat_medis === 'string' ? JSON.parse(item.alat_medis) : item.alat_medis; almed = Array.isArray(parsed) ? parsed : []; } catch { almed = []; }
         let alasanStatus: string[] = [];
         try { const parsed = typeof item.alasan_status === 'string' ? JSON.parse(item.alasan_status) : item.alasan_status; alasanStatus = Array.isArray(parsed) ? parsed : []; } catch { alasanStatus = []; }
-        let usia: number | null = null;
-        if (item.tanggal_lahir_klien) {
-          const dob = new Date(item.tanggal_lahir_klien);
-          const today = new Date();
-          usia = today.getFullYear() - dob.getFullYear();
-          const m = today.getMonth() - dob.getMonth();
-          if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) usia--;
-        }
+        const usia = calcUsiaFromDob(item.tanggal_lahir_klien);
         return [
           i+1,
           item.nomor||'-',
@@ -744,6 +798,24 @@ export default function CustomerCarePage() {
   const selectedReferensiKlien = klien.find((k: any) => String(k.id) === String(formLead.referensi_klien_id));
   const referensiSearchResults = referensiSearch.trim().length >= 2
     ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(referensiSearch.trim().toLowerCase())).slice(0, 8)
+    : [];
+
+  const selectedMitraReferensi = mitraList.find((m: any) => String(m.id) === String(formLead.referensi_mitra_id));
+  const mitraReferensiSearchResults = mitraReferensiSearch.trim().length >= 2
+    ? mitraList.filter((m: any) => (m.user?.name || '').toLowerCase().includes(mitraReferensiSearch.trim().toLowerCase())).slice(0, 8)
+    : [];
+
+  const editSelectedKlien = editLeadForm ? klien.find((k: any) => String(k.id) === String(editLeadForm.klien_id)) : null;
+  const editKlienSearchResults = editKlienSearch.trim().length >= 2
+    ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(editKlienSearch.trim().toLowerCase())).slice(0, 8)
+    : [];
+  const editSelectedReferensiKlien = editLeadForm ? klien.find((k: any) => String(k.id) === String(editLeadForm.referensi_klien_id)) : null;
+  const editReferensiSearchResults = editReferensiSearch.trim().length >= 2
+    ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(editReferensiSearch.trim().toLowerCase())).slice(0, 8)
+    : [];
+  const editSelectedMitraReferensi = editLeadForm ? mitraList.find((m: any) => String(m.id) === String(editLeadForm.referensi_mitra_id)) : null;
+  const editMitraReferensiSearchResults = editMitraReferensiSearch.trim().length >= 2
+    ? mitraList.filter((m: any) => (m.user?.name || '').toLowerCase().includes(editMitraReferensiSearch.trim().toLowerCase())).slice(0, 8)
     : [];
 
   return (
@@ -1293,69 +1365,7 @@ export default function CustomerCarePage() {
               <button onClick={() => setShowFormLead(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
             </div>
             <form onSubmit={handleCreateLead} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jenis Layanan</label>
-                  <select value={formLead.cms_layanan_id} onChange={e => setFormLead(f => ({ ...f, cms_layanan_id: e.target.value, tier_nama:'' }))} style={inp}>
-                    <option value="">-- Pilih Layanan --</option>
-                    {cmsLayananList.map((l: any) => (
-                      <option key={l.id} value={l.id}>{l.nama}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tier</label>
-                  <select value={formLead.tier_nama} onChange={e => setFormLead(f => ({ ...f, tier_nama: e.target.value }))} style={inp} disabled={!formLead.cms_layanan_id || getTiersFor(formLead.cms_layanan_id).length === 0}>
-                    <option value="">-- Tanpa Tier --</option>
-                    {getTiersFor(formLead.cms_layanan_id).map((t: any, i: number) => (
-                      <option key={i} value={t.nama}>{t.nama}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div style={{ position:'relative' }}>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Cari Klien Terdaftar (opsional)</label>
-                {selectedKlienForLead ? (
-                  <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                    <span style={{ color:'var(--text)', fontWeight:600 }}>
-                      {selectedKlienForLead.nama_lengkap || selectedKlienForLead.user?.name} — {selectedKlienForLead.user?.phone || 'no telp -'}
-                    </span>
-                    <button type="button" onClick={() => setFormLead(f => ({ ...f, klien_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}>
-                      <X size={14}/>
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <input
-                      value={klienSearch}
-                      onChange={e => { setKlienSearch(e.target.value); setShowKlienResults(true); }}
-                      onFocus={() => setShowKlienResults(true)}
-                      onBlur={() => setTimeout(() => setShowKlienResults(false), 150)}
-                      style={inp}
-                      placeholder="Ketik nama atau no. telp klien..."
-                    />
-                    {showKlienResults && klienSearch.trim().length >= 2 && (
-                      <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
-                        {klienSearchResults.length === 0 ? (
-                          <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Klien tidak ditemukan</div>
-                        ) : klienSearchResults.map((k: any) => (
-                          <div key={k.id}
-                            onMouseDown={() => {
-                              setFormLead(f => ({ ...f, klien_id: k.id, nama_leads: k.nama_lengkap || k.user?.name || f.nama_leads, kontak: k.user?.phone || f.kontak, alamat_cust_pj: k.alamat || f.alamat_cust_pj }));
-                              setKlienSearch('');
-                              setShowKlienResults(false);
-                            }}
-                            style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
-                            <div style={{ fontWeight:600 }}>{k.nama_lengkap || k.user?.name || '-'}</div>
-                            <div style={{ fontSize:'11px', color:'var(--text3)' }}>{k.user?.phone || k.user?.email || '-'}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Referensi</p>
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px' }}>Referensi</p>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Referensi</label>
                 <select value={formLead.referensi_tipe} onChange={e => setFormLead(f => ({ ...f, referensi_tipe: e.target.value, referensi_sub:'', referensi_klien_id:'', referensi_mitra_id:'', nama_referensi:'', kontak_referensi:'' }))} style={inp}>
@@ -1401,12 +1411,29 @@ export default function CustomerCarePage() {
                 </div>
               )}
               {formLead.referensi_tipe === 'Mitra' && (
-                <div>
+                <div style={{ position:'relative' }}>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Mitra Referensi</label>
-                  <select value={formLead.referensi_mitra_id} onChange={e => setFormLead((f: any) => ({ ...f, referensi_mitra_id: e.target.value }))} style={inp}>
-                    <option value="">-- Pilih Mitra --</option>
-                    {mitraList.map((m: any) => <option key={m.id} value={m.id}>{m.user?.name}</option>)}
-                  </select>
+                  {selectedMitraReferensi ? (
+                    <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                      <span style={{ color:'var(--text)', fontWeight:600 }}>{selectedMitraReferensi.user?.name}</span>
+                      <button type="button" onClick={() => setFormLead((f: any) => ({ ...f, referensi_mitra_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}><X size={14}/></button>
+                    </div>
+                  ) : (
+                    <>
+                      <input value={mitraReferensiSearch} onChange={e => { setMitraReferensiSearch(e.target.value); setShowMitraReferensiResults(true); }} onFocus={() => setShowMitraReferensiResults(true)} onBlur={() => setTimeout(() => setShowMitraReferensiResults(false), 150)} style={inp} placeholder="Ketik nama mitra..." />
+                      {showMitraReferensiResults && mitraReferensiSearch.trim().length >= 2 && (
+                        <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
+                          {mitraReferensiSearchResults.length === 0 ? (
+                            <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Mitra tidak ditemukan</div>
+                          ) : mitraReferensiSearchResults.map((m: any) => (
+                            <div key={m.id} onMouseDown={() => { setFormLead((f: any) => ({ ...f, referensi_mitra_id: m.id })); setMitraReferensiSearch(''); setShowMitraReferensiResults(false); }} style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
+                              <div style={{ fontWeight:600 }}>{m.user?.name || '-'}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
               {(formLead.referensi_tipe === 'Institusi B2B') && (
@@ -1428,19 +1455,9 @@ export default function CustomerCarePage() {
                   <input value={formLead.no_rumah} onChange={e => setFormLead((f: any) => ({ ...f, no_rumah: e.target.value }))} style={inp} placeholder="Opsional" />
                 </div>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. KTP Cust/PJ</label>
-                  <input value={formLead.no_ktp_cust_pj} onChange={e => setFormLead((f: any) => ({ ...f, no_ktp_cust_pj: e.target.value }))} style={inp} placeholder="Opsional" />
-                </div>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Hubungan dengan Pasien</label>
-                  <input value={formLead.hubungan_dengan_pasien} onChange={e => setFormLead((f: any) => ({ ...f, hubungan_dengan_pasien: e.target.value }))} style={inp} placeholder="Cth: Anak, Suami, Istri" />
-                </div>
-              </div>
               <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Email Cust/PJ</label>
-                <input type="email" value={formLead.email_cust_pj} onChange={e => setFormLead((f: any) => ({ ...f, email_cust_pj: e.target.value }))} style={inp} placeholder="Opsional" />
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Hubungan dengan Pasien</label>
+                <input value={formLead.hubungan_dengan_pasien} onChange={e => setFormLead((f: any) => ({ ...f, hubungan_dengan_pasien: e.target.value }))} style={inp} placeholder="Cth: Anak, Suami, Istri" />
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Alamat Cust/PJ</label>
@@ -1458,8 +1475,8 @@ export default function CustomerCarePage() {
                   <input type="date" value={formLead.tanggal_lahir_klien} onChange={e => setFormLead((f: any) => ({ ...f, tanggal_lahir_klien: e.target.value }))} style={inp} />
                 </div>
                 <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>No. WA Klien</label>
-                  <input value={formLead.no_wa_klien} onChange={e => setFormLead((f: any) => ({ ...f, no_wa_klien: e.target.value }))} style={inp} placeholder="Opsional" />
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Usia</label>
+                  <input readOnly value={calcUsiaFromDob(formLead.tanggal_lahir_klien) != null ? calcUsiaFromDob(formLead.tanggal_lahir_klien) + ' tahun' : ''} placeholder="-- isi Tgl Lahir --" style={{ ...inp, opacity:0.7 }} />
                 </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jenis Kelamin</label>
@@ -1823,14 +1840,179 @@ export default function CustomerCarePage() {
                     </div>
                   )}
 
-                  <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-                    {buildLeadDetailRows(item).map(row => (
-                      <div key={row.label}>
-                        <p style={{ color:'var(--text3)', fontSize:'11px' }}>{row.label}</p>
-                        <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:600 }}>{row.value}</p>
+                  {(item.status === 0 || item.status === 3) && editLeadForm ? (
+                    <div style={{ display:'flex', flexDirection:'column', gap:'12px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', marginBottom:'16px' }}>
+                      <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>Edit Detail Leads</p>
+
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                        <div>
+                          <label style={{ color:'var(--text3)', fontSize:'11px', display:'block', marginBottom:'4px' }}>Jenis Layanan</label>
+                          <select value={editLeadForm.cms_layanan_id} onChange={e => setEditLeadForm((f: any) => ({ ...f, cms_layanan_id: e.target.value, tier_nama:'' }))} style={inp}>
+                            <option value="">-- Pilih Layanan --</option>
+                            {cmsLayananList.map((l: any) => <option key={l.id} value={l.id}>{l.nama}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ color:'var(--text3)', fontSize:'11px', display:'block', marginBottom:'4px' }}>Tier</label>
+                          <select value={editLeadForm.tier_nama} onChange={e => setEditLeadForm((f: any) => ({ ...f, tier_nama: e.target.value }))} style={inp} disabled={!editLeadForm.cms_layanan_id || getTiersFor(editLeadForm.cms_layanan_id).length === 0}>
+                            <option value="">-- Tanpa Tier --</option>
+                            {getTiersFor(editLeadForm.cms_layanan_id).map((t: any, i: number) => <option key={i} value={t.nama}>{t.nama}</option>)}
+                          </select>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+
+                      <div style={{ position:'relative' }}>
+                        <label style={{ color:'var(--text3)', fontSize:'11px', display:'block', marginBottom:'4px' }}>Cari Klien Terdaftar (opsional)</label>
+                        {editSelectedKlien ? (
+                          <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                            <span style={{ color:'var(--text)', fontWeight:600 }}>{editSelectedKlien.nama_lengkap || editSelectedKlien.user?.name}</span>
+                            <button type="button" onClick={() => setEditLeadForm((f: any) => ({ ...f, klien_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}><X size={14}/></button>
+                          </div>
+                        ) : (
+                          <>
+                            <input value={editKlienSearch} onChange={e => { setEditKlienSearch(e.target.value); setShowEditKlienResults(true); }} onFocus={() => setShowEditKlienResults(true)} onBlur={() => setTimeout(() => setShowEditKlienResults(false), 150)} style={inp} placeholder="Ketik nama atau no. telp klien..." />
+                            {showEditKlienResults && editKlienSearch.trim().length >= 2 && (
+                              <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
+                                {editKlienSearchResults.length === 0 ? (
+                                  <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Klien tidak ditemukan</div>
+                                ) : editKlienSearchResults.map((k: any) => (
+                                  <div key={k.id} onMouseDown={() => { setEditLeadForm((f: any) => ({ ...f, klien_id: k.id })); setEditKlienSearch(''); setShowEditKlienResults(false); }} style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
+                                    <div style={{ fontWeight:600 }}>{k.nama_lengkap || k.user?.name || '-'}</div>
+                                    <div style={{ fontSize:'11px', color:'var(--text3)' }}>{k.user?.phone || k.user?.email || '-'}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px' }}>Referensi</p>
+                      <select value={editLeadForm.referensi_tipe} onChange={e => setEditLeadForm((f: any) => ({ ...f, referensi_tipe: e.target.value, referensi_sub:'', referensi_klien_id:'', referensi_mitra_id:'', nama_referensi:'', kontak_referensi:'' }))} style={inp}>
+                        <option value="">-- Pilih --</option>
+                        {REFERENSI_TIPE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                      {REFERENSI_SUB_OPTIONS[editLeadForm.referensi_tipe] && (
+                        <select value={editLeadForm.referensi_sub} onChange={e => setEditLeadForm((f: any) => ({ ...f, referensi_sub: e.target.value }))} style={inp}>
+                          <option value="">-- Pilih Sub --</option>
+                          {REFERENSI_SUB_OPTIONS[editLeadForm.referensi_tipe].map((o: string) => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      )}
+                      {(editLeadForm.referensi_tipe === 'Keluarga' || editLeadForm.referensi_tipe === 'Teman') && (
+                        <div style={{ position:'relative' }}>
+                          <label style={{ color:'var(--text3)', fontSize:'11px', display:'block', marginBottom:'4px' }}>Klien Referensi</label>
+                          {editSelectedReferensiKlien ? (
+                            <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                              <span style={{ color:'var(--text)', fontWeight:600 }}>{editSelectedReferensiKlien.nama_lengkap || editSelectedReferensiKlien.user?.name}</span>
+                              <button type="button" onClick={() => setEditLeadForm((f: any) => ({ ...f, referensi_klien_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}><X size={14}/></button>
+                            </div>
+                          ) : (
+                            <>
+                              <input value={editReferensiSearch} onChange={e => { setEditReferensiSearch(e.target.value); setShowEditReferensiResults(true); }} onFocus={() => setShowEditReferensiResults(true)} onBlur={() => setTimeout(() => setShowEditReferensiResults(false), 150)} style={inp} placeholder="Ketik nama klien referensi..." />
+                              {showEditReferensiResults && editReferensiSearch.trim().length >= 2 && (
+                                <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
+                                  {editReferensiSearchResults.length === 0 ? (
+                                    <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Klien tidak ditemukan</div>
+                                  ) : editReferensiSearchResults.map((k: any) => (
+                                    <div key={k.id} onMouseDown={() => { setEditLeadForm((f: any) => ({ ...f, referensi_klien_id: k.id, nama_referensi: k.nama_lengkap || k.user?.name || '' })); setEditReferensiSearch(''); setShowEditReferensiResults(false); }} style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
+                                      <div style={{ fontWeight:600 }}>{k.nama_lengkap || k.user?.name || '-'}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          )}
+                          <p style={{ color:'var(--text3)', fontSize:'11px', marginTop:'6px' }}>Atau isi manual:</p>
+                          <input value={editLeadForm.nama_referensi} onChange={e => setEditLeadForm((f: any) => ({ ...f, nama_referensi: e.target.value }))} style={{...inp, marginTop:'6px'}} placeholder="Nama referensi" />
+                        </div>
+                      )}
+                      {editLeadForm.referensi_tipe === 'Mitra' && (
+                        <div style={{ position:'relative' }}>
+                          <label style={{ color:'var(--text3)', fontSize:'11px', display:'block', marginBottom:'4px' }}>Mitra Referensi</label>
+                          {editSelectedMitraReferensi ? (
+                            <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                              <span style={{ color:'var(--text)', fontWeight:600 }}>{editSelectedMitraReferensi.user?.name}</span>
+                              <button type="button" onClick={() => setEditLeadForm((f: any) => ({ ...f, referensi_mitra_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}><X size={14}/></button>
+                            </div>
+                          ) : (
+                            <>
+                              <input value={editMitraReferensiSearch} onChange={e => { setEditMitraReferensiSearch(e.target.value); setShowEditMitraReferensiResults(true); }} onFocus={() => setShowEditMitraReferensiResults(true)} onBlur={() => setTimeout(() => setShowEditMitraReferensiResults(false), 150)} style={inp} placeholder="Ketik nama mitra..." />
+                              {showEditMitraReferensiResults && editMitraReferensiSearch.trim().length >= 2 && (
+                                <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
+                                  {editMitraReferensiSearchResults.length === 0 ? (
+                                    <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Mitra tidak ditemukan</div>
+                                  ) : editMitraReferensiSearchResults.map((m: any) => (
+                                    <div key={m.id} onMouseDown={() => { setEditLeadForm((f: any) => ({ ...f, referensi_mitra_id: m.id })); setEditMitraReferensiSearch(''); setShowEditMitraReferensiResults(false); }} style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
+                                      <div style={{ fontWeight:600 }}>{m.user?.name || '-'}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+                      {editLeadForm.referensi_tipe === 'Institusi B2B' && (
+                        <input value={editLeadForm.nama_referensi} onChange={e => setEditLeadForm((f: any) => ({ ...f, nama_referensi: e.target.value }))} style={inp} placeholder="Nama institusi" />
+                      )}
+
+                      <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px' }}>Data Cust/PJ</p>
+                      <input value={editLeadForm.nama_leads} onChange={e => setEditLeadForm((f: any) => ({ ...f, nama_leads: e.target.value }))} style={inp} placeholder="Nama Cust/PJ" />
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                        <input value={editLeadForm.kontak} onChange={e => setEditLeadForm((f: any) => ({ ...f, kontak: e.target.value }))} style={inp} placeholder="No. WA Cust/PJ" />
+                        <input value={editLeadForm.no_rumah} onChange={e => setEditLeadForm((f: any) => ({ ...f, no_rumah: e.target.value }))} style={inp} placeholder="No. Rumah" />
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                        <input value={editLeadForm.no_ktp_cust_pj} onChange={e => setEditLeadForm((f: any) => ({ ...f, no_ktp_cust_pj: e.target.value }))} style={inp} placeholder="No. KTP Cust/PJ" />
+                        <input value={editLeadForm.hubungan_dengan_pasien} onChange={e => setEditLeadForm((f: any) => ({ ...f, hubungan_dengan_pasien: e.target.value }))} style={inp} placeholder="Hubungan dgn Pasien" />
+                      </div>
+                      <input type="email" value={editLeadForm.email_cust_pj} onChange={e => setEditLeadForm((f: any) => ({ ...f, email_cust_pj: e.target.value }))} style={inp} placeholder="Email Cust/PJ" />
+                      <textarea value={editLeadForm.alamat_cust_pj} onChange={e => setEditLeadForm((f: any) => ({ ...f, alamat_cust_pj: e.target.value }))} style={{...inp, minHeight:'44px', resize:'vertical'}} placeholder="Alamat Cust/PJ" />
+
+                      <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px' }}>Data Klien (Pasien)</p>
+                      <input value={editLeadForm.nama_pasien} onChange={e => setEditLeadForm((f: any) => ({ ...f, nama_pasien: e.target.value }))} style={inp} placeholder="Nama Klien" />
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px' }}>
+                        <input type="date" value={editLeadForm.tanggal_lahir_klien} onChange={e => setEditLeadForm((f: any) => ({ ...f, tanggal_lahir_klien: e.target.value }))} style={inp} />
+                        <input readOnly value={calcUsiaFromDob(editLeadForm.tanggal_lahir_klien) != null ? calcUsiaFromDob(editLeadForm.tanggal_lahir_klien) + ' tahun' : ''} placeholder="Usia" style={{ ...inp, opacity:0.7 }} />
+                        <select value={editLeadForm.jenis_kelamin_klien} onChange={e => setEditLeadForm((f: any) => ({ ...f, jenis_kelamin_klien: e.target.value }))} style={inp}>
+                          <option value="">-- JK --</option>
+                          <option value="L">Laki-laki</option>
+                          <option value="P">Perempuan</option>
+                        </select>
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                        <input value={editLeadForm.tinggi_badan} onChange={e => setEditLeadForm((f: any) => ({ ...f, tinggi_badan: e.target.value }))} style={inp} placeholder="TB (cm)" />
+                        <input value={editLeadForm.berat_badan} onChange={e => setEditLeadForm((f: any) => ({ ...f, berat_badan: e.target.value }))} style={inp} placeholder="BB (kg)" />
+                      </div>
+                      <textarea value={editLeadForm.alamat_klien} onChange={e => setEditLeadForm((f: any) => ({ ...f, alamat_klien: e.target.value }))} style={{...inp, minHeight:'44px', resize:'vertical'}} placeholder="Alamat Klien 1" />
+                      <textarea value={editLeadForm.alamat_klien_2} onChange={e => setEditLeadForm((f: any) => ({ ...f, alamat_klien_2: e.target.value }))} style={{...inp, minHeight:'40px', resize:'vertical'}} placeholder="Alamat Klien 2 (opsional)" />
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                        <input value={editLeadForm.diagnosis_awal} onChange={e => setEditLeadForm((f: any) => ({ ...f, diagnosis_awal: e.target.value }))} style={inp} placeholder="Diagnosis Awal" />
+                        <input value={editLeadForm.alat_pendukung} onChange={e => setEditLeadForm((f: any) => ({ ...f, alat_pendukung: e.target.value }))} style={inp} placeholder="Alat Pendukung" />
+                      </div>
+                      <textarea value={editLeadForm.deskripsi_diagnosa} onChange={e => setEditLeadForm((f: any) => ({ ...f, deskripsi_diagnosa: e.target.value }))} style={{...inp, minHeight:'44px', resize:'vertical'}} placeholder="Deskripsi Diagnosa" />
+                      <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                        {[0,1,2,3,4].map(i => (
+                          <input key={i} value={editLeadForm.alat_medis[i] || ''} onChange={e => setEditLeadForm((f: any) => { const arr = [...f.alat_medis]; arr[i] = e.target.value; return { ...f, alat_medis: arr }; })} style={inp} placeholder={`Almed ${i+1} (opsional)`} />
+                        ))}
+                      </div>
+                      <textarea value={editLeadForm.catatan} onChange={e => setEditLeadForm((f: any) => ({ ...f, catatan: e.target.value }))} style={{...inp, minHeight:'50px', resize:'vertical'}} placeholder="Catatan" />
+
+                      <button onClick={() => handleSaveEditLead(item)} disabled={savingEditLead}
+                        style={{ width:'100%', padding:'10px', background:'linear-gradient(135deg, #ec4899, #8b5cf6)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor: savingEditLead ? 'not-allowed' : 'pointer', opacity: savingEditLead ? 0.6 : 1 }}>
+                        {savingEditLead ? 'Menyimpan...' : 'Simpan Perubahan'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                      {buildLeadDetailRows(item).map(row => (
+                        <div key={row.label}>
+                          <p style={{ color:'var(--text3)', fontSize:'11px' }}>{row.label}</p>
+                          <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:600 }}>{row.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Exchange Historis - hanya muncul kalau lead ini sudah punya riwayat Exchange */}
                   {relatedExchanges.length > 0 && (
