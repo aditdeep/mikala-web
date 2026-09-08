@@ -5,6 +5,7 @@ import {
   Plus, Search, X, Edit2, Trash2, Eye, Globe,
   Image, BookOpen, Users, Star, Settings,
 } from 'lucide-react';
+import RichEditor from '../../../components/RichEditor';
 
 const TABS = [
   { key: 'artikel',   label: 'Artikel',   icon: BookOpen },
@@ -284,7 +285,7 @@ export default function WebsiteMgaPage() {
                 {tab === 'artikel' && <>
                   <div><label style={lbl}>Judul *</label><input required value={form.judul||''} onChange={e=>s('judul',e.target.value)} style={inp} placeholder="Judul artikel"/></div>
                   <div><label style={lbl}>Ringkasan</label><textarea value={form.ringkasan||''} onChange={e=>s('ringkasan',e.target.value)} style={{...inp,minHeight:'60px',resize:'vertical' as const}} placeholder="Ringkasan singkat..."/></div>
-                  <div><label style={lbl}>Konten *</label><textarea required value={form.konten||''} onChange={e=>s('konten',e.target.value)} style={{...inp,minHeight:'160px',resize:'vertical' as const}} placeholder="Konten artikel (HTML diperbolehkan)..."/></div>
+                  <div><label style={lbl}>Konten * (toolbar: bold, italic, heading, list, link, gambar)</label><RichEditor value={form.konten||''} onChange={(html) => s('konten', html)} uploadFolder="mga/cms/artikel" /></div>
                   <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px' }}>
                     <div><label style={lbl}>Kategori</label>
                       <select value={form.kategori||'Informasi'} onChange={e=>s('kategori',e.target.value)} style={inp}>

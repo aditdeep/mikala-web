@@ -1024,7 +1024,7 @@ export default function WebsitePage() {
                 <textarea value={formArtikel.excerpt} onChange={e => setFormArtikel(p => ({...p,excerpt:e.target.value}))} style={{...inp, minHeight:'60px', resize:'vertical'}} placeholder="Ringkasan artikel..." />
               </div>
               <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Konten artikel (toolbar: bold, italic, heading, list, link)</label>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Konten artikel (toolbar: bold, italic, heading, list, link, gambar)</label>
                 <RichEditor value={formArtikel.konten} onChange={(html) => setFormArtikel(p => ({...p,konten:html}))} />
               </div>
               <div style={{ display:'flex', gap:'10px' }}>

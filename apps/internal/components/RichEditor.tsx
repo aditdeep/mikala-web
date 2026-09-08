@@ -2,15 +2,21 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect } from 'react';
-import { Bold, Italic, List, ListOrdered, Quote, Link2, Heading2, Heading3, Undo, Redo } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { apiClient } from '@mikala/lib';
+import { Bold, Italic, List, ListOrdered, Quote, Link2, Heading2, Heading3, Undo, Redo, Image as ImageIcon, Loader2 } from 'lucide-react';
 
-export default function RichEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+export default function RichEditor({ value, onChange, uploadFolder }: { value: string; onChange: (html: string) => void; uploadFolder?: string }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' } }),
+      Image.configure({ HTMLAttributes: { style: 'max-width:100%; border-radius:8px;' } }),
       Placeholder.configure({ placeholder: 'Tulis isi artikel di sini...' }),
     ],
     content: value || '',
@@ -32,17 +38,19 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
 
   if (!editor) return null;
 
-  const Btn = ({ onClick, active, title, children }: any) => (
+  const Btn = ({ onClick, active, title, children, disabled }: any) => (
     <button
       type="button"
       title={title}
       onClick={onClick}
+      disabled={disabled}
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: '32px', height: '32px', borderRadius: '8px', cursor: 'pointer',
+        width: '32px', height: '32px', borderRadius: '8px', cursor: disabled ? 'not-allowed' : 'pointer',
         border: '1px solid ' + (active ? 'transparent' : 'var(--border)'),
         background: active ? 'linear-gradient(135deg, #2d7a5e, #d63a7a)' : 'var(--glass)',
         color: active ? 'white' : 'var(--text2)',
+        opacity: disabled ? 0.5 : 1,
       }}
     >
       {children}
@@ -57,6 +65,27 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   };
 
+  const triggerAddImage = () => fileInputRef.current?.click();
+
+  const handleImageFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', uploadFolder || 'mgm/cms/artikel');
+      const res: any = await apiClient.post('/internal/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (res.data?.success && res.data?.url) {
+        editor.chain().focus().setImage({ src: res.data.url }).run();
+      } else {
+        alert('Upload gagal: ' + (res.data?.message || 'unknown response'));
+      }
+    } catch (e: any) {
+      console.error('Upload error', e);
+      alert('Upload gagal: ' + (e.response?.data?.message || e.response?.status || e.message || 'unknown error'));
+    }
+    setUploading(false);
+  };
+
   return (
     <div style={{ border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden', background: 'var(--bg)' }}>
       <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', padding: '8px', borderBottom: '1px solid var(--border)', background: 'var(--glass)' }}>
@@ -68,6 +97,8 @@ export default function RichEditor({ value, onChange }: { value: string; onChang
         <Btn title="Numbered List" active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered size={15} /></Btn>
         <Btn title="Quote" active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote size={15} /></Btn>
         <Btn title="Link" active={editor.isActive('link')} onClick={addLink}><Link2 size={15} /></Btn>
+        <Btn title="Insert Gambar" onClick={triggerAddImage} disabled={uploading}>{uploading ? <Loader2 size={15} /> : <ImageIcon size={15} />}</Btn>
+        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f); e.target.value = ''; }} />
         <div style={{ width: '1px', background: 'var(--border)', margin: '2px 4px' }} />
         <Btn title="Undo" onClick={() => editor.chain().focus().undo().run()}><Undo size={15} /></Btn>
         <Btn title="Redo" onClick={() => editor.chain().focus().redo().run()}><Redo size={15} /></Btn>
