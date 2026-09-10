@@ -16,21 +16,8 @@ async function getGaleri() {
   } catch { return []; }
 }
 
-const DEFAULT_GALERI = [
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/Perawatan-khusus.png', caption: 'Pelatihan Keperawatan' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/09/home-imag-MGM.jpg',    caption: 'Kegiatan Pelatihan' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/rawat-jalan.jpg',       caption: 'Praktek Klinik' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/1.jpg',                 caption: 'Perawatan Profesional' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/babysitter_oke.jpg',    caption: 'Pelatihan Babysitter' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Fisioterapi_ok.jpg',    caption: 'Fisioterapi' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2023/04/periksa-berkala_new.jpg','caption': 'Pemeriksaan Berkala' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Medikal-evakuasi.jpg',  caption: 'Medikal Evakuasi' },
-  { url: 'https://www.mikalaglobalmedika.com/wp-content/uploads/2024/08/Alat-Medis.jpg',        caption: 'Peralatan Medis' },
-];
-
 export default async function GaleriPage() {
-  const galeri = await getGaleri();
-  const data   = galeri.length > 0 ? galeri : DEFAULT_GALERI;
+  const data = await getGaleri();
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -50,19 +37,27 @@ export default async function GaleriPage() {
 
       <section className="section" style={{ background: 'white' }}>
         <div className="container">
-          <div style={{ columns: 'auto 300px', gap: '16px' }}>
-            {data.map((g: any, i: number) => (
-              <div key={i} style={{ marginBottom: '16px', breakInside: 'avoid', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow)', position: 'relative', background: 'var(--bg)' }}>
-                <img src={g.url || g.gambar} alt={g.caption || g.judul || `Galeri ${i+1}`}
-                  style={{ width: '100%', display: 'block', objectFit: 'cover' }}/>
-                {(g.caption || g.judul) && (
-                  <div style={{ padding: '12px 16px', background: 'white' }}>
-                    <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)' }}>{g.caption || g.judul}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          {data.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text3)' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🖼️</div>
+              <p style={{ fontWeight: 600, fontSize: '18px', color: 'var(--text)' }}>Galeri segera hadir</p>
+              <p style={{ fontSize: '14px', marginTop: '8px' }}>Dokumentasi kegiatan akan segera kami tambahkan di sini</p>
+            </div>
+          ) : (
+            <div style={{ columns: 'auto 300px', gap: '16px' }}>
+              {data.map((g: any, i: number) => (
+                <div key={i} style={{ marginBottom: '16px', breakInside: 'avoid', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow)', position: 'relative', background: 'var(--bg)' }}>
+                  <img src={g.url || g.gambar} alt={g.caption || g.judul || `Galeri ${i+1}`}
+                    style={{ width: '100%', display: 'block', objectFit: 'cover' }}/>
+                  {(g.caption || g.judul) && (
+                    <div style={{ padding: '12px 16px', background: 'white' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)' }}>{g.caption || g.judul}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
