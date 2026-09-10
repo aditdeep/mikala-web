@@ -11,17 +11,21 @@ export const metadata: Metadata = {
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 
-async function getArtikel() {
+async function getArtikel(): Promise<{ items: any[]; debug: string }> {
+  const url = `${API}/mga/artikel?per_page=12`;
   try {
     const controller = new AbortController();
-    setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(`${API}/mga/artikel?per_page=12`, { signal: controller.signal, next: { revalidate: 3600 } });
-    return (await res.json()).data || [];
-  } catch { return []; }
+    setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+    const json = await res.json();
+    return { items: json.data || [], debug: `url=${url} status=${res.status} success=${json.success} count=${(json.data||[]).length}` };
+  } catch (e: any) {
+    return { items: [], debug: `url=${url} FETCH_ERROR: ${e?.name || ''} ${e?.message || String(e)}` };
+  }
 }
 
 export default async function ArtikelPage() {
-  const artikel = await getArtikel();
+  const { items: artikel, debug } = await getArtikel();
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -44,6 +48,8 @@ export default async function ArtikelPage() {
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📝</div>
               <p style={{ fontWeight: 600, fontSize: '18px', color: 'var(--text)' }}>Artikel segera hadir</p>
               <p style={{ fontSize: '14px', marginTop: '8px' }}>Tim kami sedang mempersiapkan konten terbaik untuk Anda</p>
+              {/* DEBUG SEMENTARA — hapus setelah masalah fetch artikel selesai didiagnosis */}
+              <p style={{ fontSize: '11px', marginTop: '20px', color: 'var(--text3)', opacity: 0.6, wordBreak: 'break-all' }}>debug: {debug}</p>
             </div>
           ) : (
             <div className="grid-3">
