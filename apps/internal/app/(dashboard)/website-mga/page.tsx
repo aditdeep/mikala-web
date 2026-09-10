@@ -104,7 +104,7 @@ export default function WebsiteMgaPage() {
             <Globe size={14}/> Preview Website
           </a>
           {tab !== 'settings' && (
-            <button onClick={() => { setShowModal(true); setEditItem(null); setForm({}); }}
+            <button onClick={() => { setShowModal(true); setEditItem(null); setForm({ status: 'published' }); }}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>
               <Plus size={14}/> Tambah {TABS.find(t => t.key === tab)?.label}
             </button>

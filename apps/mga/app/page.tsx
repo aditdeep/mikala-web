@@ -20,6 +20,33 @@ async function getSettings() {
   } catch { return {}; }
 }
 
+async function getPrograms() {
+  try {
+    const res = await fetch(`${API}/mga/program`, { next: { revalidate: 3600 } });
+    const data = (await res.json()).data || [];
+    return data.map((p: any) => ({
+      icon: p.icon || '🎌',
+      title: p.judul,
+      desc: p.deskripsi || '',
+      duration: p.durasi || '',
+      highlights: (p.kurikulum || '').split('|').map((s: string) => s.trim()).filter(Boolean),
+    }));
+  } catch { return []; }
+}
+
+async function getTestimoni() {
+  try {
+    const res = await fetch(`${API}/mga/testimoni`, { next: { revalidate: 3600 } });
+    const data = (await res.json()).data || [];
+    return data.map((t: any) => ({
+      nama: t.nama,
+      asal: t.asal || '',
+      text: t.teks || '',
+      foto: t.foto || '👤',
+    }));
+  } catch { return []; }
+}
+
 const STATS = [
   { num: '500+',  label: 'Alumni Ditempatkan',   icon: '👥' },
   { num: '98%',   label: 'Tingkat Kelulusan',     icon: '🎓' },
@@ -27,7 +54,8 @@ const STATS = [
   { num: '10+',   label: 'Tahun Pengalaman',      icon: '⭐' },
 ];
 
-const PROGRAMS = [
+// Fallback (dipakai hanya kalau CMS belum punya data program sama sekali)
+const FALLBACK_PROGRAMS = [
   {
     icon: '🎌',
     title: 'Program Kaigo Jepang',
@@ -58,14 +86,17 @@ const STEPS = [
   { num: '04', title: 'Penempatan Kerja',    desc: 'Ditempatkan di fasilitas kesehatan Jepang mitra MGA yang terverifikasi.' },
 ];
 
-const TESTIMONIALS = [
+// Fallback (dipakai hanya kalau CMS belum punya testimoni sama sekali)
+const FALLBACK_TESTIMONIALS = [
   { nama: 'Sari Rahayu, 26', asal: 'Bekasi', text: 'Berkat MGA, saya kini bekerja di nursing home di Osaka. Pelatihan bahasa dan budaya sangat membantu adaptasi saya di Jepang.', foto: '👩' },
   { nama: 'Budi Santoso, 28', asal: 'Surabaya', text: 'Program Kaigo MGA sangat terstruktur. Dalam 12 bulan saya sudah bisa bekerja mandiri di fasilitas lansia di Tokyo.', foto: '👨' },
   { nama: 'Dewi Anggraini, 25', asal: 'Bandung', text: 'Trainer-trainer MGA sangat berpengalaman. Mereka tidak hanya mengajar ilmu tapi juga mental untuk bekerja di luar negeri.', foto: '👩' },
 ];
 
 export default async function HomePage() {
-  const [artikel, settings] = await Promise.all([getArtikel(), getSettings()]);
+  const [artikel, settings, cmsPrograms, cmsTestimoni] = await Promise.all([getArtikel(), getSettings(), getPrograms(), getTestimoni()]);
+  const PROGRAMS = cmsPrograms.length > 0 ? cmsPrograms : FALLBACK_PROGRAMS;
+  const TESTIMONIALS = cmsTestimoni.length > 0 ? cmsTestimoni : FALLBACK_TESTIMONIALS;
 
   return (
     <div style={{ minHeight: '100vh' }}>

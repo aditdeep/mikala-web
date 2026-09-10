@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   keywords: 'LPK perawat jepang, kaigo, lembaga pelatihan kerja, perawat lansia jepang, mikala akademi',
   metadataBase: new URL('https://mikalaglobalakademi.co.id'),
   icons: {
-    icon:  'https://res.cloudinary.com/djgtchmsx/image/upload/v1779020551/Favicon_MGM_nmpyxc.png',
-    apple: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779020551/Favicon_MGM_nmpyxc.png',
+    icon:  'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153869/logo-mga-web_digdlz.png',
+    apple: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153869/logo-mga-web_digdlz.png',
   },
   openGraph: {
     title: 'Mikala Global Akademi — LPK Perawat ke Jepang',

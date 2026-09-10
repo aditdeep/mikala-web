@@ -7,9 +7,32 @@ export const metadata: Metadata = {
   description: 'Program pelatihan Kaigo (perawat lansia) untuk bekerja di Jepang. EPA, SSW, dan sertifikasi BNSP.',
 };
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 const MITRA_DAFTAR = 'https://mitra.mikalaglobalmedika.com/auth/register';
+const FALLBACK_COLORS = ['var(--green)', 'var(--blue)', '#7c3aed'];
 
-const PROGRAMS_DETAIL = [
+async function getPrograms() {
+  try {
+    const res = await fetch(`${API}/mga/program`, { next: { revalidate: 3600 } });
+    const data = (await res.json()).data || [];
+    return data.map((p: any, i: number) => ({
+      icon: p.icon || '🎌',
+      badge: '',
+      title: p.judul,
+      subtitle: p.subtitle || '',
+      duration: p.durasi || '',
+      biaya: p.biaya || 'Hubungi Kami',
+      kuota: p.kuota || '',
+      desc: p.deskripsi || '',
+      kurikulum: (p.kurikulum || '').split('|').map((s: string) => s.trim()).filter(Boolean),
+      syarat: (p.syarat || '').split('|').map((s: string) => s.trim()).filter(Boolean),
+      color: p.warna || FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+    }));
+  } catch { return []; }
+}
+
+// Fallback (dipakai hanya kalau CMS belum punya data program sama sekali)
+const FALLBACK_PROGRAMS_DETAIL = [
   {
     icon: '🎌', badge: 'Paling Populer',
     title: 'Program Kaigo Jepang — EPA',
@@ -67,7 +90,9 @@ const FAQ = [
   { q: 'Berapa lama proses hingga bisa berangkat ke Jepang?', a: 'Rata-rata 12-18 bulan dari pendaftaran hingga keberangkatan, mencakup pelatihan, sertifikasi, dan proses visa.' },
 ];
 
-export default function ProgramPage() {
+export default async function ProgramPage() {
+  const cmsPrograms = await getPrograms();
+  const PROGRAMS_DETAIL = cmsPrograms.length > 0 ? cmsPrograms : FALLBACK_PROGRAMS_DETAIL;
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar active="/program"/>
