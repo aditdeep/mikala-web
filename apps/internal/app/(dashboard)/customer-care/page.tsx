@@ -29,6 +29,7 @@ const leadStatusMap: any = {
   1: { label:'Deal',    color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)', icon: CheckCircle },
   2: { label:'Batal',   color:'#ef4444', bg:'rgba(239,68,68,0.15)',  border:'rgba(239,68,68,0.3)',  icon: XCircle },
   3: { label:'Gantung', color:'#6b7280', bg:'rgba(107,114,128,0.15)', border:'rgba(107,114,128,0.3)', icon: Clock },
+  4: { label:'Stop',    color:'#64748b', bg:'rgba(100,116,139,0.15)', border:'rgba(100,116,139,0.3)', icon: XCircle },
 };
 
 const REFERENSI_TIPE_OPTIONS = ['Keluarga', 'Teman', 'Mitra', 'Website', 'Sosmed', 'Iklan', 'Institusi B2B'];
@@ -292,7 +293,7 @@ export default function CustomerCarePage() {
   const [dealMitraId, setDealMitraId] = useState('');
   const [dealMitraTipeFilter, setDealMitraTipeFilter] = useState('');
   const [dealForm, setDealForm] = useState({
-    mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'',
+    mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'500000',
     kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
     jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'',
   });
@@ -324,6 +325,11 @@ export default function CustomerCarePage() {
   const [savingExchange, setSavingExchange] = useState(false);
   const [downloadingAdendumId, setDownloadingAdendumId] = useState<number|null>(null);
   const [tagihingTransportId, setTagihingTransportId] = useState<number|null>(null);
+  const [creatingNewOrderId, setCreatingNewOrderId] = useState<number|null>(null);
+
+  // STOP / Lanjutkan (leads yg sudah Deal, selesai/lanjut pakai jasa)
+  const [stoppingId, setStoppingId] = useState<number|null>(null);
+  const [lanjutkanId, setLanjutkanId] = useState<number|null>(null);
 
   // Kontrak MGM-Klien (1.1/1.2) di popup Detail Leads (Deal step)
   const [kontrakBiayaTransport, setKontrakBiayaTransport] = useState('');
@@ -478,7 +484,7 @@ export default function CustomerCarePage() {
       await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined, ...dealForm });
       setDealTarget(null);
       setDealMitraId('');
-      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'' });
+      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'' });
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Deal'); }
@@ -515,7 +521,9 @@ export default function CustomerCarePage() {
 
   const fetchDealLeads = () => {
     setLoadingDealList(true);
-    apiClient.get('/internal/cc/leads?status=1').then((r: any) => {
+    // status 1 (Deal) + 4 (Stop) supaya leads yang di-STOP tetap tampil di tab Deal
+    // dengan tombol Lanjutkan, bukan hilang begitu saja.
+    apiClient.get('/internal/cc/leads?status=1,4').then((r: any) => {
       setDealLeadsList(Array.isArray(r.data?.data) ? r.data.data : []);
     }).catch(() => setDealLeadsList([])).finally(() => setLoadingDealList(false));
     if (mitraList.length === 0) fetchOrders();
@@ -550,6 +558,56 @@ export default function CustomerCarePage() {
       fetchExchangeList();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal mencatat Exchange'); }
     finally { setSavingExchange(false); }
+  };
+
+  // TAMBAH (di modal Log Exchange): buat order baru (Nomor Order baru), data Cust/PJ &
+  // Pasien/Klien di-copy dari leads ini, langsung buka Form Proses utk order barunya.
+  const handleTambahOrderBaru = async (item: any) => {
+    if (!confirm('Buat order baru dengan Nomor Order baru? Data Cust/PJ & Pasien/Klien akan disalin dari order ini (' + (item.nomor||'-') + ').')) return;
+    setCreatingNewOrderId(item.id);
+    try {
+      const r: any = await apiClient.post('/internal/cc/leads/'+item.id+'/duplicate');
+      setExchangeTarget(null);
+      setExchangeMitraId('');
+      setExchangeAlasan('');
+      setExchangeHonorBaru('');
+      setExchangeUangCutiBaru('');
+      setExchangeBiayaTransport('');
+      fetchLeadsList();
+      fetchLeadsSummary();
+      const newLead = r.data?.data;
+      if (newLead) setLeadDetail({ type:'lead', item: newLead });
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat order baru'); }
+    finally { setCreatingNewOrderId(null); }
+  };
+
+  // STOP: leads yg sudah Deal ditandai selesai kontrak (sudah tidak pakai jasa lagi).
+  const handleStopLead = async (item: any) => {
+    if (!confirm('Tandai STOP untuk ' + (item.nama_leads||'leads ini') + '? Artinya sudah selesai kontrak memakai jasa Mikala. Bisa dilanjutkan kembali kapan saja lewat tombol Lanjutkan.')) return;
+    setStoppingId(item.id);
+    try {
+      await apiClient.patch('/internal/cc/leads/'+item.id+'/stop');
+      setLeadDetail(null);
+      fetchDealLeads();
+      fetchLeadsSummary();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai STOP'); }
+    finally { setStoppingId(null); }
+  };
+
+  // Lanjutkan: leads yg sebelumnya di-STOP, dibuka lagi sebagai order layanan baru dgn
+  // nomor & data yang sama (kembali ke status Proses / Form Proses).
+  const handleLanjutkanLead = async (item: any) => {
+    if (!confirm('Lanjutkan order ' + (item.nomor||'-') + '? Nomor & data akan tetap sama, kembali berstatus Proses.')) return;
+    setLanjutkanId(item.id);
+    try {
+      const r: any = await apiClient.patch('/internal/cc/leads/'+item.id+'/lanjutkan');
+      fetchDealLeads();
+      fetchLeadsList();
+      fetchLeadsSummary();
+      const updated = r.data?.data;
+      if (updated) setLeadDetail({ type:'lead', item: updated });
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal melanjutkan leads'); }
+    finally { setLanjutkanId(null); }
   };
 
   const handleDownloadAdendum = async (exchangeId: number, nomor?: string) => {
@@ -1045,7 +1103,7 @@ export default function CustomerCarePage() {
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                    {['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal'].map(h => (
+                    {['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal','Status'].map(h => (
                       <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
                     ))}
                   </tr></thead>
@@ -1063,6 +1121,18 @@ export default function CustomerCarePage() {
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.alamat_cust_pj||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.kontak||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'160px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.diagnosis_awal||'-'}</td>
+                        <td style={{ padding:'12px 16px' }}>
+                          {item.status === 4 ? (
+                            <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
+                              <span style={{ background:'rgba(100,116,139,0.15)', color:'#64748b', border:'1px solid rgba(100,116,139,0.3)', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>STOP</span>
+                              <button onClick={() => handleLanjutkanLead(item)} disabled={lanjutkanId === item.id} style={{ padding:'4px 10px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'11px', fontWeight:600, cursor: lanjutkanId === item.id ? 'not-allowed' : 'pointer', opacity: lanjutkanId === item.id ? 0.6 : 1 }}>
+                                {lanjutkanId === item.id ? '...' : 'Lanjutkan'}
+                              </button>
+                            </div>
+                          ) : (() => { const s = getLeadStatusDisplay(item); return (
+                            <span style={{ background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>
+                          ); })()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1627,7 +1697,7 @@ export default function CustomerCarePage() {
                   <input value={dealForm.honor_mitra} onChange={e => setDealForm(f => ({ ...f, honor_mitra: e.target.value }))} style={inp} placeholder="Rp" />
                 </div>
                 <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Uang Cuti Mitra</label>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Uang Cuti Mitra <span style={{fontWeight:400, color:'var(--text3)'}}>(default 250rb x 2 hari)</span></label>
                   <input value={dealForm.uang_cuti_mitra} onChange={e => setDealForm(f => ({ ...f, uang_cuti_mitra: e.target.value }))} style={inp} placeholder="Rp" />
                 </div>
               </div>
@@ -1784,6 +1854,9 @@ export default function CustomerCarePage() {
                 <button type="submit" disabled={savingExchange} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #8b5cf6, #7c3aed)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {savingExchange ? 'Menyimpan...' : 'Catat Exchange'}
                 </button>
+                <button type="button" onClick={() => handleTambahOrderBaru(exchangeTarget)} disabled={creatingNewOrderId === exchangeTarget.id} style={{ flex:1, padding:'10px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'12px', color:'#10b981', fontWeight:700, fontSize:'13px', cursor: creatingNewOrderId === exchangeTarget.id ? 'not-allowed' : 'pointer', opacity: creatingNewOrderId === exchangeTarget.id ? 0.6 : 1 }}>
+                  {creatingNewOrderId === exchangeTarget.id ? '...' : 'Tambah'}
+                </button>
               </div>
             </form>
           </div>
@@ -1831,9 +1904,14 @@ export default function CustomerCarePage() {
                   )}
                   {item.status === 1 && (
                     <div style={{ marginBottom:'16px', display:'flex', flexDirection:'column', gap:'8px' }}>
-                      <button onClick={() => { setLeadDetail(null); setExchangeTarget(item); }} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'10px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
-                        <Repeat size={13}/>Log Exchange
-                      </button>
+                      <div style={{ display:'flex', gap:'8px' }}>
+                        <button onClick={() => { setLeadDetail(null); setExchangeTarget(item); }} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(139,92,246,0.1)', border:'1px solid rgba(139,92,246,0.2)', borderRadius:'10px', color:'#8b5cf6', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                          <Repeat size={13}/>Log Exchange
+                        </button>
+                        <button onClick={() => handleStopLead(item)} disabled={stoppingId === item.id} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(100,116,139,0.1)', border:'1px solid rgba(100,116,139,0.2)', borderRadius:'10px', color:'#64748b', fontSize:'12px', fontWeight:600, cursor: stoppingId === item.id ? 'not-allowed' : 'pointer', opacity: stoppingId === item.id ? 0.6 : 1 }}>
+                          <XCircle size={13}/>{stoppingId === item.id ? '...' : 'STOP'}
+                        </button>
+                      </div>
 
                       <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
                         <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>
@@ -1885,6 +1963,17 @@ export default function CustomerCarePage() {
                           <FileText size={13}/>{tagihingAdmin ? 'Memproses...' : (item.invoice_admin_nomor ? 'Download Ulang Invoice' : 'Tagih Biaya Admin')}
                         </button>
                       </div>
+                    </div>
+                  )}
+
+                  {item.status === 4 && (
+                    <div style={{ marginBottom:'16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                      <p style={{ fontSize:'12px', color:'var(--text2)' }}>
+                        Kontrak sudah <strong>STOP</strong> (selesai pakai jasa){item.stop_at ? ' sejak ' + new Date(item.stop_at).toLocaleDateString('id-ID') : ''}.
+                      </p>
+                      <button onClick={() => handleLanjutkanLead(item)} disabled={lanjutkanId === item.id} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor: lanjutkanId === item.id ? 'not-allowed' : 'pointer', opacity: lanjutkanId === item.id ? 0.6 : 1 }}>
+                        {lanjutkanId === item.id ? 'Memproses...' : 'Lanjutkan'}
+                      </button>
                     </div>
                   )}
 
