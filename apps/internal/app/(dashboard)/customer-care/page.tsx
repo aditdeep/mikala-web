@@ -56,6 +56,28 @@ const CC_SUBTABS = [
   { key:'exchange', label:'Exchange' },
 ];
 
+// Filter baris tabel berdasarkan search per kolom (mirip Excel autofilter). `getters`
+// memetakan key kolom ke fungsi pengambil teks yang dicari; kolom tanpa getter (mis. kolom
+// Aksi/No urut) tidak ikut difilter.
+function applyColFilters<T>(items: T[], colFilters: Record<string, string>, getters: Record<string, (item: T) => string>): T[] {
+  const active = Object.entries(colFilters).filter(([, v]) => v && v.trim() !== '');
+  if (active.length === 0) return items;
+  return items.filter(item => active.every(([k, v]) => (getters[k]?.(item) || '').toLowerCase().includes(v.trim().toLowerCase())));
+}
+
+// Header kolom tabel dengan input search kecil di bawah label (mirip filter Excel).
+function ThSearch({ label, value, onChange }: { label: string; value?: string; onChange?: (v: string) => void }) {
+  return (
+    <th style={{ padding:'10px 16px 8px', textAlign:'left', verticalAlign:'top' }}>
+      <div style={{ fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', marginBottom: onChange ? '5px' : 0 }}>{label}</div>
+      {onChange && (
+        <input value={value||''} onChange={e => onChange(e.target.value)} placeholder="Cari..."
+          style={{ width:'100%', minWidth:'80px', padding:'4px 6px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text)', fontSize:'11px', fontWeight:400, textTransform:'none' }} />
+      )}
+    </th>
+  );
+}
+
 function parseJsonArraySafe(v: any): string[] {
   if (!v) return [];
   try {
@@ -102,6 +124,7 @@ function buildLeadDetailRows(item: any) {
       { label:'Mobilisasi', value: item.mobilisasi || '-' },
       { label:'Jasa Disetujui', value: item.jasa_disetujui || '-' },
       { label:'Honor Mitra', value: item.honor_mitra || '-' },
+      { label:'Manajemen Fee', value: item.management_fee || '-' },
       { label:'Biaya Admin', value: item.biaya_admin || '-' },
     ] : []),
     ...(item.status === 2 ? [
@@ -255,6 +278,42 @@ export default function CustomerCarePage() {
   const [leadsStatusFilter, setLeadsStatusFilter] = useState('');
   const [layananDrillFilter, setLayananDrillFilter] = useState<{ layanan_id: any; tier_nama: string|null; label: string }|null>(null);
 
+  // Search per kolom (mirip filter Excel) di tabel Leads/Deal/Exchange
+  const [leadsColFilters, setLeadsColFilters] = useState<Record<string,string>>({});
+  const [dealColFilters, setDealColFilters] = useState<Record<string,string>>({});
+  const [exchangeColFilters, setExchangeColFilters] = useState<Record<string,string>>({});
+
+  // Getter per kolom -- dipakai bareng oleh tabel (search per kolom) & export .xls, supaya
+  // hasil download selalu sesuai filter yang lagi aktif di tabel.
+  const leadsGetters = {
+    nomor: (i: any) => i.nomor || '',
+    tanggal: (i: any) => i.created_at ? new Date(i.created_at).toLocaleDateString('id-ID') : '',
+    nama_klien: (i: any) => i.nama_pasien || '',
+    alamat_klien: (i: any) => i.alamat_klien || '',
+    nama_cust: (i: any) => i.nama_leads || '',
+    alamat_cust: (i: any) => i.alamat_cust_pj || '',
+    kontak: (i: any) => i.kontak || '',
+    status: (i: any) => getLeadStatusDisplay(i).label || '',
+  };
+  const dealGetters = {
+    nik: (i: any) => i.nik || i.nomor || '',
+    nama_klien: (i: any) => i.nama_pasien || '',
+    alamat_klien: (i: any) => i.alamat_klien || '',
+    nama_cust: (i: any) => i.nama_leads || '',
+    alamat_cust: (i: any) => i.alamat_cust_pj || '',
+    kontak: (i: any) => i.kontak || '',
+    diagnosa: (i: any) => i.diagnosis_awal || '',
+    status: (i: any) => i.status === 4 ? 'Stop' : (getLeadStatusDisplay(i).label || ''),
+  };
+  const exchangeGetters = {
+    nomor: (i: any) => i.nomor || '',
+    leads: (i: any) => ((i.lead?.nama_leads||'') + ' ' + (i.lead?.nomor||'')),
+    mitra_lama: (i: any) => i.mitra_lama?.user?.name || '',
+    mitra_baru: (i: any) => i.mitra_baru?.user?.name || '',
+    alasan: (i: any) => i.alasan || '',
+    tanggal: (i: any) => i.exchanged_at ? new Date(i.exchanged_at).toLocaleDateString('id-ID') : '',
+  };
+
   // Form tambah Leads
   const [showFormLead, setShowFormLead] = useState(false);
   const DEFAULT_FORM_LEAD = {
@@ -293,7 +352,7 @@ export default function CustomerCarePage() {
   const [dealMitraId, setDealMitraId] = useState('');
   const [dealMitraTipeFilter, setDealMitraTipeFilter] = useState('');
   const [dealForm, setDealForm] = useState({
-    mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'500000',
+    mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', uang_cuti_mitra:'500000',
     kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
     jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'',
   });
@@ -484,7 +543,7 @@ export default function CustomerCarePage() {
       await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined, ...dealForm });
       setDealTarget(null);
       setDealMitraId('');
-      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'' });
+      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'' });
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Deal'); }
@@ -696,7 +755,8 @@ export default function CustomerCarePage() {
     } else if (activeTab === 'deal') {
       // Kolom mengikuti sheet "Deal" (Form Pemesanan Mitra) di Tabel 2 - Leads.xlsx: sama seperti
       // kolom Leads, ditambah field khusus tahap Deal (kondisi klinis, negosiasi jasa, data mitra).
-      const rows = dealLeadsList.map((item: any, i: number) => {
+      // Data yang di-export sesuai filter search per kolom yang lagi aktif di tabel.
+      const rows = applyColFilters(dealLeadsList, dealColFilters, dealGetters).map((item: any, i: number) => {
         let almed: string[] = [];
         try { const parsed = typeof item.alat_medis === 'string' ? JSON.parse(item.alat_medis) : item.alat_medis; almed = Array.isArray(parsed) ? parsed : []; } catch { almed = []; }
         let alasanStatus: string[] = [];
@@ -715,7 +775,7 @@ export default function CustomerCarePage() {
           getLeadStatusDisplay(item).label,
           alasanStatus[0]||item.alasan_batal||'-', alasanStatus[1]||'-', alasanStatus[2]||'-', alasanStatus[3]||'-', alasanStatus[4]||'-',
           item.jasa_diminta||'-', item.jasa_disarankan||'-', item.jasa_disetujui||'-', item.pembantu||'-', item.cara_mencuci_baju||'-',
-          item.mitra?.user?.name||'-', item.mitra_nim||'-', item.biaya_admin||'-', item.honor_mitra||'-', item.uang_cuti_mitra||'-',
+          item.mitra?.user?.name||'-', item.mitra_nim||'-', item.biaya_admin||'-', item.honor_mitra||'-', item.management_fee||'-', item.uang_cuti_mitra||'-',
         ];
       });
       exportRowsToXls('cc-deal-'+stamp+'.xls', [
@@ -729,17 +789,17 @@ export default function CustomerCarePage() {
         'Referensi','Nama Referensi','Nomor Telp/WA Referensi',
         'Status','Alasan/Keterangan Status 1','Alasan/Keterangan Status 2','Alasan/Keterangan Status 3','Alasan/Keterangan Status 4','Alasan/Keterangan Status 5',
         'Jasa Diminta','Jasa Disarankan','Jasa Disetujui','Pembantu','Cara Mencuci Baju',
-        'Nama Mitra','No. Induk Mitra (NIM)','Biaya Admin','Honor Mitra','Uang Cuti Mitra',
+        'Nama Mitra','No. Induk Mitra (NIM)','Biaya Admin','Honor Mitra','Manajemen Fee','Uang Cuti Mitra',
       ], rows);
     } else if (activeTab === 'exchange') {
-      const rows = exchangeList.map((item: any, i: number) => [i+1, item.nomor||'-', item.lead?.nama_leads||'-', item.mitra_lama?.user?.name||'-', item.mitra_baru?.user?.name||'-', item.alasan||'-', item.exchanged_at?new Date(item.exchanged_at).toLocaleDateString('id-ID'):'-']);
+      const rows = applyColFilters(exchangeList, exchangeColFilters, exchangeGetters).map((item: any, i: number) => [i+1, item.nomor||'-', item.lead?.nama_leads||'-', item.mitra_lama?.user?.name||'-', item.mitra_baru?.user?.name||'-', item.alasan||'-', item.exchanged_at?new Date(item.exchanged_at).toLocaleDateString('id-ID'):'-']);
       exportRowsToXls('cc-exchange-'+stamp+'.xls', ['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal'], rows);
     } else {
-      const source = leadsList.filter((item: any) => {
+      const source = applyColFilters(leadsList.filter((item: any) => {
         if (leadsStatusFilter !== '' && String(item.status) !== leadsStatusFilter) return false;
         if (layananDrillFilter && (String(item.cms_layanan_id) !== String(layananDrillFilter.layanan_id) || (item.tier_nama || null) !== (layananDrillFilter.tier_nama || null))) return false;
         return true;
-      });
+      }), leadsColFilters, leadsGetters);
       // Kolom mengikuti persis Tabel 2 - Leads (excel): No. Order, Tgl. Order, PIC Leads, Data
       // Cust/PJ, Data Klien/Pasien, Referensi, Status, Alasan/Keterangan Status 1-5.
       const rows = source.map((item: any, i: number) => {
@@ -1015,11 +1075,11 @@ export default function CustomerCarePage() {
 
       {/* TAB LEADS (unified: 1 tabel Leads, Status = link ke Detail; card summary sudah dipindah ke atas tabs) */}
       {activeTab === 'leads' && (() => {
-        const filteredLeads = leadsList.filter((item: any) => {
+        const filteredLeads = applyColFilters(leadsList.filter((item: any) => {
           if (leadsStatusFilter !== '' && String(item.status) !== leadsStatusFilter) return false;
           if (layananDrillFilter && (String(item.cms_layanan_id) !== String(layananDrillFilter.layanan_id) || (item.tier_nama || null) !== (layananDrillFilter.tier_nama || null))) return false;
           return true;
-        });
+        }), leadsColFilters, leadsGetters);
         return (
           <div className="space-y-3">
             {/* Filter status + export (gantikan baris sub-tab) */}
@@ -1052,9 +1112,15 @@ export default function CustomerCarePage() {
                 <div style={{ overflowX:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
                     <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                      {['No','No Order','Tanggal Order','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Status'].map(h => (
-                        <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                      ))}
+                      <ThSearch label="No" />
+                      <ThSearch label="No Order" value={leadsColFilters.nomor} onChange={v => setLeadsColFilters(f => ({ ...f, nomor: v }))} />
+                      <ThSearch label="Tanggal Order" value={leadsColFilters.tanggal} onChange={v => setLeadsColFilters(f => ({ ...f, tanggal: v }))} />
+                      <ThSearch label="Nama Klien" value={leadsColFilters.nama_klien} onChange={v => setLeadsColFilters(f => ({ ...f, nama_klien: v }))} />
+                      <ThSearch label="Alamat Klien" value={leadsColFilters.alamat_klien} onChange={v => setLeadsColFilters(f => ({ ...f, alamat_klien: v }))} />
+                      <ThSearch label="Nama Cust/PJ" value={leadsColFilters.nama_cust} onChange={v => setLeadsColFilters(f => ({ ...f, nama_cust: v }))} />
+                      <ThSearch label="Alamat Cust/PJ" value={leadsColFilters.alamat_cust} onChange={v => setLeadsColFilters(f => ({ ...f, alamat_cust: v }))} />
+                      <ThSearch label="No WA Cust/PJ" value={leadsColFilters.kontak} onChange={v => setLeadsColFilters(f => ({ ...f, kontak: v }))} />
+                      <ThSearch label="Status" value={leadsColFilters.status} onChange={v => setLeadsColFilters(f => ({ ...f, status: v }))} />
                     </tr></thead>
                     <tbody>
                       {filteredLeads.map((item: any, i: number) => {
@@ -1089,7 +1155,9 @@ export default function CustomerCarePage() {
       })()}
 
       {/* TAB DEAL (leads yang sudah closing) */}
-      {activeTab === 'deal' && (
+      {activeTab === 'deal' && (() => {
+        const filteredDeal = applyColFilters(dealLeadsList, dealColFilters, dealGetters);
+        return (
         <div className="space-y-3">
           <div style={{ display:'flex', justifyContent:'flex-end' }}>
             <button onClick={handleExportXls} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
@@ -1103,12 +1171,17 @@ export default function CustomerCarePage() {
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                    {['NIK','Nama Klien','Alamat Klien','Nama Cust/PJ','Alamat Cust/PJ','No WA Cust/PJ','Diagnosa Awal','Status'].map(h => (
-                      <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                    ))}
+                    <ThSearch label="NIK" value={dealColFilters.nik} onChange={v => setDealColFilters(f => ({ ...f, nik: v }))} />
+                    <ThSearch label="Nama Klien" value={dealColFilters.nama_klien} onChange={v => setDealColFilters(f => ({ ...f, nama_klien: v }))} />
+                    <ThSearch label="Alamat Klien" value={dealColFilters.alamat_klien} onChange={v => setDealColFilters(f => ({ ...f, alamat_klien: v }))} />
+                    <ThSearch label="Nama Cust/PJ" value={dealColFilters.nama_cust} onChange={v => setDealColFilters(f => ({ ...f, nama_cust: v }))} />
+                    <ThSearch label="Alamat Cust/PJ" value={dealColFilters.alamat_cust} onChange={v => setDealColFilters(f => ({ ...f, alamat_cust: v }))} />
+                    <ThSearch label="No WA Cust/PJ" value={dealColFilters.kontak} onChange={v => setDealColFilters(f => ({ ...f, kontak: v }))} />
+                    <ThSearch label="Diagnosa Awal" value={dealColFilters.diagnosa} onChange={v => setDealColFilters(f => ({ ...f, diagnosa: v }))} />
+                    <ThSearch label="Status" value={dealColFilters.status} onChange={v => setDealColFilters(f => ({ ...f, status: v }))} />
                   </tr></thead>
                   <tbody>
-                    {dealLeadsList.map((item: any, i: number) => (
+                    {filteredDeal.map((item: any, i: number) => (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
                         <td style={{ padding:'12px 16px' }}>
                           <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:700, color:'#ec4899', textDecoration:'underline', padding:0 }}>
@@ -1137,15 +1210,18 @@ export default function CustomerCarePage() {
                     ))}
                   </tbody>
                 </table>
-                {dealLeadsList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads Deal</div>}
+                {filteredDeal.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads Deal</div>}
               </div>
             )}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* TAB EXCHANGE (histori tukar mitra) */}
-      {activeTab === 'exchange' && (
+      {activeTab === 'exchange' && (() => {
+        const filteredExchange = applyColFilters(exchangeList, exchangeColFilters, exchangeGetters);
+        return (
         <div className="space-y-3">
           <div style={{ display:'flex', justifyContent:'flex-end' }}>
             <button onClick={handleExportXls} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
@@ -1159,12 +1235,18 @@ export default function CustomerCarePage() {
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'700px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                    {['No','NIM','Leads','Mitra Lama','Mitra Baru','Alasan','Tanggal','Adendum','Invoice Transport'].map(h => (
-                      <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' }}>{h}</th>
-                    ))}
+                    <ThSearch label="No" />
+                    <ThSearch label="NIM" value={exchangeColFilters.nomor} onChange={v => setExchangeColFilters(f => ({ ...f, nomor: v }))} />
+                    <ThSearch label="Leads" value={exchangeColFilters.leads} onChange={v => setExchangeColFilters(f => ({ ...f, leads: v }))} />
+                    <ThSearch label="Mitra Lama" value={exchangeColFilters.mitra_lama} onChange={v => setExchangeColFilters(f => ({ ...f, mitra_lama: v }))} />
+                    <ThSearch label="Mitra Baru" value={exchangeColFilters.mitra_baru} onChange={v => setExchangeColFilters(f => ({ ...f, mitra_baru: v }))} />
+                    <ThSearch label="Alasan" value={exchangeColFilters.alasan} onChange={v => setExchangeColFilters(f => ({ ...f, alasan: v }))} />
+                    <ThSearch label="Tanggal" value={exchangeColFilters.tanggal} onChange={v => setExchangeColFilters(f => ({ ...f, tanggal: v }))} />
+                    <ThSearch label="Adendum" />
+                    <ThSearch label="Invoice Transport" />
                   </tr></thead>
                   <tbody>
-                    {exchangeList.map((item: any, i: number) => (
+                    {filteredExchange.map((item: any, i: number) => (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
                         <td style={{ padding:'12px 16px' }}>
@@ -1197,12 +1279,13 @@ export default function CustomerCarePage() {
                     ))}
                   </tbody>
                 </table>
-                {exchangeList.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada histori exchange</div>}
+                {filteredExchange.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada histori exchange</div>}
               </div>
             )}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* TAB KLIEN (nonaktif dari nav utama - kode dibiarkan, tidak lagi punya tombol akses) */}
       {activeTab === 'klien' && (
@@ -1680,6 +1763,35 @@ export default function CustomerCarePage() {
                 </select>
               </div>
 
+              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Negosiasi Jasa</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Diminta</label>
+                  <input value={dealForm.jasa_diminta} onChange={e => setDealForm(f => ({ ...f, jasa_diminta: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disarankan</label>
+                  <input value={dealForm.jasa_disarankan} onChange={e => setDealForm(f => ({ ...f, jasa_disarankan: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disetujui</label>
+                <select value={dealForm.jasa_disetujui} onChange={e => setDealForm(f => ({ ...f, jasa_disetujui: e.target.value }))} style={inp}>
+                  <option value="">-- Pilih Jenis Layanan --</option>
+                  {cmsLayananList.map((l: any) => <option key={l.id} value={l.nama}>{l.nama}</option>)}
+                </select>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Pembantu</label>
+                  <input value={dealForm.pembantu} onChange={e => setDealForm(f => ({ ...f, pembantu: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Cara Mencuci Baju</label>
+                  <input value={dealForm.cara_mencuci_baju} onChange={e => setDealForm(f => ({ ...f, cara_mencuci_baju: e.target.value }))} style={inp} placeholder="Opsional" />
+                </div>
+              </div>
+
               <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Data Mitra (Finansial)</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
@@ -1693,13 +1805,17 @@ export default function CustomerCarePage() {
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Honor Mitra</label>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Honor Mitra <span style={{fontWeight:400, color:'var(--text3)'}}>(Gaji)</span></label>
                   <input value={dealForm.honor_mitra} onChange={e => setDealForm(f => ({ ...f, honor_mitra: e.target.value }))} style={inp} placeholder="Rp" />
                 </div>
                 <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Uang Cuti Mitra <span style={{fontWeight:400, color:'var(--text3)'}}>(default 250rb x 2 hari)</span></label>
-                  <input value={dealForm.uang_cuti_mitra} onChange={e => setDealForm(f => ({ ...f, uang_cuti_mitra: e.target.value }))} style={inp} placeholder="Rp" />
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Manajemen Fee</label>
+                  <input value={dealForm.management_fee} onChange={e => setDealForm(f => ({ ...f, management_fee: e.target.value }))} style={inp} placeholder="Rp" />
                 </div>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Uang Cuti Mitra <span style={{fontWeight:400, color:'var(--text3)'}}>(default 250rb x 2 hari)</span></label>
+                <input value={dealForm.uang_cuti_mitra} onChange={e => setDealForm(f => ({ ...f, uang_cuti_mitra: e.target.value }))} style={inp} placeholder="Rp" />
               </div>
 
               <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Kondisi Klinis Klien</p>
@@ -1721,32 +1837,6 @@ export default function CustomerCarePage() {
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Mobilisasi</label>
                   <input value={dealForm.mobilisasi} onChange={e => setDealForm(f => ({ ...f, mobilisasi: e.target.value }))} style={inp} placeholder="Opsional" />
-                </div>
-              </div>
-
-              <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Negosiasi Jasa</p>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Diminta</label>
-                  <input value={dealForm.jasa_diminta} onChange={e => setDealForm(f => ({ ...f, jasa_diminta: e.target.value }))} style={inp} placeholder="Opsional" />
-                </div>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disarankan</label>
-                  <input value={dealForm.jasa_disarankan} onChange={e => setDealForm(f => ({ ...f, jasa_disarankan: e.target.value }))} style={inp} placeholder="Opsional" />
-                </div>
-              </div>
-              <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disetujui</label>
-                <input value={dealForm.jasa_disetujui} onChange={e => setDealForm(f => ({ ...f, jasa_disetujui: e.target.value }))} style={inp} placeholder="Digunakan sebagai kolom 'Gaji' pada kontrak" />
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Pembantu</label>
-                  <input value={dealForm.pembantu} onChange={e => setDealForm(f => ({ ...f, pembantu: e.target.value }))} style={inp} placeholder="Opsional" />
-                </div>
-                <div>
-                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Cara Mencuci Baju</label>
-                  <input value={dealForm.cara_mencuci_baju} onChange={e => setDealForm(f => ({ ...f, cara_mencuci_baju: e.target.value }))} style={inp} placeholder="Opsional" />
                 </div>
               </div>
 
