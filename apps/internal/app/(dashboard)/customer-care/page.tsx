@@ -354,7 +354,7 @@ export default function CustomerCarePage() {
   const [dealForm, setDealForm] = useState({
     mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', uang_cuti_mitra:'500000',
     kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
-    jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'',
+    jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'',
   });
   const [savingDeal, setSavingDeal] = useState(false);
 
@@ -431,6 +431,16 @@ export default function CustomerCarePage() {
     if (activeTab === 'leads' || activeTab === 'deal') fetchLeadsList();
     if (mitraList.length === 0) fetchOrders();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (dealTarget) {
+      setDealForm(f => ({
+        ...f,
+        cms_layanan_id: dealTarget.cms_layanan_id ? String(dealTarget.cms_layanan_id) : (f.cms_layanan_id || ''),
+        tier_nama: dealTarget.tier_nama || f.tier_nama || '',
+      }));
+    }
+  }, [dealTarget]);
 
   useEffect(() => {
     if (leadDetail?.type === 'lead' && leadDetail.item?.status === 1) {
@@ -543,7 +553,7 @@ export default function CustomerCarePage() {
       await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined, ...dealForm });
       setDealTarget(null);
       setDealMitraId('');
-      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', pembantu:'', cara_mencuci_baju:'' });
+      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'' });
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Deal'); }
@@ -1774,12 +1784,29 @@ export default function CustomerCarePage() {
                   <input value={dealForm.jasa_disarankan} onChange={e => setDealForm(f => ({ ...f, jasa_disarankan: e.target.value }))} style={inp} placeholder="Opsional" />
                 </div>
               </div>
-              <div>
-                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disetujui</label>
-                <select value={dealForm.jasa_disetujui} onChange={e => setDealForm(f => ({ ...f, jasa_disetujui: e.target.value }))} style={inp}>
-                  <option value="">-- Pilih Jenis Layanan --</option>
-                  {cmsLayananList.map((l: any) => <option key={l.id} value={l.nama}>{l.nama}</option>)}
-                </select>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disetujui — Jenis Layanan</label>
+                  <select value={dealForm.cms_layanan_id} onChange={e => {
+                    const val = e.target.value;
+                    const l = cmsLayananList.find((x: any) => String(x.id) === String(val));
+                    setDealForm(f => ({ ...f, cms_layanan_id: val, tier_nama: '', jasa_disetujui: l?.nama || '' }));
+                  }} style={inp}>
+                    <option value="">-- Pilih Jenis Layanan --</option>
+                    {cmsLayananList.map((l: any) => <option key={l.id} value={l.id}>{l.nama}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disetujui — Tier</label>
+                  <select value={dealForm.tier_nama} onChange={e => {
+                    const val = e.target.value;
+                    const l = cmsLayananList.find((x: any) => String(x.id) === String(dealForm.cms_layanan_id));
+                    setDealForm(f => ({ ...f, tier_nama: val, jasa_disetujui: val ? `${l?.nama||''} - ${val}` : (l?.nama || '') }));
+                  }} style={inp} disabled={!dealForm.cms_layanan_id || getTiersFor(dealForm.cms_layanan_id).length === 0}>
+                    <option value="">-- Tanpa Tier --</option>
+                    {getTiersFor(dealForm.cms_layanan_id).map((t: any, i: number) => { const val = t.frekuensi ? `${t.nama} - ${t.frekuensi}` : t.nama; return <option key={i} value={val}>{val}</option>; })}
+                  </select>
+                </div>
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
