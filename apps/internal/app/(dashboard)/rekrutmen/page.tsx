@@ -611,6 +611,7 @@ export default function RekrutmenPage() {
               { label:'Kelamin',    val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
               { label:'Kota',       val: showDetail.kota },
               { label:'Pendidikan', val: showDetail.pendidikan_terakhir },
+              { label:'Tipe Pekerjaan', val: showDetail.tipe_pekerjaan },
               { label:'Status',     val: showDetail.status },
               { label:'Pengalaman', val: showDetail.pengalaman },
             ].map(f => (

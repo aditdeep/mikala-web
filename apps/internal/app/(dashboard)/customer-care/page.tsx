@@ -32,6 +32,7 @@ const leadStatusMap: any = {
 };
 
 const REFERENSI_TIPE_OPTIONS = ['Keluarga', 'Teman', 'Mitra', 'Website', 'Sosmed', 'Iklan', 'Institusi B2B'];
+const TIPE_PEKERJAAN_OPTIONS = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)','Ke Jepang Lainnya'];
 const REFERENSI_SUB_OPTIONS: Record<string, string[]> = {
   Website: ['Web MGM', 'Web MGA', 'Web Lainnya'],
   Sosmed: ['Instagram', 'Facebook', 'TikTok', 'YouTube', 'X', 'Lainnya'],
@@ -237,6 +238,7 @@ export default function CustomerCarePage() {
   const [showFormOrder, setShowFormOrder] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
   const [mitraList, setMitraList] = useState<any[]>([]);
+  const [allMitraList, setAllMitraList] = useState<any[]>([]); // semua mitra (tanpa filter status) - dipakai utk field Referensi Mitra
   const [formOrder, setFormOrder] = useState({
     klien_id:'', pasien_id:'', mitra_id:'', layanan_type:'homecare_harian',
     tanggal_mulai:'', tanggal_selesai:'', lokasi:'', harga_per_shift:'0', total_shift:'1', deskripsi:''
@@ -288,6 +290,7 @@ export default function CustomerCarePage() {
   // Modal Deal
   const [dealTarget, setDealTarget] = useState<any>(null);
   const [dealMitraId, setDealMitraId] = useState('');
+  const [dealMitraTipeFilter, setDealMitraTipeFilter] = useState('');
   const [dealForm, setDealForm] = useState({
     mitra_nim:'', biaya_admin:'', honor_mitra:'', uang_cuti_mitra:'',
     kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
@@ -413,6 +416,9 @@ export default function CustomerCarePage() {
     }).catch(() => {});
     apiClient.get('/internal/mitra-list?status=available').then((r: any) => {
       setMitraList(Array.isArray(r.data?.data) ? r.data.data : []);
+    }).catch(() => {});
+    apiClient.get('/internal/mitra-list').then((r: any) => {
+      setAllMitraList(Array.isArray(r.data?.data) ? r.data.data : []);
     }).catch(() => {});
   };
 
@@ -835,9 +841,9 @@ export default function CustomerCarePage() {
     ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(referensiSearch.trim().toLowerCase())).slice(0, 8)
     : [];
 
-  const selectedMitraReferensi = mitraList.find((m: any) => String(m.id) === String(formLead.referensi_mitra_id));
+  const selectedMitraReferensi = allMitraList.find((m: any) => String(m.id) === String(formLead.referensi_mitra_id));
   const mitraReferensiSearchResults = mitraReferensiSearch.trim().length >= 2
-    ? mitraList.filter((m: any) => (m.user?.name || '').toLowerCase().includes(mitraReferensiSearch.trim().toLowerCase())).slice(0, 8)
+    ? allMitraList.filter((m: any) => (m.user?.name || '').toLowerCase().includes(mitraReferensiSearch.trim().toLowerCase())).slice(0, 8)
     : [];
 
   const editSelectedKlien = editLeadForm ? klien.find((k: any) => String(k.id) === String(editLeadForm.klien_id)) : null;
@@ -848,9 +854,9 @@ export default function CustomerCarePage() {
   const editReferensiSearchResults = editReferensiSearch.trim().length >= 2
     ? klien.filter((k: any) => JSON.stringify(k).toLowerCase().includes(editReferensiSearch.trim().toLowerCase())).slice(0, 8)
     : [];
-  const editSelectedMitraReferensi = editLeadForm ? mitraList.find((m: any) => String(m.id) === String(editLeadForm.referensi_mitra_id)) : null;
+  const editSelectedMitraReferensi = editLeadForm ? allMitraList.find((m: any) => String(m.id) === String(editLeadForm.referensi_mitra_id)) : null;
   const editMitraReferensiSearchResults = editMitraReferensiSearch.trim().length >= 2
-    ? mitraList.filter((m: any) => (m.user?.name || '').toLowerCase().includes(editMitraReferensiSearch.trim().toLowerCase())).slice(0, 8)
+    ? allMitraList.filter((m: any) => (m.user?.name || '').toLowerCase().includes(editMitraReferensiSearch.trim().toLowerCase())).slice(0, 8)
     : [];
 
   return (
@@ -1584,14 +1590,21 @@ export default function CustomerCarePage() {
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'520px', padding:'24px', margin:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tandai Deal — {dealTarget.nama_leads}</h2>
-              <button onClick={() => { setDealTarget(null); setDealMitraId(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+              <button onClick={() => { setDealTarget(null); setDealMitraId(''); setDealMitraTipeFilter(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
             </div>
             <form onSubmit={handleMarkDeal} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Filter Tipe Pekerjaan</label>
+                <select value={dealMitraTipeFilter} onChange={e => setDealMitraTipeFilter(e.target.value)} style={inp}>
+                  <option value="">-- Semua Tipe Pekerjaan --</option>
+                  {TIPE_PEKERJAAN_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Assign Mitra (opsional)</label>
                 <select value={dealMitraId} onChange={e => setDealMitraId(e.target.value)} style={inp}>
                   <option value="">-- Belum Assign --</option>
-                  {mitraList.map((m: any) => (
+                  {mitraList.filter((m: any) => !dealMitraTipeFilter || m.tipe_pekerjaan === dealMitraTipeFilter).map((m: any) => (
                     <option key={m.id} value={m.id}>{m.user?.name} ({m.status})</option>
                   ))}
                 </select>
@@ -1894,32 +1907,6 @@ export default function CustomerCarePage() {
                             {getTiersFor(editLeadForm.cms_layanan_id).map((t: any, i: number) => { const val = t.frekuensi ? `${t.nama} - ${t.frekuensi}` : t.nama; return <option key={i} value={val}>{val}</option>; })}
                           </select>
                         </div>
-                      </div>
-
-                      <div style={{ position:'relative' }}>
-                        <label style={{ color:'var(--text3)', fontSize:'11px', display:'block', marginBottom:'4px' }}>Cari Klien Terdaftar (opsional)</label>
-                        {editSelectedKlien ? (
-                          <div style={{ ...inp, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                            <span style={{ color:'var(--text)', fontWeight:600 }}>{editSelectedKlien.nama_lengkap || editSelectedKlien.user?.name}</span>
-                            <button type="button" onClick={() => setEditLeadForm((f: any) => ({ ...f, klien_id:'' }))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex' }}><X size={14}/></button>
-                          </div>
-                        ) : (
-                          <>
-                            <input value={editKlienSearch} onChange={e => { setEditKlienSearch(e.target.value); setShowEditKlienResults(true); }} onFocus={() => setShowEditKlienResults(true)} onBlur={() => setTimeout(() => setShowEditKlienResults(false), 150)} style={inp} placeholder="Ketik nama atau no. telp klien..." />
-                            {showEditKlienResults && editKlienSearch.trim().length >= 2 && (
-                              <div style={{ position:'absolute', zIndex:20, top:'100%', left:0, right:0, marginTop:'4px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', maxHeight:'200px', overflowY:'auto', boxShadow:'0 8px 24px rgba(0,0,0,0.25)' }}>
-                                {editKlienSearchResults.length === 0 ? (
-                                  <div style={{ padding:'12px', fontSize:'12px', color:'var(--text3)' }}>Klien tidak ditemukan</div>
-                                ) : editKlienSearchResults.map((k: any) => (
-                                  <div key={k.id} onMouseDown={() => { setEditLeadForm((f: any) => ({ ...f, klien_id: k.id })); setEditKlienSearch(''); setShowEditKlienResults(false); }} style={{ padding:'10px 12px', fontSize:'13px', color:'var(--text)', cursor:'pointer', borderBottom:'1px solid var(--border)' }}>
-                                    <div style={{ fontWeight:600 }}>{k.nama_lengkap || k.user?.name || '-'}</div>
-                                    <div style={{ fontSize:'11px', color:'var(--text3)' }}>{k.user?.phone || k.user?.email || '-'}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        )}
                       </div>
 
                       <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px' }}>Referensi</p>
