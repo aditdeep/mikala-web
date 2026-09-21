@@ -3,12 +3,37 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText } from 'lucide-react';
+import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText, Download, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','MA, MAN, atau Sekolah Keagamaan Lainnya','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
 const TIPE_PEKERJAAN = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)','Ke Jepang Lainnya'];
 const AGAMA = ['Islam','Kristen Protestan','Kristen Katolik','Hindu','Budha','Konghucu'];
 const HEWAN = ['Tidak takut semua hewan','Anjing','Kucing','Yang lain'];
+
+// Kolom export/import Excel tabel Data Mitra -- header di sini dipakai juga waktu parse balik
+// file yang diimport (biar kolom boleh diacak urutannya pas dirapikan di Excel, dicocokkan by
+// nama header, bukan posisi kolom). key 'no_hp' khusus, diambil dari user.phone bukan field mitra.
+const EXPORT_FIELDS: { header: string; key: string }[] = [
+  { header: 'NIM', key: 'nomor_induk' },
+  { header: 'Nama Lengkap', key: 'nama_lengkap' },
+  { header: 'NIK', key: 'nik' },
+  { header: 'Gender (L/P)', key: 'jenis_kelamin' },
+  { header: 'No HP', key: 'no_hp' },
+  { header: 'Tempat Lahir', key: 'tempat_lahir' },
+  { header: 'Tanggal Lahir (YYYY-MM-DD)', key: 'tanggal_lahir' },
+  { header: 'Tipe Pekerjaan', key: 'tipe_pekerjaan' },
+  { header: 'Kota', key: 'kota' },
+  { header: 'Provinsi', key: 'provinsi' },
+  { header: 'Pendidikan Terakhir', key: 'pendidikan_terakhir' },
+  { header: 'Suku', key: 'suku' },
+  { header: 'Tinggi Badan (cm)', key: 'tinggi_badan' },
+  { header: 'Berat Badan (kg)', key: 'berat_badan' },
+  { header: 'Agama', key: 'agama' },
+  { header: 'Status Pernikahan', key: 'status_nikah' },
+  { header: 'Status (available/on_job/inactive)', key: 'status' },
+  { header: 'Status Rekrutmen (pending/verified/rejected)', key: 'status_rekrutmen' },
+];
 
 // Hitung usia (tahun) dari tanggal lahir, sampai hari ini -- dipakai supaya Usia tidak perlu
 // diisi manual lagi dan tidak bisa "basi"/tidak sinkron dengan Tanggal Lahir.
@@ -210,6 +235,8 @@ export default function RekrutmenPage() {
   const [uploadingCV, setUploadingCV] = useState(false);
   const [fotoUrl, setFotoUrl] = useState('');
   const [cvUrl, setCvUrl] = useState('');
+  const [importing, setImporting] = useState(false);
+  const importFileRef = React.useRef<HTMLInputElement>(null);
 
   // State untuk verifikasi
   const [priceRateInput, setPriceRateInput] = useState('');
@@ -414,6 +441,64 @@ export default function RekrutmenPage() {
     on_job: data.filter((d: any) => d.status === 'on_job').length,
   };
 
+  // Export tabel Data Mitra (sesuai filter tab/search aktif) ke .xlsx, biar bisa dirapikan
+  // datanya di Excel lalu di-import balik lewat tombol Import.
+  const handleExportMitra = () => {
+    const rows = filtered.map((item: any) => {
+      const row: any = {};
+      EXPORT_FIELDS.forEach(f => {
+        row[f.header] = f.key === 'no_hp' ? (item.user?.phone || '') : (item[f.key] ?? '');
+      });
+      return row;
+    });
+    const ws = XLSX.utils.json_to_sheet(rows, { header: EXPORT_FIELDS.map(f => f.header) });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data Mitra');
+    const stamp = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `data-mitra-${stamp}.xlsx`);
+  };
+
+  // Import file Excel yang sudah dirapikan: cocokkan tiap baris ke mitra by NIM, kolom yang
+  // kosong di Excel TIDAK menimpa data yang sudah ada (lihat RekrutmenController::importXlsx).
+  const handleImportFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json: any[] = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      const headerToKey: Record<string, string> = {};
+      EXPORT_FIELDS.forEach(f => { headerToKey[f.header] = f.key; });
+      const rows = json.map(r => {
+        const out: any = {};
+        Object.keys(r).forEach(h => {
+          const key = headerToKey[h.trim()];
+          if (key) out[key] = String(r[h] ?? '').trim();
+        });
+        return out;
+      }).filter(r => r.nomor_induk);
+
+      if (rows.length === 0) {
+        alert('Tidak ada baris dengan kolom NIM terisi. Pastikan header kolom NIM tidak diubah/dihapus.');
+        return;
+      }
+      const res: any = await apiClient.post('/internal/rekrutmen/mitra-import', { rows });
+      const { updated, not_found, errors } = res.data || {};
+      let msg = `Berhasil update ${updated || 0} mitra.`;
+      if (not_found?.length) msg += `\n\nNIM tidak ditemukan (${not_found.length}): ${not_found.slice(0, 10).join(', ')}${not_found.length > 10 ? ', ...' : ''}`;
+      if (errors?.length) msg += `\n\nError (${errors.length}): ${errors.slice(0, 5).join('; ')}`;
+      alert(msg);
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal import file');
+    } finally {
+      setImporting(false);
+      if (importFileRef.current) importFileRef.current.value = '';
+    }
+  };
+
   const statusBadge = (s: string) => {
     const map: any = {
       pending:     { color:'#94a3b8', bg:'rgba(148,163,184,0.15)', border:'rgba(148,163,184,0.3)', label:'Pending',    icon: Clock },
@@ -444,10 +529,21 @@ export default function RekrutmenPage() {
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Rekrutmen Mitra</h1>
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>{data.length} total pelamar terdaftar</p>
         </div>
-        <button onClick={() => { setShowModal(true); setEditItem(null); setForm({...emptyForm}); setErrorMsg(''); setFotoUrl(''); setCvUrl(''); }}
-          style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer', boxShadow:'0 4px 12px rgba(124,58,237,0.35)' }}>
-          <Plus size={15} />Tambah Pelamar
-        </button>
+        <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
+          <button onClick={handleExportMitra} title="Export tabel Data Mitra (sesuai filter/tab aktif) ke Excel"
+            style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <Download size={15} />Export Excel
+          </button>
+          <input ref={importFileRef} type="file" accept=".xlsx,.xls" style={{ display:'none' }} onChange={handleImportFileChange} />
+          <button onClick={() => importFileRef.current?.click()} disabled={importing} title="Import Excel yang sudah dirapikan (cocokkan by NIM, kolom kosong tidak menimpa)"
+            style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor: importing ? 'default' : 'pointer', opacity: importing ? 0.6 : 1 }}>
+            <Upload size={15} />{importing ? 'Mengimpor...' : 'Import Excel'}
+          </button>
+          <button onClick={() => { setShowModal(true); setEditItem(null); setForm({...emptyForm}); setErrorMsg(''); setFotoUrl(''); setCvUrl(''); }}
+            style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer', boxShadow:'0 4px 12px rgba(124,58,237,0.35)' }}>
+            <Plus size={15} />Tambah Pelamar
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
