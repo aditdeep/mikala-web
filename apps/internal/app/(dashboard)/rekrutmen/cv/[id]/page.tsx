@@ -107,6 +107,20 @@ export default function CVPage() {
   const nama = mitra?.nama_lengkap || mitra?.user?.name || '-';
   const namaDepan = nama.split(' ')[0];
   const namaBelakang = nama.split(' ').slice(1).join(' ');
+  // FIX: Usia gak pernah kesimpen sbg kolom DB tersendiri -- di halaman Detail Mitra (rekrutmen/
+  // page.tsx) juga cuma dihitung on-the-fly dari tanggal_lahir (lihat calcUsia() di sana), BUKAN
+  // dibaca dari field lain. CV lama nyoba getExtra(p,'Usia') dari blob teks yg mostly kosong buat
+  // mitra baru, makanya keliatan "- tahun" padahal Detail Mitra bisa nampilin usia dgn benar.
+  const calcUsia = (tanggalLahir?: string): number | null => {
+    if (!tanggalLahir) return null;
+    const lahir = new Date(tanggalLahir);
+    if (isNaN(lahir.getTime())) return null;
+    const now = new Date();
+    let u = now.getFullYear() - lahir.getFullYear();
+    const belumUlangTahun = now.getMonth() < lahir.getMonth() || (now.getMonth() === lahir.getMonth() && now.getDate() < lahir.getDate());
+    if (belumUlangTahun) u--;
+    return u >= 0 ? u : null;
+  };
   const p = mitra?.pengalaman || '';
   // FIX: mitra baru (dibuat via form Rekrutmen modern) ngisi kolom DB asli (mitra.agama,
   // mitra.berat_badan, dst -- lihat task migrasi blob->kolom sebelumnya), BUKAN blob teks lama
@@ -114,7 +128,8 @@ export default function CVPage() {
   // ADA di DB keliatan kosong ("-") di CV. Sekarang kolom DB asli diprioritaskan, blob-parse
   // cuma fallback buat mitra lama yg belum kesimpen di kolom asli.
   const tipeJob = mitra?.tipe_pekerjaan || getExtra(p, 'Tipe Pekerjaan') || 'Perawat Homecare';
-  const usia = getExtra(p, 'Usia') || '-';
+  const usiaHitung = calcUsia(mitra?.tanggal_lahir);
+  const usia = usiaHitung != null ? String(usiaHitung) : (getExtra(p, 'Usia') || '-');
   const tempatLahir = mitra?.tempat_lahir || getExtra(p, 'Tempat Lahir') || '-';
   const suku = mitra?.suku || getExtra(p, 'Suku') || '-';
   const tinggi = mitra?.tinggi_badan || getExtra(p, 'TB') || '-';
@@ -211,9 +226,14 @@ export default function CVPage() {
               </div>
             </div>
 
-            {/* Right: Photo */}
-            <div style={{ flexShrink:0, marginLeft:'20px' }}>
-              <div style={{ width:'130px', height:'130px', borderRadius:'50%', border:'4px solid rgba(255,255,255,0.6)', background:`linear-gradient(135deg, ${LIGHT_GREEN}, ${LIGHT_PINK})`, display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.25), 0 0 0 8px rgba(255,255,255,0.15)' }}>
+            {/* Right: Photo -- FIX: box-shadow blur+spread (dulu dipakai buat efek "ring" transparan
+                di belakang foto) dirender Chrome sbg kotak hitam solid pas print/save-as-PDF (bug
+                lawas box-shadow+overflow:hidden+border-radius di print engine). Ring transparan
+                sekarang dibikin pakai div bulat solid (bukan shadow) di belakangnya, jadi hasil
+                print-nya konsisten sama tampilan di layar. */}
+            <div className="cv-avatar-wrap" style={{ flexShrink:0, marginLeft:'20px', position:'relative', width:'146px', height:'146px', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <div className="cv-avatar-ring" style={{ position:'absolute', inset:0, borderRadius:'50%', background:'rgba(255,255,255,0.15)' }} />
+              <div style={{ position:'relative', width:'130px', height:'130px', borderRadius:'50%', border:'4px solid rgba(255,255,255,0.6)', background:`linear-gradient(135deg, ${LIGHT_GREEN}, ${LIGHT_PINK})`, display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
                 {foto ? (
                   <img src={foto} alt={nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                 ) : (
@@ -403,7 +423,21 @@ export default function CVPage() {
             box-shadow: none !important;
             margin: 0 auto !important; border-radius: 0 !important;
           }
-          @page { size: A4; margin: 0; }
+          /* FIX: dulu box-shadow blur di lingkaran foto (efek "ring" transparan) kerender jadi
+             kotak hitam solid pas print -- diganti div bulat solid biasa (.cv-avatar-ring), jadi
+             gak perlu shadow lagi di sini. print-color-adjust:exact dipasang di seluruh kartu
+             biar semua warna/gradient background ikut ke-print persis kayak di layar (browser
+             default suka nge-skip background color/gradient pas print kalau opsi ini gak diset). */
+          #cv-content, #cv-content * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          /* FIX: "margin bottom dan margin top halaman kedua dikasih spasi ya bro, biar gak
+             kepotong gantung" -- halaman pertama tetap margin:0 (biar header gradient full-bleed
+             sampai tepi kertas kayak desain aslinya), tapi halaman ke-2 dst dikasih margin
+             atas+bawah supaya konten yg lanjut ke halaman baru gak nempel/ke-crop mepet di tepi. */
+          @page { size: A4; margin: 14mm 0; }
+          @page :first { margin: 0; }
         }
       `}</style>
     </div>
