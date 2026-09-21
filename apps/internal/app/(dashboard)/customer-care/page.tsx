@@ -398,6 +398,12 @@ export default function CustomerCarePage() {
   const [downloadingKontrak3, setDownloadingKontrak3] = useState(false);
   const [tagihingAdmin, setTagihingAdmin] = useState(false);
 
+  // Koreksi Jenis Layanan/Tier utk leads yg sudah Deal (supaya kehitung di tabel ringkasan
+  // tab Layanan) -- dipakai saat cms_layanan_id/tier_nama leads kosong/keliru.
+  const [koreksiLayananId, setKoreksiLayananId] = useState('');
+  const [koreksiTierNama, setKoreksiTierNama] = useState('');
+  const [savingKoreksiLayanan, setSavingKoreksiLayanan] = useState(false);
+
   // Modal Detail Leads/Deal/Exchange
   const [leadDetail, setLeadDetail] = useState<{ type: 'lead'|'exchange'; item: any }|null>(null);
 
@@ -424,7 +430,7 @@ export default function CustomerCarePage() {
 
   useEffect(() => { fetchAll(); fetchLeadsSummary(); }, []);
   useEffect(() => {
-    if (activeTab === 'leads') fetchCmsLayananCatalog();
+    if (activeTab === 'leads' || activeTab === 'deal') fetchCmsLayananCatalog();
     if (activeTab === 'deal') fetchDealLeads();
     // exchange & leads keduanya butuh exchangeList (tabel Exchange sendiri + Exchange Historis di popup Detail Leads/Deal)
     if (activeTab === 'leads' || activeTab === 'deal' || activeTab === 'exchange') fetchExchangeList();
@@ -446,6 +452,8 @@ export default function CustomerCarePage() {
     if (leadDetail?.type === 'lead' && leadDetail.item?.status === 1) {
       setKontrakBiayaTransport(leadDetail.item.biaya_transport ? String(leadDetail.item.biaya_transport) : '');
       setKontrakCatatan(leadDetail.item.catatan_revisi_kontrak || '');
+      setKoreksiLayananId(leadDetail.item.cms_layanan_id ? String(leadDetail.item.cms_layanan_id) : '');
+      setKoreksiTierNama(leadDetail.item.tier_nama || '');
     }
     if (leadDetail?.type === 'lead' && (leadDetail.item?.status === 0 || leadDetail.item?.status === 3)) {
       const item = leadDetail.item;
@@ -712,6 +720,26 @@ export default function CustomerCarePage() {
       fetchLeadsList();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal membuat Kontrak'); }
     finally { setSavingKontrak(false); }
+  };
+
+  // Koreksi Jenis Layanan/Tier utk leads yg sudah Deal, supaya kehitung benar di tabel
+  // ringkasan tab Layanan (kadang cms_layanan_id/tier_nama kosong/keliru dari data lama).
+  const handleSaveKoreksiLayanan = async (item: any) => {
+    setSavingKoreksiLayanan(true);
+    try {
+      const l = cmsLayananList.find((x: any) => String(x.id) === String(koreksiLayananId));
+      const r: any = await apiClient.patch('/internal/cc/leads/'+item.id+'/layanan', {
+        cms_layanan_id: koreksiLayananId || undefined,
+        tier_nama: koreksiTierNama,
+        jasa_disetujui: koreksiTierNama ? `${l?.nama||''} - ${koreksiTierNama}` : (l?.nama || item.jasa_disetujui),
+      });
+      const updated = r.data?.data;
+      if (updated) setLeadDetail({ type:'lead', item: updated });
+      fetchDealLeads();
+      fetchLeadsSummary();
+      alert('Jenis Layanan/Tier berhasil diperbarui');
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal memperbarui Jenis Layanan/Tier'); }
+    finally { setSavingKoreksiLayanan(false); }
   };
 
   const handleDownloadKontrak2 = async (item: any) => {
@@ -1777,11 +1805,17 @@ export default function CustomerCarePage() {
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Diminta</label>
-                  <input value={dealForm.jasa_diminta} onChange={e => setDealForm(f => ({ ...f, jasa_diminta: e.target.value }))} style={inp} placeholder="Opsional" />
+                  <select value={dealForm.jasa_diminta} onChange={e => setDealForm(f => ({ ...f, jasa_diminta: e.target.value }))} style={inp}>
+                    <option value="">-- Opsional --</option>
+                    {cmsLayananList.map((l: any) => <option key={l.id} value={l.nama}>{l.nama}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Jasa Disarankan</label>
-                  <input value={dealForm.jasa_disarankan} onChange={e => setDealForm(f => ({ ...f, jasa_disarankan: e.target.value }))} style={inp} placeholder="Opsional" />
+                  <select value={dealForm.jasa_disarankan} onChange={e => setDealForm(f => ({ ...f, jasa_disarankan: e.target.value }))} style={inp}>
+                    <option value="">-- Opsional --</option>
+                    {cmsLayananList.map((l: any) => <option key={l.id} value={l.nama}>{l.nama}</option>)}
+                  </select>
                 </div>
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
@@ -2027,6 +2061,25 @@ export default function CustomerCarePage() {
                         </button>
                         <button onClick={() => handleStopLead(item)} disabled={stoppingId === item.id} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(100,116,139,0.1)', border:'1px solid rgba(100,116,139,0.2)', borderRadius:'10px', color:'#64748b', fontSize:'12px', fontWeight:600, cursor: stoppingId === item.id ? 'not-allowed' : 'pointer', opacity: stoppingId === item.id ? 0.6 : 1 }}>
                           <XCircle size={13}/>{stoppingId === item.id ? '...' : 'STOP'}
+                        </button>
+                      </div>
+
+                      <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                        <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>Koreksi Jenis Layanan / Tier</p>
+                        <p style={{ fontSize:'11px', color:'var(--text3)' }}>Kalau angka Deal di tabel Layanan gak sesuai, cek/betulkan Jenis Layanan &amp; Tier leads ini di sini.</p>
+                        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                          <select value={koreksiLayananId} onChange={e => { setKoreksiLayananId(e.target.value); setKoreksiTierNama(''); }} style={{ ...inp, fontSize:'12px' }}>
+                            <option value="">-- Pilih Jenis Layanan --</option>
+                            {cmsLayananList.map((l: any) => <option key={l.id} value={l.id}>{l.nama}</option>)}
+                          </select>
+                          <select value={koreksiTierNama} onChange={e => setKoreksiTierNama(e.target.value)} style={{ ...inp, fontSize:'12px' }} disabled={!koreksiLayananId || getTiersFor(koreksiLayananId).length === 0}>
+                            <option value="">-- Tanpa Tier --</option>
+                            {getTiersFor(koreksiLayananId).map((t: any, i: number) => { const val = t.frekuensi ? `${t.nama} - ${t.frekuensi}` : t.nama; return <option key={i} value={val}>{val}</option>; })}
+                          </select>
+                        </div>
+                        <button onClick={() => handleSaveKoreksiLayanan(item)} disabled={savingKoreksiLayanan || !koreksiLayananId}
+                          style={{ width:'100%', padding:'8px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'10px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor: (savingKoreksiLayanan || !koreksiLayananId) ? 'not-allowed' : 'pointer', opacity: (savingKoreksiLayanan || !koreksiLayananId) ? 0.6 : 1 }}>
+                          {savingKoreksiLayanan ? 'Menyimpan...' : 'Simpan Koreksi'}
                         </button>
                       </div>
 
