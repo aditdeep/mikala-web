@@ -168,12 +168,15 @@ export default function CVPage() {
         </div>
       </div>
 
-      {/* CV A4 */}
+      {/* CV A4 -- tinggi TIDAK dipatok (biar bisa lebih dari 1 halaman kalau kontennya panjang,
+          browser print yg atur pemotongan halaman). overflow TIDAK hidden di level ini (supaya
+          konten yg lebih panjang dari 1123px gak ke-crop -- dekorasi lingkaran di header sudah
+          di-clip di level headernya sendiri, lihat di bawah). */}
       <div id="cv-content" style={{
-        width:'794px', minHeight:'1123px', margin:'0 auto',
+        width:'794px', margin:'0 auto',
         background:'white', fontFamily:'"Segoe UI", Arial, sans-serif',
         position:'relative', boxShadow:'0 8px 40px rgba(0,0,0,0.18)',
-        borderRadius:'4px', overflow:'hidden',
+        borderRadius:'4px',
       }}>
 
         {/* Background subtle pattern */}
@@ -221,11 +224,14 @@ export default function CVPage() {
           </svg>
         </div>
 
-        {/* ═══ BODY - 2 COLUMNS ═══ */}
-        <div style={{ position:'relative', zIndex:1, display:'grid', gridTemplateColumns:'240px 1fr', minHeight:'900px' }}>
+        {/* ═══ BODY - 2 COLUMNS ═══ -- pakai display:table/table-cell (bukan CSS grid) karena
+            grid sering gak kepotong dgn bener kalau kontennya lebih panjang dari 1 halaman A4
+            pas di-print/export PDF (kolom kanan yg panjang jadi ke-crop). table-cell alami
+            mendukung tinggi kolom yg fleksibel & page-break yg lebih predictable di Chrome. */}
+        <div style={{ position:'relative', zIndex:1, display:'table', width:'100%', tableLayout:'fixed' }}>
 
           {/* ═══ LEFT SIDEBAR ═══ */}
-          <div style={{ background:`linear-gradient(180deg, ${LIGHT_GREEN} 0%, rgba(232,245,240,0.3) 100%)`, borderRight:'2px solid rgba(45,122,94,0.12)', padding:'24px 18px' }}>
+          <div style={{ display:'table-cell', width:'240px', verticalAlign:'top', background:`linear-gradient(180deg, ${LIGHT_GREEN} 0%, rgba(232,245,240,0.3) 100%)`, borderRight:'2px solid rgba(45,122,94,0.12)', padding:'24px 18px' }}>
 
             {/* Foto besar (opsional duplicate untuk print) */}
 
@@ -270,7 +276,7 @@ export default function CVPage() {
           </div>
 
           {/* ═══ RIGHT CONTENT ═══ */}
-          <div style={{ padding:'24px 24px 24px 20px' }}>
+          <div style={{ display:'table-cell', verticalAlign:'top', padding:'24px 24px 24px 20px' }}>
 
             {/* PENDIDIKAN FORMAL */}
             <div style={{ marginBottom:'22px' }}>
@@ -317,23 +323,52 @@ export default function CVPage() {
             </div>
 
             {/* BIDANG KEAHLIAN -- diisi dari materi training yg sudah DICEKLIS oleh Training
-                Center (cv_materi), bukan tag statis lagi. tipeJob tetap ditaruh di depan sebagai
-                highlight utama. */}
+                Center (cv_materi), bukan tag statis lagi. Dikelompokkan per kategori (mis.
+                "Dasar" & "PHC") kalau ceklisnya kebetulan kena 2 kategori sekaligus, masing2
+                ditampilkan sebagai list rapi 2 kolom (bukan pill/badge lagi biar muat banyak
+                item tanpa berantakan). break-inside:avoid di tiap baris biar gak kepotong di
+                tengah kalau pas jatuh di batas halaman. */}
             <div style={{ marginBottom:'22px' }}>
               <SectionTitle title="Bidang Keahlian" color={PINK} />
-              <div style={{ background:`linear-gradient(135deg, rgba(214,58,122,0.06), white)`, borderRadius:'12px', padding:'14px 16px', border:`1px solid ${PINK}22` }}>
-                {cvMateri.length > 0 ? (
-                  <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
-                    {[tipeJob, ...cvMateri.map((m: any) => m.nama).filter(Boolean)].map((skill, i) => (
-                      <span key={i} style={{ background: i === 0 ? `linear-gradient(135deg, ${GREEN}, ${PINK})` : `linear-gradient(135deg, ${LIGHT_GREEN}, ${LIGHT_PINK})`, color: i === 0 ? 'white' : DARK, borderRadius:'20px', padding:'4px 12px', fontSize:'10px', fontWeight:600, border: i === 0 ? 'none' : `1px solid ${GREEN}22` }}>
-                        {skill}
-                      </span>
-                    ))}
+              {(() => {
+                const KATEGORI_LABEL: Record<string, string> = {
+                  'Dasar': 'Materi Dasar',
+                  'PHC': 'Perawat Homecare (PHC)',
+                };
+                const grup = cvMateri.reduce((acc: Record<string, string[]>, m: any) => {
+                  const kat = m.kategori || 'Lainnya';
+                  if (!acc[kat]) acc[kat] = [];
+                  if (m.nama) acc[kat].push(m.nama);
+                  return acc;
+                }, {} as Record<string, string[]>);
+                const kategoriKeys = Object.keys(grup);
+                return (
+                  <div style={{ background:`linear-gradient(135deg, rgba(214,58,122,0.06), white)`, borderRadius:'12px', padding:'14px 16px', border:`1px solid ${PINK}22` }}>
+                    <div style={{ marginBottom: kategoriKeys.length ? '10px' : 0 }}>
+                      <span style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', borderRadius:'20px', padding:'4px 12px', fontSize:'10px', fontWeight:600 }}>{tipeJob}</span>
+                    </div>
+                    {kategoriKeys.length > 0 ? (
+                      kategoriKeys.map(kat => (
+                        <div key={kat} style={{ marginBottom:'12px', breakInside:'avoid-column' as const }}>
+                          {kategoriKeys.length > 1 && (
+                            <p style={{ fontSize:'10.5px', fontWeight:700, color:PINK, textTransform:'uppercase', letterSpacing:'0.3px', margin:'0 0 6px' }}>{KATEGORI_LABEL[kat] || kat}</p>
+                          )}
+                          <div style={{ columnCount:2, columnGap:'18px' }}>
+                            {grup[kat].map((nm: string, i: number) => (
+                              <div key={i} style={{ display:'flex', gap:'6px', fontSize:'10.5px', color:DARK, lineHeight:'1.5', marginBottom:'3px', breakInside:'avoid-column' as const, WebkitColumnBreakInside:'avoid' as const }}>
+                                <span style={{ color:GREEN, flexShrink:0 }}>✓</span>
+                                <span>{nm}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ fontSize:'11px', color:GRAY, margin:0, fontStyle:'italic' }}>Belum ada materi training yang diceklis oleh Training Center.</p>
+                    )}
                   </div>
-                ) : (
-                  <p style={{ fontSize:'11px', color:GRAY, margin:0, fontStyle:'italic' }}>Belum ada materi training yang diceklis oleh Training Center.</p>
-                )}
-              </div>
+                );
+              })()}
             </div>
 
           </div>
@@ -355,8 +390,14 @@ export default function CVPage() {
           body { margin: 0; padding: 0; background: white; }
           body * { visibility: hidden; }
           #cv-content, #cv-content * { visibility: visible; }
+          /* FIX: sebelumnya "left:0" bikin kartu CV nempel ke pojok kiri & keliatan gak center
+             (ada blank space gede di kanan) begitu di-print/save-as-PDF, karena posisi absolute
+             menghapus efek margin:0 auto. left:50% + translateX(-50%) selalu nge-center kartu
+             794px itu secara horizontal di halaman A4, berapa pun lebar area print-nya. Tinggi
+             TIDAK dipatok (dan overflow gak di-hidden) supaya konten yg lebih panjang dari 1
+             halaman otomatis lanjut ke halaman 2 dst, bukan kepotong. */
           #cv-content {
-            position: absolute; left: 0; top: 0;
+            position: absolute; left: 50%; top: 0; transform: translateX(-50%);
             width: 794px; box-shadow: none !important;
             margin: 0 !important; border-radius: 0 !important;
           }
