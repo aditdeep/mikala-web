@@ -29,7 +29,7 @@ const labelStyle: React.CSSProperties = { color:'var(--text2)', fontSize:'12px',
 const sectionStyle: React.CSSProperties = { background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'14px', padding:'16px', marginBottom:'12px' };
 
 const emptyForm = {
-  name:'', email:'', password:'', phone:'', nik:'', usia:'',
+  name:'', email:'', password:'', phone:'', nik:'', nomor_induk:'', usia:'',
   tempat_lahir:'', tanggal_lahir:'', alamat:'', kelurahan:'', kecamatan:'',
   kota:'', provinsi:'', suku:'', pendidikan:'', jenis_kelamin:'L',
   tinggi:'', berat:'', vaksin:'', status_nikah:'Belum Menikah',
@@ -256,7 +256,7 @@ export default function RekrutmenPage() {
         ktp_file: cvUrl || undefined,
         name: form.name, email: form.email,
         password: form.password || 'password123',
-        phone: form.phone, nik: form.nik,
+        phone: form.phone, nik: form.nik, nomor_induk: form.nomor_induk || undefined,
         alamat: `${form.alamat}, ${form.kelurahan}, ${form.kecamatan}, ${form.kota}, ${form.provinsi}`,
         kota: form.kota, provinsi: form.provinsi,
         tanggal_lahir: form.tanggal_lahir,
@@ -315,6 +315,7 @@ export default function RekrutmenPage() {
       password: '',
       phone: user.phone || '',
       nik: item.nik || '',
+      nomor_induk: item.nomor_induk || '',
       pendidikan: item.pendidikan_terakhir || '',
       kota: item.kota || '',
       provinsi: item.provinsi || '',
@@ -481,7 +482,7 @@ export default function RekrutmenPage() {
             <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'750px' }}>
               <thead>
                 <tr style={{ borderBottom:'1px solid var(--border)' }}>
-                  {['No','Nama','Email','Pendidikan','Kota','Status','Rekrutmen','Aksi'].map(h => (
+                  {['No','NIM','Nama','Email','Pendidikan','Kota','Status','Rekrutmen','Aksi'].map(h => (
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', whiteSpace:'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -495,6 +496,7 @@ export default function RekrutmenPage() {
                   return (
                     <tr key={item.id || i} style={{ borderBottom:'1px solid var(--border)' }}>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(page - 1) * perPage + i + 1}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{item.nomor_induk || '-'}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                           <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--purple-light)', fontSize:'13px', fontWeight:700, flexShrink:0, overflow:'hidden' }}>
@@ -605,6 +607,7 @@ export default function RekrutmenPage() {
             {[
               { label:'Telepon',    val: showDetail.user?.phone },
               { label:'CV/Dok',     val: showDetail.cv_file ? '✓ Ada' : '-' },
+              { label:'NIM',        val: showDetail.nomor_induk },
               { label:'NIK',        val: showDetail.nik },
               { label:'Tgl Lahir',  val: showDetail.tanggal_lahir },
               { label:'Usia',       val: calcUsia(showDetail.tanggal_lahir) != null ? `${calcUsia(showDetail.tanggal_lahir)} tahun` : '-' },
@@ -895,6 +898,10 @@ export default function RekrutmenPage() {
                     <input required value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} />
                   </div>
                   <div><label style={labelStyle}>NIK *</label><input required value={form.nik} onChange={e => set('nik', e.target.value)} style={inputStyle} /></div>
+                  <div>
+                    <label style={labelStyle}>NIM {editItem ? '' : '(kosongkan = auto-generate)'}</label>
+                    <input value={form.nomor_induk||''} onChange={e => set('nomor_induk', e.target.value)} placeholder="mis. CG.03.26-001" style={inputStyle} />
+                  </div>
                   <div><label style={labelStyle}>Tempat Lahir *</label><input required value={form.tempat_lahir} onChange={e => set('tempat_lahir', e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>Tanggal Lahir *</label><input required type="date" value={form.tanggal_lahir} onChange={e => set('tanggal_lahir', e.target.value)} style={inputStyle} /></div>
                   <div>
