@@ -23,6 +23,7 @@ export default function CVPage() {
   const [mitra, setMitra] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState<string[]>([]);
+  const [cvMateri, setCvMateri] = useState<any[]>([]);
 
   useEffect(() => {
     apiClient.get(`/internal/rekrutmen/mitra/${params.id}`)
@@ -45,6 +46,12 @@ export default function CVPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+    // Bidang Keahlian di CV diisi dari materi training yang SUDAH DICEKLIS oleh divisi
+    // Training Center (bukan tag statis lagi) -- lihat TrainingController::mitraProgress()
+    // yang sudah menyiapkan field cv_materi persis untuk kebutuhan ini.
+    apiClient.get(`/internal/training/mitra/${params.id}/progress`)
+      .then((res: any) => setCvMateri(res.data?.cv_materi || []))
+      .catch(() => setCvMateri([]));
   }, [params.id]);
 
   const getExtra = (p: string, field: string) => {
@@ -118,9 +125,6 @@ export default function CVPage() {
     ? new Date(mitra.tanggal_lahir).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })
     : '-';
   const foto = mitra?.foto_url || mitra?.ktp_file || null;
-  const email = mitra?.user?.email || '-';
-  const phone = mitra?.user?.phone || '-';
-  const alamat = mitra?.alamat || '-';
   const nik = mitra?.nik || '-';
 
   const SectionTitle = ({ title, color = GREEN }: { title: string; color?: string }) => (
@@ -197,17 +201,6 @@ export default function CVPage() {
               <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'rgba(255,255,255,0.2)', backdropFilter:'blur(10px)', borderRadius:'20px', padding:'5px 14px', border:'1px solid rgba(255,255,255,0.3)' }}>
                 <span style={{ color:'white', fontSize:'12px', fontWeight:600, letterSpacing:'0.5px' }}>{tipeJob}</span>
               </div>
-              {/* Contact mini */}
-              <div style={{ display:'flex', gap:'16px', marginTop:'12px', flexWrap:'wrap' }}>
-                {[
-                  { icon:'📞', val: phone },
-                  { icon:'✉️', val: email },
-                ].map(c => (
-                  <div key={c.val} style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'10px', color:'rgba(255,255,255,0.85)' }}>
-                    <span>{c.icon}</span><span>{c.val}</span>
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* Right: Photo */}
@@ -255,31 +248,6 @@ export default function CVPage() {
               <BioRow label="Tinggi Badan" value={tinggi + ' cm'} />
               <BioRow label="Berat Badan" value={berat + ' kg'} />
               <BioRow label="Vaksin" value={vaksin} />
-            </div>
-
-            {/* ALAMAT */}
-            <div style={{ marginBottom:'20px' }}>
-              <SectionTitle title="Alamat" color={GREEN} />
-              <p style={{ fontSize:'11px', color:DARK, lineHeight:'1.7', margin:0 }}>{alamat}</p>
-            </div>
-
-            {/* KONTAK */}
-            <div style={{ marginBottom:'20px' }}>
-              <SectionTitle title="Kontak" color={GREEN} />
-              <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
-                {[
-                  { label:'Telepon', value: phone, icon:'📞' },
-                  { label:'Email', value: email, icon:'✉️' },
-                ].map(c => (
-                  <div key={c.label} style={{ display:'flex', gap:'8px', fontSize:'11px', color:DARK, alignItems:'flex-start' }}>
-                    <span style={{ flexShrink:0 }}>{c.icon}</span>
-                    <div>
-                      <div style={{ color:GRAY, fontSize:'10px' }}>{c.label}</div>
-                      <div style={{ fontWeight:600, wordBreak:'break-all' as const }}>{c.value}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* KEMAMPUAN KHUSUS */}
@@ -348,17 +316,23 @@ export default function CVPage() {
               )}
             </div>
 
-            {/* MOTIVASI / TIPE PEKERJAAN */}
+            {/* BIDANG KEAHLIAN -- diisi dari materi training yg sudah DICEKLIS oleh Training
+                Center (cv_materi), bukan tag statis lagi. tipeJob tetap ditaruh di depan sebagai
+                highlight utama. */}
             <div style={{ marginBottom:'22px' }}>
               <SectionTitle title="Bidang Keahlian" color={PINK} />
               <div style={{ background:`linear-gradient(135deg, rgba(214,58,122,0.06), white)`, borderRadius:'12px', padding:'14px 16px', border:`1px solid ${PINK}22` }}>
-                <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
-                  {[tipeJob, 'Perawatan Pasien', 'Homecare', 'Komunikasi'].filter(Boolean).map((skill, i) => (
-                    <span key={i} style={{ background: i === 0 ? `linear-gradient(135deg, ${GREEN}, ${PINK})` : `linear-gradient(135deg, ${LIGHT_GREEN}, ${LIGHT_PINK})`, color: i === 0 ? 'white' : DARK, borderRadius:'20px', padding:'4px 12px', fontSize:'10px', fontWeight:600, border: i === 0 ? 'none' : `1px solid ${GREEN}22` }}>
-                      {skill}
-                    </span>
-                  ))}
-                </div>
+                {cvMateri.length > 0 ? (
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
+                    {[tipeJob, ...cvMateri.map((m: any) => m.nama).filter(Boolean)].map((skill, i) => (
+                      <span key={i} style={{ background: i === 0 ? `linear-gradient(135deg, ${GREEN}, ${PINK})` : `linear-gradient(135deg, ${LIGHT_GREEN}, ${LIGHT_PINK})`, color: i === 0 ? 'white' : DARK, borderRadius:'20px', padding:'4px 12px', fontSize:'10px', fontWeight:600, border: i === 0 ? 'none' : `1px solid ${GREEN}22` }}>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize:'11px', color:GRAY, margin:0, fontStyle:'italic' }}>Belum ada materi training yang diceklis oleh Training Center.</p>
+                )}
               </div>
             </div>
 
