@@ -108,17 +108,22 @@ export default function CVPage() {
   const namaDepan = nama.split(' ')[0];
   const namaBelakang = nama.split(' ').slice(1).join(' ');
   const p = mitra?.pengalaman || '';
-  const tipeJob = getExtra(p, 'Tipe Pekerjaan') || mitra?.tipe_pekerjaan || 'Perawat Homecare';
+  // FIX: mitra baru (dibuat via form Rekrutmen modern) ngisi kolom DB asli (mitra.agama,
+  // mitra.berat_badan, dst -- lihat task migrasi blob->kolom sebelumnya), BUKAN blob teks lama
+  // di mitra.pengalaman. Kalau CV cuma baca getExtra(p,...) dari blob itu, data yg sebenernya
+  // ADA di DB keliatan kosong ("-") di CV. Sekarang kolom DB asli diprioritaskan, blob-parse
+  // cuma fallback buat mitra lama yg belum kesimpen di kolom asli.
+  const tipeJob = mitra?.tipe_pekerjaan || getExtra(p, 'Tipe Pekerjaan') || 'Perawat Homecare';
   const usia = getExtra(p, 'Usia') || '-';
-  const tempatLahir = getExtra(p, 'Tempat Lahir') || '-';
-  const suku = getExtra(p, 'Suku') || '-';
-  const tinggi = getExtra(p, 'TB') || '-';
-  const berat = getExtra(p, 'BB') || '-';
-  const agama = getExtra(p, 'Agama') || '-';
-  const statusNikah = getExtra(p, 'Status Nikah') || '-';
-  const vaksin = getExtra(p, 'Vaksin') || '-';
-  const takutHewan = getExtra(p, 'Takut Hewan') || '-';
-  const memasak = getExtra(p, 'Memasak') || '-';
+  const tempatLahir = mitra?.tempat_lahir || getExtra(p, 'Tempat Lahir') || '-';
+  const suku = mitra?.suku || getExtra(p, 'Suku') || '-';
+  const tinggi = mitra?.tinggi_badan || getExtra(p, 'TB') || '-';
+  const berat = mitra?.berat_badan || getExtra(p, 'BB') || '-';
+  const agama = mitra?.agama || getExtra(p, 'Agama') || '-';
+  const statusNikah = mitra?.status_nikah || getExtra(p, 'Status Nikah') || '-';
+  const vaksin = mitra?.vaksin || getExtra(p, 'Vaksin') || '-';
+  const takutHewan = mitra?.takut_hewan || getExtra(p, 'Takut Hewan') || '-';
+  const memasak = mitra?.bisa_memasak || getExtra(p, 'Memasak') || '-';
   const pelatihan = getPelatihan(p);
   const pengalamanKerja = getPengalamanKerja(p);
   const tglLahir = mitra?.tanggal_lahir
@@ -150,7 +155,7 @@ export default function CVPage() {
   );
 
   return (
-    <div style={{ background:'#f0f4f0', minHeight:'100vh', padding:'20px' }}>
+    <div className="cv-page-wrapper" style={{ background:'#f0f4f0', minHeight:'100vh', padding:'20px' }}>
       {/* Control Bar */}
       <div className="no-print" style={{ maxWidth:'794px', margin:'0 auto 20px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'10px' }}>
         <button onClick={() => router.back()} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 16px', background:'white', border:'1px solid #ddd', borderRadius:'12px', color:'#555', cursor:'pointer', fontSize:'13px', fontWeight:600 }}>
@@ -386,20 +391,17 @@ export default function CVPage() {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @media print {
-          .no-print { display: none !important; }
-          body { margin: 0; padding: 0; background: white; }
-          body * { visibility: hidden; }
-          #cv-content, #cv-content * { visibility: visible; }
-          /* FIX: sebelumnya "left:0" bikin kartu CV nempel ke pojok kiri & keliatan gak center
-             (ada blank space gede di kanan) begitu di-print/save-as-PDF, karena posisi absolute
-             menghapus efek margin:0 auto. left:50% + translateX(-50%) selalu nge-center kartu
-             794px itu secara horizontal di halaman A4, berapa pun lebar area print-nya. Tinggi
-             TIDAK dipatok (dan overflow gak di-hidden) supaya konten yg lebih panjang dari 1
-             halaman otomatis lanjut ke halaman 2 dst, bukan kepotong. */
+          /* .no-print (Control Bar di sini + Sidebar/Header dashboard, lihat globals.css)
+             disembunyikan total via display:none (bukan cuma visibility:hidden) supaya beneran
+             gak makan tempat/nambah margin kosong di atas hasil print. Shell dashboard yg
+             dipatok height:100vh+overflow:hidden juga di-reset ke height:auto/overflow:visible
+             di globals.css -- itu akar masalah kenapa CV yg lebih panjang dari 1 halaman dulu
+             ke-crop, gak pernah lanjut ke halaman 2. Kartu #cv-content sekarang tinggal ngikut
+             flow dokumen biasa & center via margin:auto, gak perlu position:absolute lagi. */
+          .cv-page-wrapper { padding: 0 !important; min-height: 0 !important; background: white !important; }
           #cv-content {
-            position: absolute; left: 50%; top: 0; transform: translateX(-50%);
-            width: 794px; box-shadow: none !important;
-            margin: 0 !important; border-radius: 0 !important;
+            box-shadow: none !important;
+            margin: 0 auto !important; border-radius: 0 !important;
           }
           @page { size: A4; margin: 0; }
         }

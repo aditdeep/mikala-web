@@ -51,6 +51,23 @@ html, body {
   max-width: 100vw;
 }
 
+/* FIX: shell dashboard (.dashboard-shell/.dashboard-col/.dashboard-main di (dashboard)/layout.tsx)
+   dipatok height:100vh + overflow:hidden/auto biar sidebar & scroll area kerja bener di layar --
+   tapi itu bikin halaman apapun yg butuh nge-print/save-as-PDF konten yg lebih panjang dari 1
+   layar (mis. CV mitra) ke-crop, gak pernah lanjut ke halaman 2. Reset ke height:auto +
+   overflow:visible khusus pas print, dan sembunyikan total chrome sidebar/header (.no-print)
+   biar gak makan tempat/nambah margin kosong di hasil print. */
+@media print {
+  .no-print { display: none !important; }
+  .dashboard-shell, .dashboard-col, .dashboard-main {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+}
+
 /* Sidebar responsive */
 @media (min-width: 1024px) {
   .lg\:relative { position: relative !important; }
