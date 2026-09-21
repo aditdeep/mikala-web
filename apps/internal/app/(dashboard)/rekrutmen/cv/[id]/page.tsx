@@ -355,7 +355,7 @@ export default function CVPage() {
                           )}
                           <div style={{ columnCount:2, columnGap:'18px' }}>
                             {grup[kat].map((nm: string, i: number) => (
-                              <div key={i} style={{ display:'flex', gap:'6px', fontSize:'10.5px', color:DARK, lineHeight:'1.5', marginBottom:'3px', breakInside:'avoid-column' as const, WebkitColumnBreakInside:'avoid' as const }}>
+                              <div key={i} style={{ display:'flex', gap:'6px', fontSize:'10.5px', color:DARK, lineHeight:'1.5', marginBottom:'3px', breakInside:'avoid-column' as const }}>
                                 <span style={{ color:GREEN, flexShrink:0 }}>✓</span>
                                 <span>{nm}</span>
                               </div>
