@@ -598,6 +598,11 @@ export default function WebsitePage() {
               { key:'video_title', label:'Judul Video Profil', type:'text' },
               { key:'video_url', label:'URL Video YouTube', type:'text' },
               { key:'google_ads_id', label:'Google Ads Conversion ID (AW-XXXXXXXXX)', type:'text' },
+              // FIX: sebelumnya cuma ada field Google Ads (AW-), padahal Google Tag Manager
+              // (GTM-XXXXXXX) itu produk lain -- container terpisah buat pasang banyak tag
+              // sekaligus (GA4, Meta Pixel, dll) tanpa edit kode tiap kali. Ditambah field baru
+              // yg terpisah biar gak ketuker lagi kayak sebelumnya.
+              { key:'gtm_id', label:'Google Tag Manager Container ID (GTM-XXXXXXX)', type:'text' },
             ].map(f => (
               <div key={f.key}>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>{f.label}</label>
