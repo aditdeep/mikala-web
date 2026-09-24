@@ -589,7 +589,10 @@ export default function RekrutmenPage() {
     }
   };
 
-  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+  // FIX: sebelumnya diketik ketat (v: string) -- Vercel build gagal begitu dipakai utk simpan
+  // field baru "kemampuan" yg nilainya string[] (bukan string), lolos di local ts.transpileModule
+  // karena itu cuma syntax check (bukan type-check penuh kayak next build).
+  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   const filtered = data.filter((d: any) => {
     const matchTab = activeTab === 'semua' || d.status === activeTab;
