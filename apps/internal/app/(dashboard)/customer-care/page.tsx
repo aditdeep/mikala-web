@@ -1038,9 +1038,9 @@ export default function CustomerCarePage() {
       {/* Summary cards Leads - selalu tampil, di semua tabs (Layanan/Leads/Klien/Pasien/Feedback/Report), bukan cuma milik tab Leads */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px,1fr))', gap:'12px' }}>
         {[
-          { icon: Briefcase,  label:'Total Leads', value: leadsSummary?.total_leads ?? 0, gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)' },
-          { icon: TrendingUp, label:'Deal',        value: leadsSummary?.total_deal ?? 0,  gradient:'linear-gradient(135deg, #10b981, #059669)' },
-          { icon: XCircle,    label:'Loss',        value: leadsSummary?.total_loss ?? 0,  gradient:'linear-gradient(135deg, #ef4444, #b91c1c)' },
+          { icon: Briefcase,  label:'Total Pasien',     value: leadsSummary?.total_pasien ?? 0,          gradient:'linear-gradient(135deg, #ec4899, #8b5cf6)' },
+          { icon: TrendingUp, label:'Pasien Aktif',     value: leadsSummary?.total_pasien_aktif ?? 0,     gradient:'linear-gradient(135deg, #10b981, #059669)' },
+          { icon: XCircle,    label:'Pasien Non Aktif', value: leadsSummary?.total_pasien_non_aktif ?? 0, gradient:'linear-gradient(135deg, #ef4444, #b91c1c)' },
         ].map(s => {
           const Icon = s.icon;
           return (

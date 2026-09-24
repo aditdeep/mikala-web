@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { LogOut, Sun, Moon, Search, Menu } from 'lucide-react';
+import { LogOut, Sun, Moon, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@mikala/lib';
 import { useTheme } from '@/components/ThemeProvider';
@@ -24,12 +24,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <Menu size={18} style={{ color:'var(--text2)' }} />
       </button>
 
-      {/* Search */}
-      <div style={{ display:'flex', alignItems:'center', gap:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'8px 14px', flex:1, maxWidth:'280px' }}>
-        <Search size={15} style={{ color:'var(--text3)', flexShrink:0 }} />
-        <input placeholder="Cari..." style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:'13px', width:'100%' }} />
-      </div>
-
+      {/* Kolom search dihapus -- sebelumnya cuma dekorasi (gak ada state/onChange, gak nyambung ke apapun) */}
       <div style={{ display:'flex', alignItems:'center', gap:'6px', marginLeft:'auto' }}>
         <button onClick={toggle} style={{ width:'36px', height:'36px', borderRadius:'10px', background:'var(--glass)', border:'1px solid var(--glass-border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           {theme === 'dark' ? <Sun size={15} style={{ color:'#fbbf24' }} /> : <Moon size={15} style={{ color:'var(--purple-light)' }} />}
