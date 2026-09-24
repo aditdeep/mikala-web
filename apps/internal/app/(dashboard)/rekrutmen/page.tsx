@@ -59,14 +59,27 @@ const emptyForm = {
   kota:'', provinsi:'', suku:'', pendidikan:'', jenis_kelamin:'L',
   tinggi:'', berat:'', vaksin:'', status_nikah:'Belum Menikah',
   agama:'Islam', takut_hewan:'Tidak takut semua hewan',
-  bisa_memasak:'3', tipe_pekerjaan:'Perawat Homecare',
+  bisa_memasak:'Bisa', tipe_pekerjaan:'Perawat Homecare',
   pengalaman_pelatihan:'', pengalaman:'',
+  // Kemampuan (list bebas, diisi mitra sendiri saat daftar) -- ditampilkan di CV mitra
+  kemampuan: [] as string[],
   payment_type: 'cash' as 'cash' | 'kredit',
   sumber_tipe: 'sendiri',
   sumber_detail: '',
   lembaga_id: undefined as number | undefined,
   referrer_mitra_id: undefined as number | undefined,
 };
+
+// FIX: data lama (sebelum field ini diubah jadi dropdown Bisa/Tidak Bisa) kesimpen sbg skala
+// angka 1-5 ("1".."5") atau kosong -- normalisasi ke 2 opsi baru biar select gak "blank" pas
+// buka Edit utk mitra lama: 1 (Tidak bisa) -> "Tidak Bisa", 2-5 (Sedikit..Sangat mahir) -> "Bisa".
+function normalizeMemasak(v: string): string {
+  const t = (v || '').trim();
+  if (t === 'Bisa' || t === 'Tidak Bisa') return t;
+  const n = parseInt(t, 10);
+  if (!isNaN(n)) return n <= 1 ? 'Tidak Bisa' : 'Bisa';
+  return 'Bisa';
+}
 
 // Parse balik data yang di-encode ke dalam field `pengalaman` (lihat handleSubmit) supaya
 // form Edit tidak menampilkan kosong -- sebelumnya ini menyebabkan data "Data Tambahan"
@@ -76,7 +89,7 @@ function parsePengalamanBlob(raw: string) {
     pengalaman_pelatihan: '', pengalaman: '',
     usia: '', tempat_lahir: '', tinggi: '', berat: '', vaksin: '',
     agama: 'Islam', status_nikah: 'Belum Menikah', takut_hewan: 'Tidak takut semua hewan',
-    bisa_memasak: '3', tipe_pekerjaan: 'Perawat Homecare', suku: '',
+    bisa_memasak: 'Bisa', tipe_pekerjaan: 'Perawat Homecare', suku: '',
   };
   if (!raw) return result;
 
@@ -101,7 +114,7 @@ function parsePengalamanBlob(raw: string) {
     result.agama = grab('Agama') || 'Islam';
     result.status_nikah = grab('Status Nikah') || 'Belum Menikah';
     result.takut_hewan = grab('Takut Hewan') || 'Tidak takut semua hewan';
-    result.bisa_memasak = grab('Memasak').replace(/\/5$/, '').trim() || '3';
+    result.bisa_memasak = normalizeMemasak(grab('Memasak').replace(/\/5$/, '').trim());
     result.tipe_pekerjaan = grab('Tipe Pekerjaan') || 'Perawat Homecare';
     result.suku = grab('Suku');
   } else if (!pelatihanMatch && !kerjaMatch) {
@@ -125,6 +138,147 @@ function parseAlamatBlob(rawAlamat: string, kota: string, provinsi: string) {
     kelurahan: parts[1] || '',
     kecamatan: parts[2] || '',
   };
+}
+
+// ── Kemampuan Khusus -- input list bebas (tag), ditampilkan di CV mitra ──────
+function KemampuanTagInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const [draft, setDraft] = React.useState('');
+  const add = () => {
+    const v = draft.trim();
+    if (!v || value.includes(v)) { setDraft(''); return; }
+    onChange([...value, v]);
+    setDraft('');
+  };
+  return (
+    <div>
+      <div style={{ display:'flex', gap:'8px' }}>
+        <input
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+          style={{ ...inputStyle, flex:1 }}
+          placeholder="mis. Merawat luka, Injeksi -- Enter utk tambah"
+        />
+        <button type="button" onClick={add} style={{ padding:'0 16px', borderRadius:'10px', border:'1px solid var(--border)', background:'rgba(124,58,237,0.15)', color:'var(--purple-light)', fontWeight:700, cursor:'pointer' }}>+</button>
+      </div>
+      {value.length > 0 && (
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'6px', marginTop:'10px' }}>
+          {value.map((k, i) => (
+            <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'5px 10px', borderRadius:'20px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', color:'var(--purple-light)', fontSize:'12px' }}>
+              {k}
+              <button type="button" onClick={() => onChange(value.filter((_, idx) => idx !== i))} style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:'13px', lineHeight:1, padding:0 }}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── PhotoCropModal -- crop foto profil sebelum diupload (pilih area fokus, mis. badan/kepala) ──
+// Implementasi manual (drag + zoom di atas canvas), tanpa library eksternal supaya gak perlu
+// nambah dependency baru yg belum tentu ke-install bersih di semua environment deploy.
+function PhotoCropModal({ file, onCancel, onConfirm }: { file: File; onCancel: () => void; onConfirm: (blob: Blob) => void }) {
+  const FRAME = 280; // ukuran area crop (persegi) di layar, px
+  const OUTPUT = 600; // ukuran output foto hasil crop, px
+  const [imgSrc, setImgSrc] = React.useState('');
+  const [natSize, setNatSize] = React.useState({ w: 0, h: 0 });
+  const [zoom, setZoom] = React.useState(1);
+  const [offset, setOffset] = React.useState({ x: 0, y: 0 });
+  const dragRef = React.useRef<{ startX: number; startY: number; offX: number; offY: number } | null>(null);
+
+  React.useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setImgSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const baseScale = natSize.w && natSize.h ? Math.max(FRAME / natSize.w, FRAME / natSize.h) : 0;
+  const scale = baseScale * zoom;
+  const dispW = natSize.w * scale;
+  const dispH = natSize.h * scale;
+
+  const clamp = (o: { x: number; y: number }, dW: number, dH: number) => ({
+    x: Math.min(0, Math.max(FRAME - dW, o.x)),
+    y: Math.min(0, Math.max(FRAME - dH, o.y)),
+  });
+
+  const onImgLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const w = img.naturalWidth, h = img.naturalHeight;
+    setNatSize({ w, h });
+    const bs = Math.max(FRAME / w, FRAME / h);
+    setOffset({ x: (FRAME - w * bs) / 2, y: (FRAME - h * bs) / 2 });
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    (e.target as Element).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, offX: offset.x, offY: offset.y };
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    setOffset(clamp({ x: dragRef.current.offX + dx, y: dragRef.current.offY + dy }, dispW, dispH));
+  };
+  const onPointerUp = () => { dragRef.current = null; };
+
+  const onZoomChange = (z: number) => {
+    const newScale = baseScale * z;
+    const newDispW = natSize.w * newScale, newDispH = natSize.h * newScale;
+    setZoom(z);
+    setOffset(o => clamp(o, newDispW, newDispH));
+  };
+
+  const confirm = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = OUTPUT; canvas.height = OUTPUT;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const img = new Image();
+    img.onload = () => {
+      const sourceX = -offset.x / scale;
+      const sourceY = -offset.y / scale;
+      const sourceSize = FRAME / scale;
+      ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, OUTPUT, OUTPUT);
+      canvas.toBlob(blob => { if (blob) onConfirm(blob); }, 'image/jpeg', 0.9);
+    };
+    img.src = imgSrc;
+  };
+
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:300, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+      <div style={{ background:'var(--card, #1a1a2e)', borderRadius:'20px', padding:'24px', width:'100%', maxWidth:'380px', textAlign:'center' }}>
+        <h3 style={{ color:'var(--text)', fontWeight:700, fontSize:'16px', marginBottom:'4px' }}>Atur Area Foto</h3>
+        <p style={{ color:'var(--text3)', fontSize:'12px', marginBottom:'14px' }}>Geser & zoom untuk pilih area fokus (mis. wajah atau seluruh badan)</p>
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerUp}
+          style={{ width:FRAME, height:FRAME, margin:'0 auto', borderRadius:'50%', overflow:'hidden', position:'relative', background:'#000', cursor:'grab', border:'2px solid var(--purple-light)', touchAction:'none' }}
+        >
+          {imgSrc && (
+            <img
+              src={imgSrc}
+              onLoad={onImgLoad}
+              draggable={false}
+              style={{ position:'absolute', left:offset.x, top:offset.y, width:dispW || undefined, height:dispH || undefined, userSelect:'none', pointerEvents:'none' }}
+              alt="crop-preview"
+            />
+          )}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px', marginTop:'16px' }}>
+          <span style={{ color:'var(--text3)', fontSize:'11px' }}>Zoom</span>
+          <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={e => onZoomChange(parseFloat(e.target.value))} style={{ flex:1 }} />
+        </div>
+        <div style={{ display:'flex', gap:'10px', justifyContent:'center', marginTop:'20px' }}>
+          <button type="button" onClick={onCancel} style={{ padding:'10px 20px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+          <button type="button" onClick={confirm} disabled={!natSize.w} style={{ padding:'10px 24px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor: natSize.w ? 'pointer' : 'not-allowed', opacity: natSize.w ? 1 : 0.6 }}>Pakai Foto Ini</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── SumberInline — komponen inline untuk form rekrutmen ──────────────────────
@@ -235,6 +389,10 @@ export default function RekrutmenPage() {
   const [uploadingCV, setUploadingCV] = useState(false);
   const [fotoUrl, setFotoUrl] = useState('');
   const [cvUrl, setCvUrl] = useState('');
+  // FIX: foto sebelumnya langsung diupload apa adanya begitu dipilih -- sekarang mampir dulu ke
+  // modal crop (PhotoCropModal) supaya admin bisa milih area fokus (mis. wajah vs seluruh badan)
+  // sebelum benar2 di-upload ke Cloudinary. cropSrcFile nyimpen file mentah menunggu di-crop.
+  const [cropSrcFile, setCropSrcFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const importFileRef = React.useRef<HTMLInputElement>(null);
 
@@ -299,6 +457,7 @@ export default function RekrutmenPage() {
         // terpisah, masing2 punya kolom asli sendiri di backend (lihat RekrutmenController).
         pengalaman_pelatihan: form.pengalaman_pelatihan,
         pengalaman: form.pengalaman,
+        kemampuan: form.kemampuan,
         tempat_lahir: form.tempat_lahir,
         tinggi: form.tinggi,
         berat: form.berat,
@@ -366,9 +525,16 @@ export default function RekrutmenPage() {
       agama: item.agama || parsedPengalaman.agama,
       status_nikah: item.status_nikah || parsedPengalaman.status_nikah,
       takut_hewan: item.takut_hewan || parsedPengalaman.takut_hewan,
-      bisa_memasak: item.bisa_memasak || parsedPengalaman.bisa_memasak,
+      bisa_memasak: normalizeMemasak(item.bisa_memasak || parsedPengalaman.bisa_memasak),
       tipe_pekerjaan: item.tipe_pekerjaan || parsedPengalaman.tipe_pekerjaan,
       suku: item.suku || parsedPengalaman.suku,
+      kemampuan: (() => {
+        if (Array.isArray(item.kemampuan)) return item.kemampuan;
+        if (typeof item.kemampuan === 'string' && item.kemampuan.trim()) {
+          try { const p = JSON.parse(item.kemampuan); if (Array.isArray(p)) return p; } catch {}
+        }
+        return [];
+      })(),
     });
     setShowModal(true);
     setErrorMsg('');
@@ -1045,15 +1211,22 @@ export default function RekrutmenPage() {
                     </select>
                   </div>
                   <div>
-                    <label style={labelStyle}>Kemampuan Memasak (1-5)</label>
+                    {/* FIX: sebelumnya dropdown 1-5 (skala kemampuan) padahal yg dibutuhin cuma
+                        biner bisa/gak -- diganti dropdown 2 opsi biar konsisten sama gimana CV
+                        (rekrutmen/cv/[id]/page.tsx) & role mitra (apps/mitra, apps/mitra-expo)
+                        nampilinnya sekarang: "Bisa" / "Tidak Bisa" (bukan skor angka lagi). */}
+                    <label style={labelStyle}>Kemampuan Memasak</label>
                     <select value={form.bisa_memasak} onChange={e => set('bisa_memasak', e.target.value)} style={inputStyle}>
-                      {[1,2,3,4,5].map(n => <option key={n} value={String(n)}>{n} - {['','Tidak bisa','Sedikit','Cukup','Mahir','Sangat mahir'][n]}</option>)}
+                      <option value="Bisa">Bisa</option>
+                      <option value="Tidak Bisa">Tidak Bisa</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Pendidikan */}
+              {/* Pendidikan -- FIX: field "Pelatihan / Pendidikan non-formal" digeser ke sini
+                  (di bawah Pendidikan Terakhir), sebelumnya nyempil di grup "Pengalaman" yg
+                  harusnya cuma isi Pengalaman Kerja/Magang aja. */}
               <div style={sectionStyle}>
                 <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>🎓 Pendidikan & Pekerjaan</p>
                 <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
@@ -1063,6 +1236,10 @@ export default function RekrutmenPage() {
                       <option value="">-- Pilih --</option>
                       {PENDIDIKAN.map(p => <option key={p}>{p}</option>)}
                     </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Pelatihan / Pendidikan non-formal *</label>
+                    <textarea required value={form.pengalaman_pelatihan} onChange={e => set('pengalaman_pelatihan', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pelatihan, atau 'Tidak ada'" />
                   </div>
                   <div>
                     <label style={labelStyle}>Tipe Pekerjaan *</label>
@@ -1080,7 +1257,7 @@ export default function RekrutmenPage() {
                   <div>
                     <label style={labelStyle}>Foto Profil</label>
                     {fotoUrl && <img src={fotoUrl} alt="foto" style={{ width:'72px', height:'72px', borderRadius:'10px', objectFit:'cover', marginBottom:'8px', display:'block' }} />}
-                    <input type="file" accept="image/*" onChange={e => { if(e.target.files?.[0]) handleUpload(e.target.files[0],'mitra/foto',setFotoUrl,setUploadingFoto); }} style={{ display:'none' }} id="upload-foto" />
+                    <input type="file" accept="image/*" onChange={e => { if(e.target.files?.[0]) { setCropSrcFile(e.target.files[0]); e.target.value = ''; } }} style={{ display:'none' }} id="upload-foto" />
                     <label htmlFor="upload-foto" style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'7px 14px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', borderRadius:'10px', color:'var(--purple-light)', fontSize:'12px', cursor:'pointer', fontWeight:600 }}>
                       {uploadingFoto ? 'Uploading...' : fotoUrl ? '✓ Ganti Foto' : '+ Upload Foto'}
                     </label>
@@ -1096,17 +1273,29 @@ export default function RekrutmenPage() {
                 </div>
               </div>
 
+              {cropSrcFile && (
+                <PhotoCropModal
+                  file={cropSrcFile}
+                  onCancel={() => setCropSrcFile(null)}
+                  onConfirm={(blob) => {
+                    setCropSrcFile(null);
+                    const cropped = new File([blob], 'foto-crop.jpg', { type: 'image/jpeg' });
+                    handleUpload(cropped, 'mitra/foto', setFotoUrl, setUploadingFoto);
+                  }}
+                />
+              )}
+
               {/* Pengalaman */}
               <div style={sectionStyle}>
                 <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>💼 Pengalaman</p>
                 <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                   <div>
-                    <label style={labelStyle}>Pelatihan / Pendidikan non-formal *</label>
-                    <textarea required value={form.pengalaman_pelatihan} onChange={e => set('pengalaman_pelatihan', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pelatihan, atau 'Tidak ada'" />
-                  </div>
-                  <div>
                     <label style={labelStyle}>Pengalaman Kerja / Magang *</label>
                     <textarea required value={form.pengalaman} onChange={e => set('pengalaman', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pengalaman, atau 'Tidak ada'" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Kemampuan Khusus (opsional)</label>
+                    <KemampuanTagInput value={form.kemampuan} onChange={(v: string[]) => set('kemampuan', v)} />
                   </div>
                 </div>
               </div>

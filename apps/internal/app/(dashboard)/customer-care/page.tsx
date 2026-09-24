@@ -34,6 +34,7 @@ const leadStatusMap: any = {
 
 const REFERENSI_TIPE_OPTIONS = ['Keluarga', 'Teman', 'Mitra', 'Website', 'Sosmed', 'Iklan', 'Institusi B2B'];
 const TIPE_PEKERJAAN_OPTIONS = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)','Ke Jepang Lainnya'];
+const AGAMA_KLIEN = ['Islam','Katholik','Kristen','Hindu','Budha','Konghucu','Lainnya'];
 const REFERENSI_SUB_OPTIONS: Record<string, string[]> = {
   Website: ['Web MGM', 'Web MGA', 'Web Lainnya'],
   Sosmed: ['Instagram', 'Facebook', 'TikTok', 'YouTube', 'X', 'Lainnya'],
@@ -322,6 +323,7 @@ export default function CustomerCarePage() {
     nama_leads:'', kontak:'', no_rumah:'', alamat_cust_pj:'', no_ktp_cust_pj:'', hubungan_dengan_pasien:'', email_cust_pj:'',
     // Klien / Pasien
     nama_pasien:'', alamat_klien:'', alamat_klien_2:'', tanggal_lahir_klien:'', no_wa_klien:'', tinggi_badan:'', berat_badan:'', jenis_kelamin_klien:'',
+    agama_klien:'',
     diagnosis_awal:'', deskripsi_diagnosa:'', alat_pendukung:'', alat_medis:['','','','',''],
     // Referensi
     referensi_tipe:'', referensi_sub:'', referensi_klien_id:'', referensi_mitra_id:'', nama_referensi:'', kontak_referensi:'',
@@ -470,7 +472,7 @@ export default function CustomerCarePage() {
         nama_pasien: item.nama_pasien || '', alamat_klien: item.alamat_klien || '', alamat_klien_2: item.alamat_klien_2 || '',
         tanggal_lahir_klien: item.tanggal_lahir_klien ? String(item.tanggal_lahir_klien).slice(0,10) : '',
         no_wa_klien: item.no_wa_klien || '', tinggi_badan: item.tinggi_badan || '', berat_badan: item.berat_badan || '',
-        jenis_kelamin_klien: item.jenis_kelamin_klien || '', diagnosis_awal: item.diagnosis_awal || '',
+        jenis_kelamin_klien: item.jenis_kelamin_klien || '', agama_klien: item.agama_klien || '', diagnosis_awal: item.diagnosis_awal || '',
         deskripsi_diagnosa: item.deskripsi_diagnosa || '', alat_pendukung: item.alat_pendukung || '', alat_medis: almed,
         referensi_tipe: item.referensi_tipe || '', referensi_sub: item.referensi_sub || '',
         referensi_klien_id: item.referensi_klien_id || '', referensi_mitra_id: item.referensi_mitra_id || '',
@@ -1719,7 +1721,7 @@ export default function CustomerCarePage() {
                   </select>
                 </div>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'12px' }}>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tinggi Badan</label>
                   <input value={formLead.tinggi_badan} onChange={e => setFormLead((f: any) => ({ ...f, tinggi_badan: e.target.value }))} style={inp} placeholder="cm" />
@@ -1727,6 +1729,13 @@ export default function CustomerCarePage() {
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Berat Badan</label>
                   <input value={formLead.berat_badan} onChange={e => setFormLead((f: any) => ({ ...f, berat_badan: e.target.value }))} style={inp} placeholder="kg" />
+                </div>
+                <div>
+                  <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Agama</label>
+                  <select value={formLead.agama_klien} onChange={e => setFormLead((f: any) => ({ ...f, agama_klien: e.target.value }))} style={inp}>
+                    <option value="">-- Pilih --</option>
+                    {AGAMA_KLIEN.map(a => <option key={a}>{a}</option>)}
+                  </select>
                 </div>
               </div>
               <div>
@@ -2261,9 +2270,13 @@ export default function CustomerCarePage() {
                           <option value="P">Perempuan</option>
                         </select>
                       </div>
-                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px' }}>
                         <input value={editLeadForm.tinggi_badan} onChange={e => setEditLeadForm((f: any) => ({ ...f, tinggi_badan: e.target.value }))} style={inp} placeholder="TB (cm)" />
                         <input value={editLeadForm.berat_badan} onChange={e => setEditLeadForm((f: any) => ({ ...f, berat_badan: e.target.value }))} style={inp} placeholder="BB (kg)" />
+                        <select value={editLeadForm.agama_klien} onChange={e => setEditLeadForm((f: any) => ({ ...f, agama_klien: e.target.value }))} style={inp}>
+                          <option value="">-- Agama --</option>
+                          {AGAMA_KLIEN.map(a => <option key={a}>{a}</option>)}
+                        </select>
                       </div>
                       <textarea value={editLeadForm.alamat_klien} onChange={e => setEditLeadForm((f: any) => ({ ...f, alamat_klien: e.target.value }))} style={{...inp, minHeight:'44px', resize:'vertical'}} placeholder="Alamat Klien 1" />
                       <textarea value={editLeadForm.alamat_klien_2} onChange={e => setEditLeadForm((f: any) => ({ ...f, alamat_klien_2: e.target.value }))} style={{...inp, minHeight:'40px', resize:'vertical'}} placeholder="Alamat Klien 2 (opsional)" />

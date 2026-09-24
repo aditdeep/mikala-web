@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, authService } from '@mikala/lib';
 import { User, Phone, Mail, LogOut, Shield, Edit2, Save, X, MapPin, CreditCard, Home } from 'lucide-react';
@@ -16,6 +16,9 @@ export default function ProfilePage() {
   const [form, setForm] = useState<any>({});
   const [uploadingFoto, setUploadingFoto] = useState(false);
   const [fotoUrl, setFotoUrl] = useState('');
+  // FIX: foto sebelumnya langsung diupload apa adanya begitu dipilih -- sekarang mampir dulu ke
+  // modal crop (PhotoCropModal) supaya mitra bisa pilih area fokus (mis. wajah vs seluruh badan).
+  const [cropSrcFile, setCropSrcFile] = useState<File | null>(null);
 
   useEffect(() => {
     const u = authService.getUser();
@@ -122,7 +125,7 @@ export default function ProfilePage() {
             </div>
           )}
           <input type="file" accept="image/*" id="upload-foto-profil" style={{ display:'none' }}
-            onChange={e => { if(e.target.files?.[0]) handleUploadFoto(e.target.files[0]); }} />
+            onChange={e => { if(e.target.files?.[0]) { setCropSrcFile(e.target.files[0]); e.target.value = ''; } }} />
           <label htmlFor="upload-foto-profil" style={{ position:'absolute', bottom:'-4px', right:'-4px', width:'24px', height:'24px', borderRadius:'8px', background:'white', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.2)' }}>
             {uploadingFoto ? '⏳' : '📷'}
           </label>
@@ -134,6 +137,18 @@ export default function ProfilePage() {
           <span className="text-white text-xs font-medium">{mitra?.status || 'Mitra'}</span>
         </div>
       </div>
+
+      {cropSrcFile && (
+        <PhotoCropModal
+          file={cropSrcFile}
+          onCancel={() => setCropSrcFile(null)}
+          onConfirm={(blob) => {
+            setCropSrcFile(null);
+            const cropped = new File([blob], 'foto-crop.jpg', { type: 'image/jpeg' });
+            handleUploadFoto(cropped);
+          }}
+        />
+      )}
 
       {/* Info Pribadi */}
       <div style={cardStyle}>
@@ -246,6 +261,111 @@ export default function ProfilePage() {
       <button onClick={handleLogout} style={{ width:'100%', padding:'15px', borderRadius:'16px', cursor:'pointer', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', color:'#ef4444', fontWeight:600, fontSize:'15px' }}>
         <LogOut size={18} />Keluar
       </button>
+    </div>
+  );
+}
+
+// ── PhotoCropModal -- crop foto profil sebelum diupload (pilih area fokus, mis. badan/kepala) ──
+// Implementasi manual (drag + zoom di atas canvas), tanpa library eksternal.
+function PhotoCropModal({ file, onCancel, onConfirm }: { file: File; onCancel: () => void; onConfirm: (blob: Blob) => void }) {
+  const FRAME = 260; // ukuran area crop (persegi) di layar, px
+  const OUTPUT = 600; // ukuran output foto hasil crop, px
+  const [imgSrc, setImgSrc] = useState('');
+  const [natSize, setNatSize] = useState({ w: 0, h: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{ startX: number; startY: number; offX: number; offY: number } | null>(null);
+
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setImgSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const baseScale = natSize.w && natSize.h ? Math.max(FRAME / natSize.w, FRAME / natSize.h) : 0;
+  const scale = baseScale * zoom;
+  const dispW = natSize.w * scale;
+  const dispH = natSize.h * scale;
+
+  const clamp = (o: { x: number; y: number }, dW: number, dH: number) => ({
+    x: Math.min(0, Math.max(FRAME - dW, o.x)),
+    y: Math.min(0, Math.max(FRAME - dH, o.y)),
+  });
+
+  const onImgLoad = (e: any) => {
+    const img = e.currentTarget;
+    const w = img.naturalWidth, h = img.naturalHeight;
+    setNatSize({ w, h });
+    const bs = Math.max(FRAME / w, FRAME / h);
+    setOffset({ x: (FRAME - w * bs) / 2, y: (FRAME - h * bs) / 2 });
+  };
+
+  const onPointerDown = (e: any) => {
+    e.target.setPointerCapture?.(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, offX: offset.x, offY: offset.y };
+  };
+  const onPointerMove = (e: any) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    setOffset(clamp({ x: dragRef.current.offX + dx, y: dragRef.current.offY + dy }, dispW, dispH));
+  };
+  const onPointerUp = () => { dragRef.current = null; };
+
+  const onZoomChange = (z: number) => {
+    const newScale = baseScale * z;
+    const newDispW = natSize.w * newScale, newDispH = natSize.h * newScale;
+    setZoom(z);
+    setOffset(o => clamp(o, newDispW, newDispH));
+  };
+
+  const confirm = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = OUTPUT; canvas.height = OUTPUT;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const img = new Image();
+    img.onload = () => {
+      const sourceX = -offset.x / scale;
+      const sourceY = -offset.y / scale;
+      const sourceSize = FRAME / scale;
+      ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, OUTPUT, OUTPUT);
+      canvas.toBlob(blob => { if (blob) onConfirm(blob); }, 'image/jpeg', 0.9);
+    };
+    img.src = imgSrc;
+  };
+
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:300, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+      <div style={{ background:'var(--bg)', borderRadius:'20px', padding:'24px', width:'100%', maxWidth:'340px', textAlign:'center', border:'1px solid var(--border)' }}>
+        <h3 style={{ color:'var(--text-primary)', fontWeight:700, fontSize:'16px', marginBottom:'4px' }}>Atur Area Foto</h3>
+        <p style={{ color:'var(--text-muted)', fontSize:'12px', marginBottom:'14px' }}>Geser & zoom untuk pilih area fokus</p>
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerUp}
+          style={{ width:FRAME, height:FRAME, margin:'0 auto', borderRadius:'50%', overflow:'hidden', position:'relative', background:'#000', cursor:'grab', border:'2px solid var(--purple-light)', touchAction:'none' }}
+        >
+          {imgSrc && (
+            <img
+              src={imgSrc}
+              onLoad={onImgLoad}
+              draggable={false}
+              style={{ position:'absolute', left:offset.x, top:offset.y, width:dispW || undefined, height:dispH || undefined, userSelect:'none', pointerEvents:'none' } as any}
+              alt="crop-preview"
+            />
+          )}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px', marginTop:'16px' }}>
+          <span style={{ color:'var(--text-muted)', fontSize:'11px' }}>Zoom</span>
+          <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={e => onZoomChange(parseFloat(e.target.value))} style={{ flex:1 }} />
+        </div>
+        <div style={{ display:'flex', gap:'10px', justifyContent:'center', marginTop:'20px' }}>
+          <button type="button" onClick={onCancel} style={{ padding:'10px 20px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text-muted)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+          <button type="button" onClick={confirm} disabled={!natSize.w} style={{ padding:'10px 24px', background:'linear-gradient(135deg, #7c3aed, #4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor: natSize.w ? 'pointer' : 'not-allowed', opacity: natSize.w ? 1 : 0.6 }}>Pakai Foto Ini</button>
+        </div>
+      </div>
     </div>
   );
 }

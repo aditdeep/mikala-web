@@ -26,8 +26,15 @@
     --bg2: #1a1a2e;
     --sidebar-bg: #09090f;
     --text: #f1f0ff;
-    --text2: #a78bfa;
-    --text3: #6b7280;
+    /* FIX: teks ungu (label section, dsb -- pakai var(--purple-light)) kurang kelihatan di dark
+       mode karena --purple/--purple-light sebelumnya gak di-override sama sekali di sini, jadi
+       masih pakai nilai light-mode (#7c3aed/#8b5cf6) yg ditujukan buat background terang, kontras
+       rendah di atas --bg2 (#1a1a2e) yg gelap. Diterangkan jadi ungu-putih (dominan putih) biar
+       kebaca jelas oleh admin. */
+    --text2: #c4b5fd;
+    --text3: #9ca3af;
+    --purple: #a78bfa;
+    --purple-light: #d8c9fe;
     --border: rgba(139,92,246,0.15);
     --glass: rgba(255,255,255,0.04);
     --glass-border: rgba(255,255,255,0.08);

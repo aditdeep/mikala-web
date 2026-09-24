@@ -138,7 +138,28 @@ export default function CVPage() {
   const statusNikah = mitra?.status_nikah || getExtra(p, 'Status Nikah') || '-';
   const vaksin = mitra?.vaksin || getExtra(p, 'Vaksin') || '-';
   const takutHewan = mitra?.takut_hewan || getExtra(p, 'Takut Hewan') || '-';
-  const memasak = mitra?.bisa_memasak || getExtra(p, 'Memasak') || '-';
+  // FIX: field ini diubah dari skala angka 1-5 jadi dropdown Bisa/Tidak Bisa (lihat rekrutmen/
+  // page.tsx) -- data lama masih bisa nyimpen angka "1".."5", jadi dinormalisasi di sini juga
+  // biar CV mitra lama gak nampilin angka mentah kayak "3/5".
+  const memasakRaw = mitra?.bisa_memasak || getExtra(p, 'Memasak').replace(/\/5$/, '').trim() || '';
+  const memasak = (() => {
+    if (memasakRaw === 'Bisa' || memasakRaw === 'Tidak Bisa') return memasakRaw;
+    const n = parseInt(memasakRaw, 10);
+    if (!isNaN(n)) return n <= 1 ? 'Tidak Bisa' : 'Bisa';
+    return '-';
+  })();
+  // Kemampuan (list bebas, diisi mitra sendiri saat daftar) -- ditampilin di Kemampuan Khusus
+  const kemampuanList: string[] = (() => {
+    if (Array.isArray(mitra?.kemampuan)) return mitra.kemampuan.filter(Boolean);
+    if (typeof mitra?.kemampuan === 'string' && mitra.kemampuan.trim()) {
+      try {
+        const parsed = JSON.parse(mitra.kemampuan);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+      } catch {}
+      return mitra.kemampuan.split(/\r?\n|,/).map((s: string) => s.trim()).filter(Boolean);
+    }
+    return [];
+  })();
   const pelatihan = getPelatihan(p);
   const pengalamanKerja = getPengalamanKerja(p);
   const tglLahir = mitra?.tanggal_lahir
@@ -292,9 +313,15 @@ export default function CVPage() {
                 )}
                 {memasak !== '-' && (
                   <div style={{ background:`linear-gradient(135deg, ${LIGHT_PINK}, white)`, borderRadius:'8px', padding:'6px 10px', fontSize:'10px', color:PINK, fontWeight:600, border:`1px solid ${PINK}22` }}>
-                    🍳 Memasak: {memasak}/5
+                    🍳 Memasak: {memasak}
                   </div>
                 )}
+                {/* Kemampuan bebas -- diisi mitra sendiri saat daftar (field baru "kemampuan") */}
+                {kemampuanList.map((k, i) => (
+                  <div key={i} style={{ background:`linear-gradient(135deg, ${LIGHT_GREEN}, white)`, borderRadius:'8px', padding:'6px 10px', fontSize:'10px', color:GREEN, fontWeight:600, border:`1px solid ${GREEN}22` }}>
+                    ✦ {k}
+                  </div>
+                ))}
               </div>
             </div>
 
