@@ -352,7 +352,10 @@ function PhotoCropModal({ file, onCancel, onConfirm }: { file: File; onCancel: (
               src={imgSrc}
               onLoad={onImgLoad}
               draggable={false}
-              style={{ position:'absolute', left:offset.x, top:offset.y, width:dispW || undefined, height:dispH || undefined, userSelect:'none', pointerEvents:'none' } as any}
+              // FIX: Tailwind preflight "img { max-width:100%; height:auto }" nge-cap lebar foto
+              // max sebesar frame berapa pun zoom-nya -- override eksplisit biar dua dimensi
+              // ke-scale proporsional (sebelumnya kelihatan "zoom cuma vertikal").
+              style={{ position:'absolute', left:offset.x, top:offset.y, width:dispW || undefined, height:dispH || undefined, maxWidth:'none', maxHeight:'none', userSelect:'none', pointerEvents:'none' } as any}
               alt="crop-preview"
             />
           )}

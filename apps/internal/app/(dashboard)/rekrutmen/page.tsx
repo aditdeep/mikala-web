@@ -263,7 +263,12 @@ function PhotoCropModal({ file, onCancel, onConfirm }: { file: File; onCancel: (
               src={imgSrc}
               onLoad={onImgLoad}
               draggable={false}
-              style={{ position:'absolute', left:offset.x, top:offset.y, width:dispW || undefined, height:dispH || undefined, userSelect:'none', pointerEvents:'none' }}
+              // FIX: Tailwind preflight punya rule global "img { max-width:100%; height:auto }" --
+              // itu nge-cap lebar foto max sebesar frame (280px) berapa pun zoom-nya, sementara
+              // tinggi (di-set eksplisit lewat inline style) bebas ngikutin zoom. Makanya zoom
+              // kelihatan "cuma vertikal" (lebar item mentok, tinggi jalan). maxWidth/maxHeight
+              // 'none' di sini override rule itu biar dua2nya ke-scale proporsional pas zoom.
+              style={{ position:'absolute', left:offset.x, top:offset.y, width:dispW || undefined, height:dispH || undefined, maxWidth:'none', maxHeight:'none', userSelect:'none', pointerEvents:'none' }}
               alt="crop-preview"
             />
           )}

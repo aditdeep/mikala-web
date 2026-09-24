@@ -48,6 +48,7 @@ const [tempRating, setTempRating] = useState(5);
   const [selectedMitraId, setSelectedMitraId] = useState<number|null>(null);
   const [loadingChecklist, setLoadingChecklist] = useState(false);
   const [savingCheck, setSavingCheck] = useState<number|null>(null);
+  const [savingBulk, setSavingBulk] = useState(false);
   const [defaultTgl, setDefaultTgl] = useState(new Date().toISOString().split('T')[0]);
   const [defaultPengajar, setDefaultPengajar] = useState('');
   const [openKat, setOpenKat] = useState<string[]>(['Dasar','PHC']);
@@ -81,8 +82,33 @@ const [tempRating, setTempRating] = useState(5);
 
   const submitRating = async () => {
     if (!ratingPopup) return;
-    await toggleCheck(ratingPopup.materiId, false, tempRating);
+    // FIX: mode bulk ("Ceklis Semua" per kategori) -- toggleCheck dipanggil satu2 (sequential,
+    // bukan Promise.all) buat tiap materi yg belum keceklis di kategori itu, pakai nilai rata2
+    // yg sama (tempRating, hasil input manual) utk semuanya. Logic wajib-isi-pengajar tetap
+    // jalan normal krn toggleCheck() sendiri yg validasi per item (lihat di bawah).
+    if (ratingPopup.isBulk) {
+      setSavingBulk(true);
+      for (const id of ratingPopup.materiIds) {
+        await toggleCheck(id, false, tempRating);
+      }
+      setSavingBulk(false);
+    } else {
+      await toggleCheck(ratingPopup.materiId, false, tempRating);
+    }
     setRatingPopup(null);
+  };
+
+  // "Ceklis Semua" per kategori -- HANYA materi di kategori yg diklik (bukan gabung Dasar+PHC
+  // sekaligus). Validasi nama pengajar tetap wajib dulu (sama kayak ceklis satuan) sebelum popup
+  // rating muncul, biar gak ujung2nya gagal semua pas disubmit.
+  const handleCeklisAllKategori = (kat: string) => {
+    const katData = checklistMitra?.by_kategori?.find((k: any) => k.kategori === kat);
+    const items = (katData?.materi || []).filter((m: any) => !m.checked);
+    if (items.length === 0) return;
+    const missingPengajar = items.some((m: any) => !(checkInputs[m.id]?.pengajar || defaultPengajar));
+    if (missingPengajar) { alert('Isi nama pengajar terlebih dahulu (kolom "Pengajar Default" di atas, atau per-materi)'); return; }
+    setRatingPopup({ isBulk: true, kategori: kat, materiIds: items.map((m: any) => m.id), count: items.length });
+    setTempRating(5);
   };
 
   const toggleCheck = async (materiId: number, checked: boolean, rating: number = 5) => {
@@ -402,14 +428,24 @@ const [tempRating, setTempRating] = useState(5);
                 const katColor = kat==='PHC'?'#0ea5e9':'#7c3aed';
                 return (
                   <div key={kat} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', overflow:'hidden' }}>
-                    <button onClick={() => setOpenKat(prev => prev.includes(kat)?prev.filter(k=>k!==kat):[...prev,kat])}
-                      style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 16px', background:'transparent', border:'none', cursor:'pointer' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                        <span style={{ fontSize:'13px', fontWeight:700, color:katColor }}>Materi {kat}</span>
-                        <span style={{ fontSize:'11px', color:'var(--text3)', background:'var(--bg)', padding:'2px 8px', borderRadius:'99px' }}>{selesai}/{items.length}</span>
-                      </div>
-                      {isOpen ? <ChevronDown size={16} style={{ color:'var(--text3)' }}/> : <ChevronRight size={16} style={{ color:'var(--text3)' }}/>}
-                    </button>
+                    <div style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 16px' }}>
+                      <button onClick={() => setOpenKat(prev => prev.includes(kat)?prev.filter(k=>k!==kat):[...prev,kat])}
+                        style={{ flex:1, display:'flex', justifyContent:'space-between', alignItems:'center', background:'transparent', border:'none', cursor:'pointer', padding:0, textAlign:'left' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                          <span style={{ fontSize:'13px', fontWeight:700, color:katColor }}>Materi {kat}</span>
+                          <span style={{ fontSize:'11px', color:'var(--text3)', background:'var(--bg)', padding:'2px 8px', borderRadius:'99px' }}>{selesai}/{items.length}</span>
+                        </div>
+                        {isOpen ? <ChevronDown size={16} style={{ color:'var(--text3)' }}/> : <ChevronRight size={16} style={{ color:'var(--text3)' }}/>}
+                      </button>
+                      {/* "Ceklis Semua" -- HANYA materi kategori ini (Dasar atau PHC), gak
+                          pernah gabung dua kategori sekaligus. Sembunyi kalau kategori sudah 100%. */}
+                      {selesai < items.length && (
+                        <button onClick={() => handleCeklisAllKategori(kat)}
+                          style={{ marginLeft:'12px', flexShrink:0, padding:'5px 12px', background:`${katColor}18`, border:`1px solid ${katColor}44`, borderRadius:'8px', color:katColor, fontWeight:600, fontSize:'11px', cursor:'pointer', whiteSpace:'nowrap' }}>
+                          ✓ Ceklis Semua
+                        </button>
+                      )}
+                    </div>
                     {isOpen && (
                       <div style={{ borderTop:'1px solid var(--border)' }}>
                         {items.map((m: any) => {
@@ -727,33 +763,52 @@ const [tempRating, setTempRating] = useState(5);
       {ratingPopup && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:'20px' }}>
           <div style={{ background:'var(--bg)', borderRadius:'20px', padding:'24px', maxWidth:'420px', width:'100%', border:'1px solid var(--border)' }}>
-            <h3 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', marginBottom:'6px' }}>Beri Penilaian</h3>
-            <p style={{ fontSize:'13px', color:'var(--text3)', marginBottom:'20px' }}>{ratingPopup.materiNama}</p>
+            <h3 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', marginBottom:'6px' }}>
+              {ratingPopup.isBulk ? `Ceklis Semua Materi ${ratingPopup.kategori}` : 'Beri Penilaian'}
+            </h3>
+            <p style={{ fontSize:'13px', color:'var(--text3)', marginBottom:'20px' }}>
+              {ratingPopup.isBulk ? `${ratingPopup.count} materi akan ditandai selesai dengan nilai yang sama` : ratingPopup.materiNama}
+            </p>
 
-            <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', padding:'20px', marginBottom:'16px', textAlign:'center' }}>
-              <p style={{ fontSize:'12px', color:'var(--text3)', marginBottom:'12px' }}>Nilai pemahaman mitra (0–5 bintang)</p>
-              <div style={{ display:'flex', justifyContent:'center', gap:'8px', marginBottom:'12px' }}>
-                {[1,2,3,4,5].map(star => (
-                  <button key={star} onClick={() => setTempRating(star)}
-                    style={{ background:'none', border:'none', cursor:'pointer', padding:'4px', fontSize:'32px', color: star <= tempRating ? '#fbbf24' : 'rgba(255,255,255,0.2)' }}>
-                    {star <= tempRating ? '★' : '☆'}
-                  </button>
-                ))}
+            {ratingPopup.isBulk ? (
+              // Mode bulk -- penilaian per-item satu2 gak praktis kalau langsung ceklis banyak
+              // sekaligus, jadi diganti input rata2 manual (boleh desimal, mis. 4.5) yg dipakai
+              // sama rata utk semua materi yg diceklis di kategori ini.
+              <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', padding:'20px', marginBottom:'16px', textAlign:'center' }}>
+                <p style={{ fontSize:'12px', color:'var(--text3)', marginBottom:'12px' }}>Nilai rata-rata (0–5, boleh desimal)</p>
+                <input
+                  type="number" min={0} max={5} step={0.1} value={tempRating}
+                  onChange={e => setTempRating(Math.min(5, Math.max(0, parseFloat(e.target.value) || 0)))}
+                  style={{ width:'120px', textAlign:'center', fontSize:'28px', fontWeight:800, color:'#fbbf24', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', padding:'8px', outline:'none' }}
+                />
+                <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'8px' }}>/ 5.0 -- berlaku sama untuk semua materi yang diceklis</p>
               </div>
-              <p style={{ fontSize:'24px', fontWeight:800, color:'#fbbf24' }}>{tempRating}.0 / 5.0</p>
-              <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>
-                {tempRating >= 5 ? '🌟 Sangat Baik' : tempRating >= 4 ? '👍 Baik' : tempRating >= 3 ? '⚠️ Cukup' : '❌ Kurang'}
-              </p>
-            </div>
+            ) : (
+              <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', padding:'20px', marginBottom:'16px', textAlign:'center' }}>
+                <p style={{ fontSize:'12px', color:'var(--text3)', marginBottom:'12px' }}>Nilai pemahaman mitra (0–5 bintang)</p>
+                <div style={{ display:'flex', justifyContent:'center', gap:'8px', marginBottom:'12px' }}>
+                  {[1,2,3,4,5].map(star => (
+                    <button key={star} onClick={() => setTempRating(star)}
+                      style={{ background:'none', border:'none', cursor:'pointer', padding:'4px', fontSize:'32px', color: star <= tempRating ? '#fbbf24' : 'rgba(255,255,255,0.2)' }}>
+                      {star <= tempRating ? '★' : '☆'}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ fontSize:'24px', fontWeight:800, color:'#fbbf24' }}>{tempRating}.0 / 5.0</p>
+                <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>
+                  {tempRating >= 5 ? '🌟 Sangat Baik' : tempRating >= 4 ? '👍 Baik' : tempRating >= 3 ? '⚠️ Cukup' : '❌ Kurang'}
+                </p>
+              </div>
+            )}
 
             <div style={{ display:'flex', gap:'10px' }}>
-              <button onClick={() => setRatingPopup(null)}
-                style={{ flex:1, padding:'11px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text)', fontWeight:600, cursor:'pointer' }}>
+              <button onClick={() => setRatingPopup(null)} disabled={savingBulk}
+                style={{ flex:1, padding:'11px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text)', fontWeight:600, cursor: savingBulk ? 'not-allowed' : 'pointer', opacity: savingBulk ? 0.6 : 1 }}>
                 Batal
               </button>
-              <button onClick={submitRating}
-                style={{ flex:2, padding:'11px', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, cursor:'pointer' }}>
-                Simpan Ceklis + Rating
+              <button onClick={submitRating} disabled={savingBulk}
+                style={{ flex:2, padding:'11px', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, cursor: savingBulk ? 'not-allowed' : 'pointer', opacity: savingBulk ? 0.7 : 1 }}>
+                {savingBulk ? 'Menyimpan...' : ratingPopup.isBulk ? `Ceklis Semua (${ratingPopup.count})` : 'Simpan Ceklis + Rating'}
               </button>
             </div>
           </div>
