@@ -1,9 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { DollarSign, Search, Eye, X, Plus, TrendingUp, TrendingDown, FileText, BookOpen, BarChart2, ArrowUpCircle, ArrowDownCircle , Calendar, Settings as SettingsIcon, Check, AlertCircle, Wallet } from "lucide-react";
+import { DollarSign, Search, Eye, X, Plus, TrendingUp, TrendingDown, FileText, BookOpen, BarChart2, ArrowUpCircle, ArrowDownCircle , Calendar, Settings as SettingsIcon, Check, AlertCircle, Wallet, Download } from "lucide-react";
 import { usePagination } from '@/lib/usePagination';
 import Pagination from '@/components/Pagination';
+import * as XLSX from 'xlsx';
 
 const statusTagihan: any = {
   paid:      { label:'Lunas',       color:'#10b981', bg:'rgba(16,185,129,0.15)', border:'rgba(16,185,129,0.3)' },
@@ -75,6 +76,9 @@ export default function FinancePage() {
   const [showFormJurnal, setShowFormJurnal] = useState(false);
   const [savingJurnal, setSavingJurnal] = useState(false);
   const [formJurnal, setFormJurnal] = useState({ tipe:'income', kategori:'', deskripsi:'', jumlah:'', tanggal:'' });
+
+  // Export Excel (multi-sheet, mengikuti kategori Laporan Keuangan)
+  const [exporting, setExporting] = useState(false);
 
 
   const fetchCuti = async () => {
@@ -258,6 +262,133 @@ export default function FinancePage() {
     }).catch(() => setLoadingReport(false));
   };
 
+  /**
+   * Export Excel multi-sheet, sesuai kategori Laporan Keuangan (Data Umum, Payroll, Kasbon,
+   * Tagihan, Jurnal) -- pengganti proses manual di file Excel yang sebelumnya diisi tangan.
+   * Data Umum ditarik langsung dari cc_leads (Deal/Stop) supaya isinya real, bukan cuma
+   * data yang kebetulan lagi ke-load di state Finance.
+   */
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const [leadsRes, kasbonRes, tagihanRes, payrollRes, jurnalRes] = await Promise.all([
+        apiClient.get('/internal/cc/leads', { params: { status: '1,4' } }),
+        apiClient.get('/internal/finance/kasbon', { params: { per_page: 9999 } }),
+        apiClient.get('/internal/finance/tagihan', { params: { per_page: 9999 } }),
+        apiClient.get('/internal/finance/payroll', { params: { per_page: 9999 } }),
+        apiClient.get('/internal/finance/jurnal', { params: { per_page: 9999 } }),
+      ]);
+      const leads: any[] = leadsRes.data?.data || [];
+      const kasbonAll = kasbonRes.data?.data;
+      const kasbonList: any[] = kasbonAll?.data || kasbonAll || [];
+      const tagihanAll: any[] = Array.isArray(tagihanRes.data?.data) ? tagihanRes.data.data : (tagihanRes.data?.data?.data || []);
+      const payrollAll: any[] = Array.isArray(payrollRes.data?.data) ? payrollRes.data.data : (payrollRes.data?.data?.data || []);
+      const jurnalAll: any[] = Array.isArray(jurnalRes.data?.data) ? jurnalRes.data.data : (jurnalRes.data?.data?.data || []);
+
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Data Umum -- pasangan Klien-Mitra yang lagi Deal/Stop
+      const dataUmumRows = leads.map((l: any, i: number) => ([
+        i + 1,
+        l.nama_leads || '-',
+        l.nama_pasien || '-',
+        l.kontak || '-',
+        l.alamat_klien || '-',
+        l.mitra?.nama_lengkap || '-',
+        l.mitra?.tipe_pekerjaan || '-',
+        l.mitra?.no_hp || l.mitra?.user?.phone || '-',
+        l.deal_at ? new Date(l.deal_at).toLocaleDateString('id-ID') : '-',
+        l.stop_at ? new Date(l.stop_at).toLocaleDateString('id-ID') : (l.status === 1 ? 'Masih Aktif' : '-'),
+        Number(l.honor_mitra || 0) + Number(l.management_fee || 0),
+        Number(l.uang_cuti_mitra || 0),
+        Number(l.rekom_fee || 0),
+        Number(l.biaya_admin || 0),
+        Number(l.management_fee || 0),
+        Number(l.refund_amount || 0),
+      ]));
+      const wsDataUmum = XLSX.utils.aoa_to_sheet([
+        ['No', 'Co Pasien', 'Nama Pasien', 'No Tel Co Pasien', 'Alamat', 'Nama Mitra', 'Status', 'No Telp Mitra', 'Start Kerja', 'Akhir Kerja', 'Gaji/bulan', 'Uang Cuti', 'Rekom Fee', 'Admin Fee', 'Manag Fee', 'Refund'],
+        ...dataUmumRows,
+      ]);
+      XLSX.utils.book_append_sheet(wb, wsDataUmum, 'Data Umum');
+
+      // Sheet 2: Payroll -- semua payroll yg pernah digenerate
+      const payrollRows = payrollAll.map((p: any, i: number) => ([
+        i + 1,
+        p.payroll_number || '-',
+        p.mitra?.nama_lengkap || p.mitra?.user?.name || '-',
+        p.periode_mulai ? new Date(p.periode_mulai).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '-',
+        p.periode_label ? 'Tgl ' + p.periode_label : '-',
+        Number(p.jumlah_hari_kerja || 0),
+        Number(p.tarif_per_hari || 0),
+        Number(p.gaji_pokok || 0),
+        Number(p.uang_cuti || 0),
+        Number(p.potongan_kasbon || 0),
+        Number(p.potongan_kredit || 0),
+        Number(p.total || 0),
+        p.status || '-',
+      ]));
+      const wsPayroll = XLSX.utils.aoa_to_sheet([
+        ['No', 'Payroll #', 'Mitra', 'Periode', 'Bagian', 'Hari Kerja', 'Tarif/Hari', 'Gaji Pokok', 'Uang Cuti', 'Potongan Kasbon', 'Potongan Kredit', 'Total', 'Status'],
+        ...payrollRows,
+      ]);
+      XLSX.utils.book_append_sheet(wb, wsPayroll, 'Payroll');
+
+      // Sheet 3: Pinjaman Mitra (Kasbon)
+      const kasbonRows = kasbonList.map((k: any, i: number) => ([
+        i + 1,
+        k.mitra_nama || ('Mitra #' + k.mitra_id),
+        Number(k.jumlah || 0),
+        k.keperluan || '-',
+        k.status || '-',
+        k.created_at ? new Date(k.created_at).toLocaleDateString('id-ID') : '-',
+        k.approved_at ? new Date(k.approved_at).toLocaleDateString('id-ID') : '-',
+      ]));
+      const wsKasbon = XLSX.utils.aoa_to_sheet([
+        ['No', 'Mitra', 'Jumlah', 'Keperluan', 'Status', 'Diajukan', 'Disetujui'],
+        ...kasbonRows,
+      ]);
+      XLSX.utils.book_append_sheet(wb, wsKasbon, 'Pinjaman Mitra');
+
+      // Sheet 4: Tagihan (Biaya Admin & lainnya)
+      const tagihanRows = tagihanAll.map((t: any, i: number) => ([
+        i + 1,
+        t.invoice_number || ('#' + t.id),
+        t.klien?.nama_lengkap || t.klien?.user?.name || t.order?.klien?.nama_lengkap || '-',
+        Number(t.total || 0),
+        t.tanggal_jatuh_tempo ? new Date(t.tanggal_jatuh_tempo).toLocaleDateString('id-ID') : '-',
+        statusTagihan[t.status]?.label || t.status || '-',
+      ]));
+      const wsTagihan = XLSX.utils.aoa_to_sheet([
+        ['No', 'Invoice #', 'Klien', 'Total', 'Jatuh Tempo', 'Status'],
+        ...tagihanRows,
+      ]);
+      XLSX.utils.book_append_sheet(wb, wsTagihan, 'Tagihan');
+
+      // Sheet 5: Jurnal Keuangan (income/outcome)
+      const jurnalRows = jurnalAll.map((j: any, i: number) => ([
+        i + 1,
+        j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID') : '-',
+        j.tipe === 'income' ? 'Income' : 'Outcome',
+        j.kategori || '-',
+        j.deskripsi || '-',
+        Number(j.jumlah || 0),
+      ]));
+      const wsJurnal = XLSX.utils.aoa_to_sheet([
+        ['No', 'Tanggal', 'Tipe', 'Kategori', 'Deskripsi', 'Jumlah'],
+        ...jurnalRows,
+      ]);
+      XLSX.utils.book_append_sheet(wb, wsJurnal, 'Jurnal');
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'Laporan-Keuangan-MGM-' + stamp + '.xlsx');
+    } catch (err: any) {
+      alert('Gagal export Excel: ' + (err?.response?.data?.message || err?.message || 'error'));
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleCreateTagihan = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -324,6 +455,10 @@ export default function FinancePage() {
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Finance</h1>
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>Kelola tagihan, payroll & jurnal keuangan</p>
         </div>
+        <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+        <button onClick={handleExportExcel} disabled={exporting} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor: exporting ? 'not-allowed' : 'pointer', opacity: exporting ? 0.6 : 1 }}>
+          <Download size={15}/>{exporting ? 'Menyiapkan...' : 'Export Excel'}
+        </button>
         {activeTab === 'tagihan' && (
           <button onClick={() => setShowForm(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #f59e0b, #d97706)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
             <Plus size={15}/>Buat Tagihan
