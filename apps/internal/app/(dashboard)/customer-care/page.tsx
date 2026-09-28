@@ -354,7 +354,7 @@ export default function CustomerCarePage() {
   const [dealMitraId, setDealMitraId] = useState('');
   const [dealMitraTipeFilter, setDealMitraTipeFilter] = useState('');
   const [dealForm, setDealForm] = useState({
-    mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', uang_cuti_mitra:'500000',
+    mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', rekom_fee:'', uang_cuti_mitra:'500000',
     kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
     jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'',
   });
@@ -399,6 +399,8 @@ export default function CustomerCarePage() {
   const [downloadingKontrak2, setDownloadingKontrak2] = useState(false);
   const [downloadingKontrak3, setDownloadingKontrak3] = useState(false);
   const [tagihingAdmin, setTagihingAdmin] = useState(false);
+  const [refundingId, setRefundingId] = useState<number|null>(null);
+  const [refundForm, setRefundForm] = useState({ refund_amount:'', refund_catatan:'' });
 
   // Koreksi Jenis Layanan/Tier utk leads yg sudah Deal (supaya kehitung di tabel ringkasan
   // tab Layanan) -- dipakai saat cms_layanan_id/tier_nama leads kosong/keliru.
@@ -563,7 +565,7 @@ export default function CustomerCarePage() {
       await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined, ...dealForm });
       setDealTarget(null);
       setDealMitraId('');
-      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'' });
+      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', rekom_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'' });
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Deal'); }
@@ -785,6 +787,19 @@ export default function CustomerCarePage() {
       fetchLeadsList();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menagih Biaya Admin'); }
     finally { setTagihingAdmin(false); }
+  };
+
+  const handleProsesRefund = async (item: any) => {
+    if (!refundForm.refund_amount || Number(refundForm.refund_amount) <= 0) { alert('Isi jumlah refund dulu'); return; }
+    setRefundingId(item.id);
+    try {
+      await apiClient.post('/internal/cc/leads/'+item.id+'/refund', refundForm);
+      alert('Refund berhasil dicatat');
+      setRefundForm({ refund_amount:'', refund_catatan:'' });
+      fetchDealLeads();
+      fetchLeadsList();
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal memproses refund'); }
+    finally { setRefundingId(null); }
   };
 
   const handleExportXls = () => {
@@ -1887,6 +1902,10 @@ export default function CustomerCarePage() {
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Uang Cuti Mitra <span style={{fontWeight:400, color:'var(--text3)'}}>(default 250rb x 2 hari)</span></label>
                 <input value={dealForm.uang_cuti_mitra} onChange={e => setDealForm(f => ({ ...f, uang_cuti_mitra: e.target.value }))} style={inp} placeholder="Rp" />
               </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Rekom Fee <span style={{fontWeight:400, color:'var(--text3)'}}>(opsional, kalau Deal ini ada referensi mitra/klien)</span></label>
+                <input value={dealForm.rekom_fee} onChange={e => setDealForm(f => ({ ...f, rekom_fee: e.target.value }))} style={inp} placeholder="Rp" />
+              </div>
 
               <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Kondisi Klinis Klien</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
@@ -2153,6 +2172,29 @@ export default function CustomerCarePage() {
                       <button onClick={() => handleLanjutkanLead(item)} disabled={lanjutkanId === item.id} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor: lanjutkanId === item.id ? 'not-allowed' : 'pointer', opacity: lanjutkanId === item.id ? 0.6 : 1 }}>
                         {lanjutkanId === item.id ? 'Memproses...' : 'Lanjutkan'}
                       </button>
+                    </div>
+                  )}
+
+                  {(item.status === 2 || item.status === 4) && (
+                    <div style={{ marginBottom:'16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                      <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>Refund</p>
+                      {item.refund_at ? (
+                        <p style={{ fontSize:'11px', color:'var(--text2)' }}>
+                          Sudah diproses: Rp {Number(item.refund_amount||0).toLocaleString('id-ID')} pada {new Date(item.refund_at).toLocaleDateString('id-ID')}
+                          {item.refund_catatan ? ' — ' + item.refund_catatan : ''}
+                        </p>
+                      ) : (
+                        <>
+                          <input type="number" placeholder="Jumlah Refund (Rp)" value={refundForm.refund_amount}
+                            onChange={e => setRefundForm(f => ({ ...f, refund_amount: e.target.value }))} style={inp} />
+                          <input placeholder="Catatan (opsional)" value={refundForm.refund_catatan}
+                            onChange={e => setRefundForm(f => ({ ...f, refund_catatan: e.target.value }))} style={inp} />
+                          <button onClick={() => handleProsesRefund(item)} disabled={refundingId === item.id}
+                            style={{ width:'100%', padding:'8px 12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'10px', color:'#ef4444', fontSize:'12px', fontWeight:600, cursor: refundingId === item.id ? 'not-allowed' : 'pointer', opacity: refundingId === item.id ? 0.6 : 1 }}>
+                            {refundingId === item.id ? 'Memproses...' : 'Proses Refund'}
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
 

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { DollarSign, Search, Eye, X, Plus, TrendingUp, TrendingDown, FileText, BookOpen, BarChart2, ArrowUpCircle, ArrowDownCircle , Calendar, Settings as SettingsIcon, Check, AlertCircle } from "lucide-react";
+import { DollarSign, Search, Eye, X, Plus, TrendingUp, TrendingDown, FileText, BookOpen, BarChart2, ArrowUpCircle, ArrowDownCircle , Calendar, Settings as SettingsIcon, Check, AlertCircle, Wallet } from "lucide-react";
 import { usePagination } from '@/lib/usePagination';
 import Pagination from '@/components/Pagination';
 
@@ -19,6 +19,7 @@ const TABS = [
   { key:'jurnal',   label:'Jurnal',   icon: BookOpen },
   { key:'report',   label:'Report',   icon: BarChart2 },
   { key:'cuti',     label:'Cuti',     icon: Calendar },
+  { key:'kasbon',   label:'Kasbon',   icon: Wallet },
   { key:'settings', label:'Settings', icon: SettingsIcon },
 ];
 
@@ -30,8 +31,14 @@ export default function FinancePage() {
   const [cutiLoading, setCutiLoading] = useState(false);
   const [cutiFilter, setCutiFilter] = useState('all');
 
+  // Kasbon (pinjaman mitra) management
+  const [kasbonList, setKasbonList] = useState<any[]>([]);
+  const [kasbonLoading, setKasbonLoading] = useState(false);
+  const [kasbonFilter, setKasbonFilter] = useState('pending');
+
   // Payroll workflow
   const [payrollPeriode, setPayrollPeriode] = useState(new Date().toISOString().slice(0,7));
+  const [payrollBagian, setPayrollBagian] = useState<'15'|'30'>('30');
   const [payrollGenerating, setPayrollGenerating] = useState(false);
   const [payrollDetail, setPayrollDetail] = useState<any>(null);
   const [payrollEditMode, setPayrollEditMode] = useState(false);
@@ -90,6 +97,31 @@ export default function FinancePage() {
       await apiClient.patch(`/internal/finance/cuti/${id}/approve`, { status, catatan_admin: catatan });
       alert(status === 'approved' ? 'Cuti disetujui' : 'Cuti ditolak');
       fetchCuti();
+    } catch (e: any) {
+      alert('Error: ' + (e?.response?.data?.message || 'gagal'));
+    }
+  };
+
+  const fetchKasbon = async () => {
+    setKasbonLoading(true);
+    try {
+      const params: any = kasbonFilter !== 'all' ? { status: kasbonFilter } : {};
+      const res = await apiClient.get('/internal/finance/kasbon', { params });
+      setKasbonList(res.data.data?.data || res.data.data || []);
+    } catch {}
+    setKasbonLoading(false);
+  };
+
+  const handleApproveKasbon = async (id: number, status: 'approved'|'rejected') => {
+    let catatan = '';
+    if (status === 'rejected') {
+      catatan = prompt('Alasan penolakan:') || '';
+      if (!catatan) return;
+    }
+    try {
+      await apiClient.patch(`/internal/finance/kasbon/${id}/approve`, { status, catatan_admin: catatan });
+      alert(status === 'approved' ? 'Kasbon disetujui' : 'Kasbon ditolak');
+      fetchKasbon();
     } catch (e: any) {
       alert('Error: ' + (e?.response?.data?.message || 'gagal'));
     }
@@ -178,6 +210,8 @@ export default function FinancePage() {
   useEffect(() => {
     if (activeTab === 'jurnal') fetchJurnal();
     if (activeTab === 'report') fetchReport();
+    if (activeTab === 'cuti') fetchCuti();
+    if (activeTab === 'kasbon') fetchKasbon();
   }, [activeTab]);
 
   const fetchAll = () => {
@@ -240,9 +274,9 @@ export default function FinancePage() {
     e.preventDefault();
     setGeneratingPayroll(true);
     try {
-      const res: any = await apiClient.post('/internal/finance/payroll/generate', { periode: periodePayroll });
-      const count = res.data?.data?.length || 0;
-      alert('Berhasil generate ' + count + ' payroll untuk periode ' + periodePayroll);
+      const res: any = await apiClient.post('/internal/finance/payroll/generate', { periode: periodePayroll, bagian: payrollBagian });
+      const count = res.data?.data?.total_generated ?? res.data?.data?.length ?? 0;
+      alert('Berhasil generate ' + count + ' payroll untuk periode ' + periodePayroll + ' (tgl ' + payrollBagian + ')');
       setShowGeneratePayroll(false);
       fetchAll();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal generate payroll'); }
@@ -406,6 +440,14 @@ export default function FinancePage() {
               <input type="month" value={periodePayroll} onChange={(e) => setPeriodePayroll(e.target.value)}
                 style={{ width:'100%', padding:'8px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}/>
             </div>
+            <div style={{ minWidth:'110px' }}>
+              <p style={{ fontSize:'12px', color:'var(--text3)', marginBottom:'4px', fontWeight:600 }}>Bagian (gajian 2x/bulan)</p>
+              <select value={payrollBagian} onChange={(e) => setPayrollBagian(e.target.value as '15'|'30')}
+                style={{ width:'100%', padding:'8px 10px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
+                <option value="15">Tgl 15 (awal bulan)</option>
+                <option value="30">Tgl 30/31 (akhir bulan)</option>
+              </select>
+            </div>
             <button onClick={(e: any) => handleGeneratePayroll(e)} disabled={generatingPayroll}
               style={{ background: generatingPayroll ? '#666' : 'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'10px', padding:'9px 18px', color:'white', fontWeight:700, fontSize:'13px', cursor: generatingPayroll ? 'not-allowed' : 'pointer' }}>
               {generatingPayroll ? 'Generating...' : 'Generate Payroll'}
@@ -427,9 +469,9 @@ export default function FinancePage() {
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
                         <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{(payrollPg.page-1)*payrollPg.perPage+i+1}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>#{item.id}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.user?.name||'-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.mitra?.nama_lengkap||item.mitra?.user?.name||'-'}</td>
                         <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'#10b981' }}>Rp {Number(item.total||0).toLocaleString('id')}</td>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.periode_mulai ? new Date(item.periode_mulai).toLocaleDateString('id-ID',{month:'long',year:'numeric'}) : '-'}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.periode_mulai ? new Date(item.periode_mulai).toLocaleDateString('id-ID',{month:'long',year:'numeric'}) : '-'}{item.periode_label ? ' (tgl '+item.periode_label+')' : ''}</td>
                         <td style={{ padding:'12px 16px' }}>
                           <span style={{ background:s.bg, color:s.color, border:'1px solid '+s.border, borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.label}</span>
                         </td>
@@ -593,13 +635,20 @@ export default function FinancePage() {
             </div>
             <div style={{ background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'14px', padding:'14px', marginBottom:'16px' }}>
               <p style={{ color:'var(--text2)', fontSize:'13px', lineHeight:'1.6' }}>
-                Generate payroll otomatis untuk semua mitra yang memiliki order aktif (<b>in_progress</b>) di periode yang dipilih. Payroll dihitung berdasarkan hari kerja × tarif per hari × 80%.
+                Generate payroll utk semua Lead berstatus Deal/Stop yang aktif di periode & bagian (tgl 15/30) yang dipilih. Gaji dihitung prorata harian dari Honor Mitra + Management Fee per Deal.
               </p>
             </div>
             <form onSubmit={handleGeneratePayroll} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Periode (Bulan-Tahun) *</label>
                 <input required type="month" value={periodePayroll} onChange={e => setPeriodePayroll(e.target.value)} style={inp} />
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Bagian *</label>
+                <select value={payrollBagian} onChange={e => setPayrollBagian(e.target.value as '15'|'30')} style={inp}>
+                  <option value="15">Tgl 15 (awal bulan)</option>
+                  <option value="30">Tgl 30/31 (akhir bulan)</option>
+                </select>
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => setShowGeneratePayroll(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
@@ -802,6 +851,63 @@ export default function FinancePage() {
                           <div style={{ display:'flex', gap:'6px', marginTop:'8px' }}>
                             <button onClick={() => handleApproveCuti(c.id, 'approved')} style={{ background:'#10b981', border:'none', borderRadius:'6px', padding:'5px 10px', color:'white', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>Setujui</button>
                             <button onClick={() => handleApproveCuti(c.id, 'rejected')} style={{ background:'#ef4444', border:'none', borderRadius:'6px', padding:'5px 10px', color:'white', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>Tolak</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+        </div>
+      )}
+
+      {/* === KASBON TAB === */}
+      {activeTab === 'kasbon' && (
+        <div>
+          <div style={{ display:'flex', gap:'8px', marginBottom:'14px', alignItems:'center', flexWrap:'wrap' }}>
+            <span style={{ fontSize:'13px', color:'var(--text3)' }}>Filter:</span>
+            {[['all','Semua'],['pending','Pending'],['approved','Disetujui'],['rejected','Ditolak']].map(([k,l]) => (
+              <button key={k} onClick={() => { setKasbonFilter(k); setTimeout(fetchKasbon, 50); }}
+                style={{ padding:'5px 12px', borderRadius:'8px', fontSize:'12px', fontWeight:600, cursor:'pointer',
+                  background: kasbonFilter===k ? '#7c3aed' : 'var(--glass)',
+                  color: kasbonFilter===k ? 'white' : 'var(--text3)',
+                  border: kasbonFilter===k ? 'none' : '1px solid var(--border)' }}>
+                {l}
+              </button>
+            ))}
+          </div>
+          {kasbonLoading ? <p style={{ color:'var(--text3)', textAlign:'center' }}>Loading...</p> :
+            kasbonList.length === 0 ? (
+              <div style={{ textAlign:'center', padding:'48px', color:'var(--text3)' }}>
+                <Wallet size={32} style={{ opacity:0.2, marginBottom:8 }}/>
+                <p>Belum ada pengajuan kasbon</p>
+              </div>
+            ) : (
+              <div style={{ display:'grid', gap:'10px' }}>
+                {kasbonList.map((k: any) => (
+                  <div key={k.id} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'14px', padding:'14px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'10px' }}>
+                      <div style={{ flex:1 }}>
+                        <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)' }}>{k.mitra_nama || ('Mitra #' + k.mitra_id)}</p>
+                        <p style={{ fontSize:'15px', fontWeight:700, color:'#f59e0b', marginTop:'4px' }}>Rp {Number(k.jumlah||0).toLocaleString('id-ID')}</p>
+                        <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'4px' }}>Keperluan: {k.keperluan || '-'}</p>
+                        <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>Diajukan: {k.created_at ? new Date(k.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-'}</p>
+                        {k.catatan_admin && <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px', fontStyle:'italic' }}>Catatan admin: {k.catatan_admin}</p>}
+                      </div>
+                      <div style={{ textAlign:'right' }}>
+                        <span style={{
+                          padding:'3px 10px', borderRadius:'8px', fontSize:'11px', fontWeight:700,
+                          background: k.status === 'pending' ? 'rgba(245,158,11,0.15)' : k.status === 'approved' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                          color: k.status === 'pending' ? '#f59e0b' : k.status === 'approved' ? '#10b981' : '#ef4444',
+                        }}>
+                          {k.status === 'pending' ? 'Pending' : k.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                        </span>
+                        {k.status === 'pending' && (
+                          <div style={{ display:'flex', gap:'6px', marginTop:'8px' }}>
+                            <button onClick={() => handleApproveKasbon(k.id, 'approved')} style={{ background:'#10b981', border:'none', borderRadius:'6px', padding:'5px 10px', color:'white', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>Setujui</button>
+                            <button onClick={() => handleApproveKasbon(k.id, 'rejected')} style={{ background:'#ef4444', border:'none', borderRadius:'6px', padding:'5px 10px', color:'white', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>Tolak</button>
                           </div>
                         )}
                       </div>
