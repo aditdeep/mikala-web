@@ -474,6 +474,7 @@ export default function FinancePage() {
             <Plus size={15}/>Tambah Jurnal
           </button>
         )}
+        </div>
       </div>
 
       {/* Summary Cards */}
