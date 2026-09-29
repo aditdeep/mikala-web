@@ -132,16 +132,22 @@ export default function WebsiteMgaPage() {
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
               {[
-                { key: 'hero_title',    label: 'Judul Hero' },
-                { key: 'hero_subtitle', label: 'Subjudul Hero' },
-                { key: 'hero_image',    label: 'URL Gambar Hero' },
-                { key: 'wa_number',     label: 'Nomor WhatsApp' },
-                { key: 'email',         label: 'Email' },
-                { key: 'alamat',        label: 'Alamat' },
-                { key: 'instagram',     label: 'URL Instagram' },
-                { key: 'facebook',      label: 'URL Facebook' },
-                { key: 'youtube',       label: 'URL YouTube' },
-                { key: 'gtm_id',        label: 'Google Tag Manager ID' },
+                { key: 'site_title',       label: 'Judul Website (SEO)' },
+                { key: 'site_description', label: 'Deskripsi Website (SEO)' },
+                { key: 'hero_title',       label: 'Judul Hero' },
+                { key: 'hero_subtitle',    label: 'Subjudul Hero' },
+                { key: 'hero_image',       label: 'URL Gambar Hero' },
+                { key: 'wa_number',        label: 'Nomor WhatsApp' },
+                { key: 'phone',            label: 'No. Telepon' },
+                { key: 'email',            label: 'Email' },
+                { key: 'alamat',           label: 'Alamat' },
+                { key: 'jam_operasional',  label: 'Jam Operasional' },
+                { key: 'instagram',        label: 'URL Instagram' },
+                { key: 'facebook',         label: 'URL Facebook' },
+                { key: 'tiktok',           label: 'URL TikTok' },
+                { key: 'youtube',          label: 'URL YouTube' },
+                { key: 'google_ads_id',    label: 'Google Ads Conversion ID (AW-XXXXXXXXX)' },
+                { key: 'gtm_id',           label: 'Google Tag Manager Container ID (GTM-XXXXXXX)' },
               ].map(f => (
                 <div key={f.key}>
                   <label style={lbl}>{f.label}</label>

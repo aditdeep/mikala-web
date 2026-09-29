@@ -7,9 +7,34 @@ export const metadata: Metadata = {
   description: 'Hubungi Mikala Global Akademi untuk informasi program, pendaftaran, dan konsultasi karir ke Jepang.',
 };
 
-const WA = 'https://wa.me/6281296998827?text=Halo%20MGA%2C%20saya%20ingin%20informasi%20program%20Kaigo%20Jepang';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
+const WA_DEFAULT = '6281296998827';
 
-export default function KontakPage() {
+// Ambil settings kontak dari CMS Web MGA > Settings, biar halaman Kontak gak lagi hardcode.
+async function getSettings() {
+  try {
+    const res = await fetch(`${API}/mga/settings`, { next: { revalidate: 60 } });
+    const json = await res.json();
+    return json?.data || {};
+  } catch {
+    return {};
+  }
+}
+
+export default async function KontakPage() {
+  const s = await getSettings();
+  const alamat = s.alamat || 'Jl. Anyelir No. 1-2, Jatibening, Bekasi, Jawa Barat 17412';
+  const phone = s.phone || s.wa_number || '+62 821-1448-8878';
+  const email = s.email || 'info@mikalaglobalakademi.co.id';
+  const jamOperasional = s.jam_operasional || 'Senin – Sabtu: 08.00 – 17.00 WIB';
+  const waNumber = (s.wa_number || WA_DEFAULT).replace(/[^0-9]/g, '');
+  const WA = `https://wa.me/${waNumber}?text=Halo%20MGA%2C%20saya%20ingin%20informasi%20program%20Kaigo%20Jepang`;
+  const socials: [string, string, string][] = [
+    ['📸', 'Instagram', s.instagram || 'https://instagram.com/mikalaglobal'],
+    ['👍', 'Facebook', s.facebook || 'https://facebook.com/mikalaglobal'],
+    ['▶️', 'YouTube', s.youtube || 'https://youtube.com/@mikalaglobal'],
+  ];
+
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar active="/kontak"/>
@@ -31,10 +56,10 @@ export default function KontakPage() {
             <div>
               <h2 style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 800, color: 'var(--text)', marginBottom: '28px', fontFamily: "'DM Serif Display', serif" }}>Informasi Kontak</h2>
               {[
-                { icon: '📍', label: 'Alamat', val: 'Jl. Anyelir No. 1-2, Jatibening, Bekasi, Jawa Barat 17412' },
-                { icon: '📞', label: 'Telepon / WhatsApp', val: '+62 821-1448-8878' },
-                { icon: '✉️', label: 'Email', val: 'info@mikalaglobalakademi.co.id' },
-                { icon: '🕐', label: 'Jam Operasional', val: 'Senin – Sabtu: 08.00 – 17.00 WIB' },
+                { icon: '📍', label: 'Alamat', val: alamat },
+                { icon: '📞', label: 'Telepon / WhatsApp', val: phone },
+                { icon: '✉️', label: 'Email', val: email },
+                { icon: '🕐', label: 'Jam Operasional', val: jamOperasional },
               ].map(c => (
                 <div key={c.label} style={{ display: 'flex', gap: '16px', marginBottom: '20px', padding: '16px', background: 'var(--bg)', borderRadius: '14px', border: '1px solid var(--border)' }}>
                   <span style={{ fontSize: '24px', flexShrink: 0 }}>{c.icon}</span>
@@ -48,7 +73,7 @@ export default function KontakPage() {
               <div style={{ marginTop: '28px' }}>
                 <p style={{ fontWeight: 700, color: 'var(--text)', marginBottom: '12px', fontSize: '14px' }}>Ikuti Kami</p>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  {[['📸', 'Instagram', 'https://instagram.com/mikalaglobal'], ['👍', 'Facebook', 'https://facebook.com/mikalaglobal'], ['▶️', 'YouTube', 'https://youtube.com/@mikalaglobal']].map(([icon, label, href]) => (
+                  {socials.map(([icon, label, href]) => (
                     <a key={label} href={href} target="_blank" rel="noreferrer"
                       style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: 'var(--green3)', borderRadius: '10px', fontSize: '13px', fontWeight: 600, color: 'var(--green)' }}>
                       {icon} {label}
@@ -72,14 +97,14 @@ export default function KontakPage() {
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: '#25d366', color: 'white', padding: '16px 36px', borderRadius: '50px', fontWeight: 700, fontSize: '16px', boxShadow: '0 4px 20px rgba(37,211,102,0.4)' }}>
                   <span style={{ fontSize: '22px' }}>💬</span> Chat WhatsApp Sekarang
                 </a>
-                <p style={{ marginTop: '16px', opacity: 0.75, fontSize: '13px' }}>Atau hubungi: +62 821-1448-8878</p>
+                <p style={{ marginTop: '16px', opacity: 0.75, fontSize: '13px' }}>Atau hubungi: {phone}</p>
               </div>
 
               {/* Map placeholder */}
               <div style={{ marginTop: '20px', background: 'var(--bg)', borderRadius: '20px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', flexDirection: 'column', gap: '8px' }}>
                 <span style={{ fontSize: '32px' }}>🗺️</span>
-                <p style={{ color: 'var(--text3)', fontSize: '13px' }}>Jl. Anyelir No. 1-2, Jatibening, Bekasi</p>
-                <a href="https://maps.google.com/?q=Jl+Anyelir+1+Jatibening+Bekasi" target="_blank" rel="noreferrer"
+                <p style={{ color: 'var(--text3)', fontSize: '13px' }}>{alamat}</p>
+                <a href={`https://maps.google.com/?q=${encodeURIComponent(alamat)}`} target="_blank" rel="noreferrer"
                   style={{ color: 'var(--green)', fontWeight: 700, fontSize: '13px' }}>Buka di Google Maps →</a>
               </div>
             </div>

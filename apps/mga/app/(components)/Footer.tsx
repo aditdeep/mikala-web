@@ -1,8 +1,33 @@
 import Link from 'next/link';
 
 const LOGO = 'https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo-mga-web_digdlz.png';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
 
-export default function Footer() {
+// Ambil settings kontak/sosmed dari CMS Web MGA > Settings, biar Footer gak lagi hardcode --
+// samain sama pola MGM: apapun yang diisi admin lewat CMS langsung kepakai di frontend.
+async function getSettings() {
+  try {
+    const res = await fetch(`${API}/mga/settings`, { next: { revalidate: 60 } });
+    const json = await res.json();
+    return json?.data || {};
+  } catch {
+    return {};
+  }
+}
+
+export default async function Footer() {
+  const s = await getSettings();
+  const alamat = s.alamat || 'Jl. Anyelir No. 1-2, Jatibening, Bekasi';
+  const phone = s.phone || s.wa_number || '+62 821-1448-8878';
+  const email = s.email || 'info@mikalaglobalakademi.co.id';
+  const jamOperasional = s.jam_operasional || 'Senin–Sabtu: 08.00–17.00 WIB';
+  const socials = [
+    { key: 'instagram', icon: '📸', href: s.instagram || 'https://instagram.com/mikalaglobal' },
+    { key: 'facebook',  icon: '👍', href: s.facebook  || 'https://facebook.com/mikalaglobal' },
+    { key: 'youtube',   icon: '▶️', href: s.youtube   || 'https://youtube.com/@mikalaglobal' },
+    { key: 'tiktok',    icon: '🎵', href: s.tiktok    || 'https://tiktok.com/@mikalaglobal' },
+  ];
+
   return (
     <footer style={{ background: 'var(--dark)', color: 'rgba(255,255,255,0.8)', padding: 'clamp(48px,8vw,80px) 0 0' }}>
       <div className="container">
@@ -14,10 +39,10 @@ export default function Footer() {
               Lembaga Pelatihan Kerja resmi mempersiapkan tenaga perawat profesional untuk berkarir di Jepang.
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
-              {['instagram', 'facebook', 'youtube', 'tiktok'].map(s => (
-                <a key={s} href={`https://${s}.com/mikalaglobal`} target="_blank" rel="noreferrer"
+              {socials.map(soc => (
+                <a key={soc.key} href={soc.href} target="_blank" rel="noreferrer"
                   style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', transition: 'background 0.2s' }}>
-                  {s === 'instagram' ? '📸' : s === 'facebook' ? '👍' : s === 'youtube' ? '▶️' : '🎵'}
+                  {soc.icon}
                 </a>
               ))}
             </div>
@@ -43,10 +68,10 @@ export default function Footer() {
           <div>
             <p style={{ fontWeight: 700, color: 'white', marginBottom: '16px', fontSize: '14px' }}>Kontak</p>
             {[
-              ['📍', 'Jl. Anyelir No. 1-2, Jatibening, Bekasi'],
-              ['📞', '+62 821-1448-8878'],
-              ['✉️', 'info@mikalaglobalakademi.co.id'],
-              ['🕐', 'Senin–Sabtu: 08.00–17.00 WIB'],
+              ['📍', alamat],
+              ['📞', phone],
+              ['✉️', email],
+              ['🕐', jamOperasional],
             ].map(([icon, text]) => (
               <div key={text} style={{ display: 'flex', gap: '10px', marginBottom: '10px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
                 <span style={{ flexShrink: 0 }}>{icon}</span>
