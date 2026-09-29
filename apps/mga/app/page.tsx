@@ -133,7 +133,7 @@ export default async function HomePage() {
                 <a href={MITRA_DAFTAR} className="btn-primary" target="_blank" rel="noreferrer" style={{ fontSize: '16px', padding: '15px 32px' }}>
                   🚀 Daftar Sekarang
                 </a>
-                <Link href="/program" className="btn-secondary" style={{ borderColor: 'rgba(255,255,255,0.4)', color: 'white', fontSize: '15px' }}>
+                <Link href="/program" className="btn-secondary btn-secondary-on-dark" style={{ fontSize: '15px' }}>
                   Lihat Program →
                 </Link>
               </div>

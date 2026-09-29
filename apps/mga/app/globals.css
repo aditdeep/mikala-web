@@ -69,6 +69,13 @@ img { max-width: 100%; display: block; }
 }
 .btn-secondary:hover { background: var(--green3); }
 
+/* Varian btn-secondary buat dipakai di atas background gelap (hero dgn overlay dark/dark2/blue) --
+   sebelumnya teks dipaksa putih lewat inline style tapi hover bawaan .btn-secondary bikin
+   background jadi var(--green3) (pink sangat muda, mendekati putih) -- teks putih di atas
+   background hampir-putih jadi gak kebaca sama sekali pas di-hover. */
+.btn-secondary-on-dark { color: white; border-color: rgba(255,255,255,0.4); }
+.btn-secondary-on-dark:hover { background: rgba(255,255,255,0.15); }
+
 .btn-white {
   display: inline-flex; align-items: center; gap: 8px;
   background: white; color: var(--green);
