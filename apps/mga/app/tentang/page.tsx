@@ -29,7 +29,7 @@ export default function TentangPage() {
       <Navbar active="/tentang"/>
 
       {/* Hero */}
-      <section style={{ background: 'linear-gradient(135deg, var(--dark) 0%, var(--dark2) 60%, #0d2a4a 100%)', padding: 'clamp(100px,15vw,140px) 0 clamp(60px,10vw,100px)', textAlign: 'center' }}>
+      <section style={{ background: 'linear-gradient(135deg, var(--dark) 0%, var(--dark2) 60%, #018BA2 100%)', padding: 'clamp(100px,15vw,140px) 0 clamp(60px,10vw,100px)', textAlign: 'center' }}>
         <div className="container">
           <div className="tag tag-green" style={{ marginBottom: '16px' }}>Tentang Kami</div>
           <h1 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 800, color: 'white', fontFamily: "'DM Serif Display', serif", marginBottom: '20px' }}>

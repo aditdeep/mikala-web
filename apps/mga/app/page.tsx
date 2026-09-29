@@ -105,15 +105,15 @@ export default async function HomePage() {
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section style={{
         minHeight: '100vh', position: 'relative', overflow: 'hidden',
-        background: 'linear-gradient(135deg, var(--dark) 0%, var(--dark2) 40%, #0d2a4a 100%)',
+        background: 'linear-gradient(135deg, var(--dark) 0%, var(--dark2) 40%, #018BA2 100%)',
         display: 'flex', alignItems: 'center', width: '100%',
       }}>
         {/* Background pattern */}
         <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}/>
         
         {/* Green glow */}
-        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(26,122,94,0.3) 0%, transparent 70%)', pointerEvents: 'none' }}/>
-        <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,87,185,0.3) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(1,139,162,0.2) 0%, transparent 70%)', pointerEvents: 'none' }}/>
 
         <div className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '100px', paddingBottom: '60px', width: '100%' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 440px), 1fr))', gap: '48px', alignItems: 'center' }}>
@@ -245,7 +245,7 @@ export default async function HomePage() {
       <section className="section" style={{ background: 'var(--dark)', color: 'white' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-            <div className="tag" style={{ background: 'rgba(26,122,94,0.3)', color: 'var(--green2)', marginBottom: '12px' }}>Testimoni Alumni</div>
+            <div className="tag" style={{ background: 'rgba(212,87,185,0.3)', color: 'var(--green2)', marginBottom: '12px' }}>Testimoni Alumni</div>
             <h2 style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 800, fontFamily: "'DM Serif Display', serif" }}>
               Cerita Sukses Alumni MGA
             </h2>

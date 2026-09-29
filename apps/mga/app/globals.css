@@ -1,22 +1,22 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --green:      #1a7a5e;
-  --green2:     #22a07a;
-  --green3:     #e8f5f0;
-  --blue:       #1a4a8a;
-  --blue2:      #2563eb;
-  --blue3:      #e8f0fb;
-  --dark:       #0d1f1a;
-  --dark2:      #1a2e28;
-  --text:       #1a2e28;
-  --text2:      #4a5e58;
-  --text3:      #8a9e98;
+  --green:      #D457B9;
+  --green2:     #e07bc9;
+  --green3:     #fbeef8;
+  --blue:       #018BA2;
+  --blue2:      #41a8b9;
+  --blue3:      #e5f3f6;
+  --dark:       #232a3d;
+  --dark2:      #46536D;
+  --text:       #1a1a1a;
+  --text2:      #55606b;
+  --text3:      #8b95a0;
   --white:      #ffffff;
-  --bg:         #f8fdfb;
-  --border:     rgba(26,122,94,0.12);
-  --shadow:     0 4px 24px rgba(26,122,94,0.1);
-  --shadow-lg:  0 16px 48px rgba(26,74,138,0.12);
+  --bg:         #faf9fb;
+  --border:     rgba(70,83,109,0.12);
+  --shadow:     0 4px 24px rgba(212,87,185,0.1);
+  --shadow-lg:  0 16px 48px rgba(70,83,109,0.12);
   --radius:     16px;
   --radius-sm:  10px;
   --radius-lg:  24px;
@@ -54,10 +54,10 @@ img { max-width: 100%; display: block; }
   background: linear-gradient(135deg, var(--green), var(--green2));
   color: white; padding: 14px 28px; border-radius: 50px;
   font-weight: 700; font-size: 15px; border: none; cursor: pointer;
-  box-shadow: 0 4px 20px rgba(26,122,94,0.35);
+  box-shadow: 0 4px 20px rgba(212,87,185,0.35);
   transition: all 0.25s; text-decoration: none;
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(26,122,94,0.45); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(212,87,185,0.45); }
 
 .btn-secondary {
   display: inline-flex; align-items: center; gap: 8px;

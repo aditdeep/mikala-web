@@ -145,7 +145,7 @@ export function TestimoniSection() {
     <section className="section" style={{ background: 'var(--dark)', color: 'white' }}>
       <div className="container">
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <div className="tag" style={{ background: 'rgba(26,122,94,0.3)', color: 'var(--green2)', marginBottom: '12px' }}>{h.testi_badge[lang]}</div>
+          <div className="tag" style={{ background: 'rgba(212,87,185,0.3)', color: 'var(--green2)', marginBottom: '12px' }}>{h.testi_badge[lang]}</div>
           <h2 style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 800, fontFamily: "'DM Serif Display', serif" }}>{h.testi_title[lang]}</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(280px, 1fr))', gap: '20px', overflowX: 'auto', paddingBottom: '8px' }} className="mga-testi-scroll">

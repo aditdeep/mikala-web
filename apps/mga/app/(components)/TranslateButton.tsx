@@ -27,7 +27,7 @@ export default function TranslateButton({ scrolled = false }: { scrolled?: boole
   };
 
   return (
-    <div style={{ display: 'flex', gap: '2px', background: scrolled ? 'rgba(26,46,40,0.08)' : 'rgba(255,255,255,0.12)', borderRadius: '10px', padding: '3px', border: `1px solid ${scrolled ? 'rgba(26,46,40,0.15)' : 'rgba(255,255,255,0.2)'}` }}>
+    <div style={{ display: 'flex', gap: '2px', background: scrolled ? 'rgba(70,83,109,0.08)' : 'rgba(255,255,255,0.12)', borderRadius: '10px', padding: '3px', border: `1px solid ${scrolled ? 'rgba(70,83,109,0.15)' : 'rgba(255,255,255,0.2)'}` }}>
       <button onClick={() => translate('id')}
         style={{
           padding: '5px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 700,

@@ -30,7 +30,7 @@ export default function Navbar({ active = '/' }: { active?: string }) {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  const barColor = '#1a2e28';
+  const barColor = '#46536D';
 
   return (
     <>
@@ -38,7 +38,7 @@ export default function Navbar({ active = '/' }: { active?: string }) {
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
         background: scrolled ? 'rgba(255,255,255,0.97)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(26,122,94,0.1)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(212,87,185,0.1)' : 'none',
         transition: 'all 0.3s',
         padding: '0 clamp(16px,4vw,48px)',
       }}>
@@ -76,7 +76,7 @@ export default function Navbar({ active = '/' }: { active?: string }) {
 
             {/* Hamburger */}
             <button onClick={() => setMenuOpen(m => !m)} className="mga-hamburger"
-              style={{ background: scrolled ? 'rgba(26,46,40,0.08)' : 'rgba(255,255,255,0.15)', border: `1px solid ${scrolled ? 'rgba(26,46,40,0.15)' : 'rgba(255,255,255,0.3)'}`, borderRadius: '8px', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px', width: '40px', backdropFilter: 'blur(10px)' }}>
+              style={{ background: scrolled ? 'rgba(70,83,109,0.08)' : 'rgba(255,255,255,0.15)', border: `1px solid ${scrolled ? 'rgba(70,83,109,0.15)' : 'rgba(255,255,255,0.3)'}`, borderRadius: '8px', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px', width: '40px', backdropFilter: 'blur(10px)' }}>
               <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: barColor, transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none' }}/>
               <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: barColor, opacity: menuOpen ? 0 : 1 }}/>
               <span style={{ display: 'block', height: '2px', borderRadius: '2px', transition: 'all 0.3s', background: barColor, transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none' }}/>
