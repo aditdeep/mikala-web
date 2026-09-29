@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
 import { ChevronLeft, ChevronRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import SearchableSelect from '../../../components/SearchableSelect';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
 const TIPE = ['Perawat Homecare','Perawat Lansia / Caregiver','Babysitter','Babysitter New Born Care','Perawat Jiwa','Caregiver / Kaigo (Jepang)'];
@@ -168,18 +169,17 @@ function SumberField({ form, setForm }: { form: any; setForm: any }) {
               ℹ️ Belum ada lembaga terdaftar. Hubungi Divisi Rekrutmen Mikala untuk mendaftarkan lembaga Anda.
             </div>
           ) : (
-            <select
-              value={form.lembaga_id || ''}
-              onChange={e => {
-                const l = lembagaList.find((x: any) => x.id === Number(e.target.value));
-                setForm((f: any) => ({ ...f, lembaga_id: Number(e.target.value), sumber_detail: l?.nama || '' }));
+            <SearchableSelect
+              options={lembagaList.map((l: any) => ({ value: l.id, label: `${l.nama}${l.kota ? ` (${l.kota})` : ''}` }))}
+              value={form.lembaga_id}
+              onChange={(v) => {
+                const l = lembagaList.find((x: any) => x.id === Number(v));
+                setForm((f: any) => ({ ...f, lembaga_id: v ? Number(v) : undefined, sumber_detail: l?.nama || '' }));
               }}
-              style={inp}>
-              <option value="">-- Pilih lembaga --</option>
-              {lembagaList.map((l: any) => (
-                <option key={l.id} value={l.id}>{l.nama}{l.kota ? ` (${l.kota})` : ''}</option>
-              ))}
-            </select>
+              placeholder="-- Pilih lembaga --"
+              searchPlaceholder="Ketik nama lembaga..."
+              emptyText="Lembaga tidak ditemukan"
+            />
           )}
         </div>
       )}
@@ -191,18 +191,17 @@ function SumberField({ form, setForm }: { form: any; setForm: any }) {
           {loadingM ? (
             <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)' }}>Memuat daftar mitra...</p>
           ) : (
-            <select
-              value={form.referrer_mitra_id || ''}
-              onChange={e => {
-                const m = mitraList.find((x: any) => x.id === Number(e.target.value));
-                setForm((f: any) => ({ ...f, referrer_mitra_id: Number(e.target.value), sumber_detail: m?.nama_lengkap || '' }));
+            <SearchableSelect
+              options={mitraList.map((m: any) => ({ value: m.id, label: `${m.nama_lengkap}${m.kota ? ` - ${m.kota}` : ''}` }))}
+              value={form.referrer_mitra_id}
+              onChange={(v) => {
+                const m = mitraList.find((x: any) => x.id === Number(v));
+                setForm((f: any) => ({ ...f, referrer_mitra_id: v ? Number(v) : undefined, sumber_detail: m?.nama_lengkap || '' }));
               }}
-              style={inp}>
-              <option value="">-- Pilih nama mitra --</option>
-              {mitraList.map((m: any) => (
-                <option key={m.id} value={m.id}>{m.nama_lengkap}{m.kota ? ` - ${m.kota}` : ''}</option>
-              ))}
-            </select>
+              placeholder="-- Pilih nama mitra --"
+              searchPlaceholder="Ketik nama mitra..."
+              emptyText="Mitra tidak ditemukan"
+            />
           )}
           <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.35)', marginTop:'6px' }}>
             Mitra yang mereferensikan akan mendapat fee setelah Anda diterima.
