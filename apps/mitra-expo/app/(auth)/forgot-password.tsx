@@ -82,7 +82,7 @@ export default function ForgotPasswordScreen() {
               <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 20 }}>
                 {result.email_sent
                   ? 'Silakan cek inbox email Anda untuk instruksi reset password. Cek juga folder spam.'
-                  : 'Email tidak terkirim otomatis. Gunakan WhatsApp di bawah untuk bantuan reset password.'}
+                  : 'Link reset tidak bisa dikirim ke email. Hubungi admin via WhatsApp di bawah, admin akan me-reset password dan mengirim password baru ke WhatsApp Anda.'}
               </Text>
 
               {result.wa_url && (

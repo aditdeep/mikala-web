@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { Headphones, Search, Eye, X, Plus, CheckCircle, Clock, AlertCircle, Users, HeartPulse, MessageSquare, BarChart2, UserPlus, Check, Briefcase, TrendingUp, XCircle, Repeat, Download, FileText } from 'lucide-react';
+import { Headphones, Search, Eye, X, Plus, CheckCircle, Clock, AlertCircle, Users, HeartPulse, MessageSquare, BarChart2, UserPlus, Check, Briefcase, TrendingUp, XCircle, Repeat, Download, FileText, KeyRound } from 'lucide-react';
+import ResetPasswordAkunModal from '@/components/ResetPasswordAkunModal';
 import { usePagination } from '@/lib/usePagination';
 import Pagination from '@/components/Pagination';
 
@@ -240,6 +241,7 @@ function exportRowsToXls(filename: string, headers: string[], rows: (string|numb
 export default function CustomerCarePage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('layanan');
+  const [showResetPw, setShowResetPw] = useState(false);
   const [layanan, setLayanan] = useState<any[]>([]);
   const [klien, setKlien] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1047,7 +1049,11 @@ export default function CustomerCarePage() {
           <button onClick={() => router.push('/customer-care/laporan')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
             <FileText size={15}/>Laporan
           </button>
+          <button onClick={() => setShowResetPw(true)} title="Reset password akun klien (mis. klien lupa password & minta via WA)" style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)', borderRadius:'12px', color:'#d97706', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <KeyRound size={15}/>Reset Password
+          </button>
         </div>
+        {showResetPw && <ResetPasswordAkunModal role="klien" onClose={() => setShowResetPw(false)} />}
       </div>
 
       {/* Summary cards Leads - selalu tampil, di semua tabs (Layanan/Leads/Klien/Pasien/Feedback/Report), bukan cuma milik tab Leads */}

@@ -3,7 +3,8 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText, Download, Upload } from 'lucide-react';
+import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText, Download, Upload, KeyRound } from 'lucide-react';
+import ResetPasswordAkunModal from '@/components/ResetPasswordAkunModal';
 import * as XLSX from 'xlsx';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','MA, MAN, atau Sekolah Keagamaan Lainnya','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
@@ -381,6 +382,8 @@ export default function RekrutmenPage() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState<any>(null);
+  // Reset password mitra (tindak lanjut 'Lupa Password' via WA): null = tutup, {} = cari akun, {target} = akun tertentu
+  const [resetPw, setResetPw] = useState<{ target?: any } | null>(null);
   const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
@@ -704,6 +707,10 @@ export default function RekrutmenPage() {
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>{data.length} total pelamar terdaftar</p>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
+          <button onClick={() => setResetPw({})} title="Reset password akun mitra (mis. mitra lupa password & minta via WA)"
+            style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)', borderRadius:'12px', color:'#d97706', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <KeyRound size={15} />Reset Password
+          </button>
           <button onClick={handleExportMitra} title="Export tabel Data Mitra (sesuai filter/tab aktif) ke Excel"
             style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
             <Download size={15} />Export Excel
@@ -800,6 +807,12 @@ export default function RekrutmenPage() {
                             style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                             <Pencil size={13} />
                           </button>
+                          {item.user && (
+                            <button onClick={() => setResetPw({ target: { ...item.user, mitra: item } })} title="Reset Password"
+                              style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.25)', borderRadius:'8px', color:'#d97706', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
+                              <KeyRound size={13} />
+                            </button>
+                          )}
                           <button onClick={() => router.push(`/rekrutmen/cv/${item.id}`)} title="CV"
                             style={{ padding:'5px 8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
                             <FileText size={13} />CV
@@ -843,6 +856,12 @@ export default function RekrutmenPage() {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Detail Pelamar</h2>
               <div style={{ display:'flex', gap:'6px' }}>
+                {showDetail.user && (
+                  <button onClick={() => setResetPw({ target: { ...showDetail.user, mitra: showDetail } })} title="Reset Password"
+                    style={{ display:'flex', alignItems:'center', gap:'4px', padding:'7px 12px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.25)', borderRadius:'10px', color:'#d97706', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                    <KeyRound size={14} />Reset PW
+                  </button>
+                )}
                 <button onClick={() => { setShowDetail(null); router.push(`/rekrutmen/cv/${showDetail.id}`); }}
                   style={{ display:'flex', alignItems:'center', gap:'4px', padding:'7px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                   <FileText size={14} />CV
@@ -1068,6 +1087,10 @@ export default function RekrutmenPage() {
             )}
           </div>
         </div>
+      )}
+
+      {resetPw && (
+        <ResetPasswordAkunModal role="mitra" target={resetPw.target} onClose={() => setResetPw(null)} />
       )}
 
       {/* ── DELETE CONFIRM ── */}

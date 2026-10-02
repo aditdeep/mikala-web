@@ -76,11 +76,11 @@ export default function ForgotPasswordPage() {
               <div style={{ width:'64px', height:'64px', borderRadius:'50%', background:'rgba(16,185,129,0.15)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
                 <CheckCircle2 size={32} style={{ color:'#10b981' }}/>
               </div>
-              <h3 style={{ color:'white', fontSize:'17px', fontWeight:700, marginBottom:'8px' }}>Instruksi Terkirim!</h3>
+              <h3 style={{ color:'white', fontSize:'17px', fontWeight:700, marginBottom:'8px' }}>{result.email_sent ? 'Instruksi Terkirim!' : 'Permintaan Diterima'}</h3>
               <p style={{ color:'rgba(255,255,255,0.6)', fontSize:'13px', lineHeight:'1.6', marginBottom:'20px' }}>
                 {result.email_sent
                   ? `Link reset password telah dikirim ke ${email}. Cek inbox atau folder spam.`
-                  : `Email gagal terkirim. Gunakan WhatsApp di bawah untuk bantuan reset.`}
+                  : `Link reset tidak bisa dikirim ke email. Hubungi admin via WhatsApp di bawah, admin akan me-reset password dan mengirim password baru ke WhatsApp Anda.`}
               </p>
 
               {/* Email info */}
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
                     <span>Hubungi CS via WhatsApp</span>
                   </a>
                   <p style={{ color:'rgba(255,255,255,0.3)', fontSize:'11px', textAlign:'center', marginTop:'6px' }}>
-                    Respon cepat di jam kerja 08.00–21.00 WIB
+                    Admin akan mengirim password baru via WhatsApp · jam kerja 08.00–21.00 WIB
                   </p>
                 </div>
               )}
