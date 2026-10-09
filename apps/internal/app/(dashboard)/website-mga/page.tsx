@@ -6,6 +6,7 @@ import {
   Image, BookOpen, Users, Star, Settings,
 } from 'lucide-react';
 import RichEditor from '../../../components/RichEditor';
+import { toWibInput } from '@/lib/jadwalWib';
 
 const TABS = [
   { key: 'artikel',   label: 'Artikel',   icon: BookOpen },
@@ -80,7 +81,7 @@ export default function WebsiteMgaPage() {
 
   const handleEdit = (item: any) => {
     setEditItem(item);
-    setForm({ ...item });
+    setForm({ ...item, published_at: toWibInput(item.published_at) });
     setShowModal(true);
   };
 
@@ -307,7 +308,7 @@ export default function WebsiteMgaPage() {
                   </div>
                   <div>
                     <label style={lbl}>Tanggal Publish (jadwal)</label>
-                    <input type="datetime-local" value={form.published_at ? String(form.published_at).slice(0,16).replace(' ','T') : ''} onChange={e=>s('published_at',e.target.value)} style={inp} />
+                    <input type="datetime-local" value={form.published_at || ''} onChange={e=>s('published_at',e.target.value)} style={inp} />
                     <p style={{ color:'var(--text3)', fontSize:'11px', margin:'4px 0 0' }}>Kosongkan = publish sekarang. Isi tanggal ke depan = dijadwalkan (auto-publish). Backdate juga bisa.</p>
                   </div>
                   <div><label style={lbl}>URL Gambar</label><input value={form.gambar||''} onChange={e=>s('gambar',e.target.value)} style={inp} placeholder="https://res.cloudinary.com/..."/></div>

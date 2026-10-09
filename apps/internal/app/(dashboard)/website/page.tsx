@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import { FileText, Image, Star, Settings, Plus, X, Edit2, Trash2, Eye, Upload, BarChart2, Globe, Building2 } from 'lucide-react';
+import { toWibInput } from '@/lib/jadwalWib';
 import RichEditor from '../../../components/RichEditor';
 
 const TABS = [
@@ -365,7 +366,7 @@ export default function WebsitePage() {
                           style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', textDecoration:'none' }}>
                           <Eye size={12}/>
                         </a>
-                        <button onClick={() => { setEditItem(a); setFormArtikel({judul:a.judul,slug:a.slug,excerpt:a.excerpt||'',konten:a.konten||'',thumbnail:a.thumbnail||'',thumbnail_caption:a.thumbnail_caption||'',kategori:a.kategori||'Artikel',status:a.status||'published',published_at:a.published_at?String(a.published_at).slice(0,16).replace(' ','T'):''}); setShowForm(true); }}
+                        <button onClick={() => { setEditItem(a); setFormArtikel({judul:a.judul,slug:a.slug,excerpt:a.excerpt||'',konten:a.konten||'',thumbnail:a.thumbnail||'',thumbnail_caption:a.thumbnail_caption||'',kategori:a.kategori||'Artikel',status:a.status||'published',published_at:toWibInput(a.published_at)}); setShowForm(true); }}
                           style={{ padding:'5px 8px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'8px', color:'#f59e0b', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Edit2 size={12}/>
                         </button>
