@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { router } from 'expo-router';
 
 const api = axios.create({
   baseURL: 'https://api.mikalaglobalmedika.com/api',
@@ -19,6 +20,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       await SecureStore.deleteItemAsync('auth_token');
       await SecureStore.deleteItemAsync('auth_user');
+      // Sesi habis (mis. password direset admin -> semua token di-revoke): balik ke login,
+      // sebelumnya user tertahan di layar dgn data kosong.
+      if (!String(error.config?.url || '').includes('/auth/')) {
+        router.replace('/(auth)/login');
+      }
     }
     return Promise.reject(error);
   }

@@ -149,17 +149,17 @@ export default function HomePage() {
                 <CheckCircle size={18} style={{ color:'var(--purple-light)' }} />
               </div>
               <div style={{ flex:1 }}>
-                <div className="font-semibold text-sm" style={{ color:'var(--text-primary)' }}>{(job.tipe_layanan||"-").replace(/_/g," ")}</div>
-                <div className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{job.patient_name}</div>
+                <div className="font-semibold text-sm" style={{ color:'var(--text-primary)' }}>{job.patient_name || job.pasien?.nama_lengkap || '-'}</div>
+                <div className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{job.tipe_layanan}</div>
               </div>
               <span style={{
-                background: job.status === 'active' ? 'rgba(16,185,129,0.15)' : 'rgba(124,58,237,0.15)',
-                color: job.status === 'active' ? '#10b981' : 'var(--purple-light)',
-                border: `1px solid ${job.status === 'active' ? 'rgba(16,185,129,0.3)' : 'rgba(124,58,237,0.3)'}`,
+                background: job.status === 'in_progress' ? 'rgba(16,185,129,0.15)' : 'rgba(124,58,237,0.15)',
+                color: job.status === 'in_progress' ? '#10b981' : 'var(--purple-light)',
+                border: `1px solid ${job.status === 'in_progress' ? 'rgba(16,185,129,0.3)' : 'rgba(124,58,237,0.3)'}`,
                 borderRadius: '8px', padding: '3px 10px',
                 fontSize: '11px', fontWeight: 600,
               }}>
-                {job.status}
+                {job.status === 'in_progress' ? 'Berjalan' : job.status === 'completed' ? 'Selesai' : job.status}
               </span>
             </div>
           )) : (

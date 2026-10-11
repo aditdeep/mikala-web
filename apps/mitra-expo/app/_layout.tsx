@@ -37,14 +37,19 @@ function AppStack() {
       },
       // Saat user tap notifikasi
       (response) => {
-        const data = response.notification.request.content.data;
-        // Navigate berdasarkan type notifikasi
-        if (data?.type === 'job') {
+        const data: any = response.notification.request.content.data;
+        // Navigate berdasarkan type notifikasi (dikirim backend NotifikasiService: order/payroll/...)
+        const t = String(data?.type || '');
+        if (['job', 'order', 'penempatan'].includes(t)) {
           router.push('/(app)/jobs');
-        } else if (data?.type === 'gaji' || data?.type === 'payroll') {
+        } else if (['gaji', 'payroll', 'kasbon'].includes(t)) {
           router.push('/(app)/gaji');
-        } else if (data?.type === 'pelatihan') {
+        } else if (['pelatihan', 'training', 'sertifikat'].includes(t)) {
           router.push('/(app)/pelatihan');
+        } else if (t === 'cuti') {
+          router.push('/(app)/cuti');
+        } else {
+          router.push('/(app)/notifikasi');
         }
       }
     );

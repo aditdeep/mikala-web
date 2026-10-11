@@ -2,7 +2,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { MapPin, Calendar, ChevronRight, Briefcase, Search, CheckCircle, Clock, PlayCircle, XCircle } from 'lucide-react';
+import { MapPin, Calendar, ChevronRight, Briefcase, Search, Phone, MessageCircle } from 'lucide-react';
+
+// Pekerjaan = penempatan mitra dari Deal Customer Care (cc_leads). Status diatur CC (Tandai Deal =
+// berjalan, Stop = selesai), jadi mitra cuma lihat -- tombol update status lama sudah dihapus.
+const rupiah = (n: any) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const toWa = (phone?: string) => { let p = String(phone || '').replace(/\D/g, ''); if (p.startsWith('0')) p = '62' + p.slice(1); else if (p.startsWith('8')) p = '62' + p; return p; };
 
 const statusConfig: any = {
   pending:     { label:'Menunggu',    color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  border:'rgba(245,158,11,0.3)' },
@@ -19,7 +24,6 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchJobs = () => {
     apiClient.get('/mitra/jobs')
@@ -32,17 +36,6 @@ export default function JobsPage() {
   };
 
   useEffect(() => { fetchJobs(); }, []);
-
-  const updateStatus = async (jobId: number, status: string) => {
-    setUpdatingStatus(true);
-    try {
-      await apiClient.patch('/mitra/jobs/' + jobId + '/status', { status });
-      fetchJobs();
-      if (selectedJob) setSelectedJob((p: any) => ({...p, status}));
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Gagal update status');
-    } finally { setUpdatingStatus(false); }
-  };
 
   const filtered = jobs.filter(j =>
     JSON.stringify(j).toLowerCase().includes(search.toLowerCase())
@@ -81,13 +74,11 @@ export default function JobsPage() {
                   </span>
                 </div>
 
-                <h3 className="font-bold text-base mb-1" style={{ color:'var(--text-primary)', textTransform:'capitalize' }}>
-                  {(job.tipe_layanan||'-').replace(/_/g,' ')}
+                <h3 className="font-bold text-base mb-1" style={{ color:'var(--text-primary)' }}>
+                  {job.pasien?.nama_lengkap || '-'}
                 </h3>
-                <p className="text-sm mb-1" style={{ color:'var(--text-muted)' }}>
-                  Klien: {job.klien?.nama_lengkap||job.klien?.user?.name||'-'}
-                </p>
-                {job.pasien && <p className="text-sm mb-3" style={{ color:'var(--text-muted)' }}>Pasien: {job.pasien?.nama_lengkap||'-'}</p>}
+                <p className="text-sm mb-1" style={{ color:'var(--text-muted)' }}>{job.tipe_layanan || '-'}</p>
+                <p className="text-sm mb-3" style={{ color:'var(--text-muted)' }}>PJ: {job.klien?.nama_lengkap || '-'}</p>
 
                 <div className="flex items-center gap-4 text-xs" style={{ color:'var(--text-muted)' }}>
                   <div className="flex items-center gap-1.5">
@@ -102,10 +93,8 @@ export default function JobsPage() {
 
                 <div style={{ marginTop:'12px', paddingTop:'12px', borderTop:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                   <div>
-                    <p className="text-xs" style={{ color:'var(--text-muted)' }}>Order #{job.order_number||job.id}</p>
-                    <p className="font-bold text-base" style={{ color:'#10b981' }}>
-                      Rp {Number(job.total||job.total_amount||job.total_harga||0).toLocaleString('id-ID')}
-                    </p>
+                    <p className="text-xs" style={{ color:'var(--text-muted)' }}>{job.kode_order || `#${job.id}`} · Gaji/bulan</p>
+                    <p className="font-bold text-base" style={{ color:'#10b981' }}>{rupiah(job.gaji_bulanan)}</p>
                   </div>
                   <ChevronRight size={16} style={{ color:'var(--purple-light)' }} />
                 </div>
@@ -119,11 +108,11 @@ export default function JobsPage() {
             <Briefcase size={36} style={{ color:'var(--purple-light)', opacity:0.5 }} />
           </div>
           <p className="font-semibold" style={{ color:'var(--text-primary)' }}>Tidak ada pekerjaan</p>
-          <p className="text-sm mt-1" style={{ color:'var(--text-muted)' }}>Belum ada pekerjaan tersedia saat ini</p>
+          <p className="text-sm mt-1" style={{ color:'var(--text-muted)' }}>Penempatan dari tim Customer Care akan muncul di sini</p>
         </div>
       )}
 
-      {/* Detail + Update Status Modal */}
+      {/* Detail Modal */}
       {selectedJob && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:1000, display:'flex', alignItems:'flex-end', justifyContent:'center' }}>
           <div style={{ background:'var(--bg2)', borderRadius:'24px 24px 0 0', padding:'24px', width:'100%', maxWidth:'480px', maxHeight:'85vh', overflowY:'auto', position:'relative', zIndex:1001 }}>
@@ -133,47 +122,58 @@ export default function JobsPage() {
             </div>
 
             <div style={{ background:'linear-gradient(135deg, #7c3aed, #4f46e5)', borderRadius:'16px', padding:'16px', marginBottom:'16px' }}>
-              <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'12px' }}>Tipe Layanan</p>
-              <p style={{ color:'white', fontWeight:700, fontSize:'16px', textTransform:'capitalize' }}>{(selectedJob.tipe_layanan||'-').replace(/_/g,' ')}</p>
-              <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px', marginTop:'4px' }}>Order #{selectedJob.order_number}</p>
+              <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'12px' }}>{selectedJob.tipe_layanan || '-'}</p>
+              <p style={{ color:'white', fontWeight:700, fontSize:'16px' }}>{selectedJob.pasien?.nama_lengkap || '-'}</p>
+              <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'11px', marginTop:'4px' }}>{selectedJob.kode_order || `#${selectedJob.id}`} · {(statusConfig[selectedJob.status] || statusConfig.pending).label}</p>
             </div>
 
+            {(selectedJob.klien?.phone || selectedJob.alamat_layanan) && (
+              <div style={{ display:'flex', gap:'8px', marginBottom:'12px' }}>
+                {selectedJob.klien?.phone && (
+                  <a href={`https://wa.me/${toWa(selectedJob.klien.phone)}`} target="_blank" rel="noopener noreferrer"
+                    style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'10px', borderRadius:'12px', background:'#25d366', color:'white', fontWeight:700, fontSize:'13px', textDecoration:'none' }}>
+                    <MessageCircle size={15}/>WA PJ
+                  </a>
+                )}
+                {selectedJob.klien?.phone && (
+                  <a href={`tel:${String(selectedJob.klien.phone).replace(/[^\d+]/g,'')}`}
+                    style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'10px', borderRadius:'12px', background:'var(--glass)', border:'1px solid var(--border)', color:'var(--text-primary)', fontWeight:700, fontSize:'13px', textDecoration:'none' }}>
+                    <Phone size={15}/>Telepon
+                  </a>
+                )}
+                {selectedJob.alamat_layanan && (
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.alamat_layanan)}`} target="_blank" rel="noopener noreferrer"
+                    style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'10px', borderRadius:'12px', background:'var(--glass)', border:'1px solid var(--border)', color:'var(--text-primary)', fontWeight:700, fontSize:'13px', textDecoration:'none' }}>
+                    <MapPin size={15}/>Peta
+                  </a>
+                )}
+              </div>
+            )}
+
             {[
-              { label:'Klien', value: selectedJob.klien?.nama_lengkap||selectedJob.klien?.user?.name||'-' },
-              ...(selectedJob.pasien ? [{ label:'Pasien', value: selectedJob.pasien?.nama_lengkap||'-' }] : []),
-              { label:'Lokasi', value: selectedJob.lokasi||selectedJob.alamat_layanan||selectedJob.catatan_lokasi||'-' },
+              { label:'Pasien', value: selectedJob.pasien?.nama_lengkap || '-' },
+              { label:'Alamat', value: selectedJob.alamat_layanan || '-' },
+              { label:'Diagnosa', value: selectedJob.pasien?.riwayat_penyakit || selectedJob.pasien?.deskripsi_diagnosa || '-' },
+              { label:'Mobilisasi', value: selectedJob.pasien?.mobilisasi || '-' },
+              { label:'Alat Medis', value: selectedJob.pasien?.alat_medis || '-' },
+              { label:'Penanggung Jawab', value: selectedJob.klien?.nama_lengkap ? `${selectedJob.klien.nama_lengkap}${selectedJob.klien.hubungan_dengan_pasien ? ` (${selectedJob.klien.hubungan_dengan_pasien})` : ''}` : '-' },
+              { label:'Kontak PJ', value: selectedJob.klien?.phone || '-' },
+              { label:'Jasa Disetujui', value: selectedJob.deskripsi_layanan || '-' },
               { label:'Tanggal Mulai', value: selectedJob.tanggal_mulai ? new Date(selectedJob.tanggal_mulai).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-' },
-              { label:'Tanggal Selesai', value: selectedJob.tanggal_selesai ? new Date(selectedJob.tanggal_selesai).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-' },
-              { label:'Total', value: 'Rp '+Number(selectedJob.total||selectedJob.total_amount||0).toLocaleString('id-ID') },
+              ...(selectedJob.tanggal_selesai ? [{ label:'Tanggal Selesai', value: new Date(selectedJob.tanggal_selesai).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) }] : []),
+              { label:'Gaji / Bulan', value: rupiah(selectedJob.gaji_bulanan) },
+              { label:'Hari Berjalan', value: selectedJob.total_hari != null ? `${selectedJob.total_hari} hari` : '-' },
+              { label:'Estimasi Pendapatan', value: rupiah(selectedJob.estimasi_earning) },
               { label:'Catatan', value: selectedJob.catatan||'-' },
             ].map(item => (
               <div key={item.label} style={{ display:'flex', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)' }}>
-                <span style={{ color:'var(--text-muted)', fontSize:'12px', minWidth:'100px' }}>{item.label}</span>
+                <span style={{ color:'var(--text-muted)', fontSize:'12px', minWidth:'110px' }}>{item.label}</span>
                 <span style={{ color:'var(--text-primary)', fontSize:'13px', fontWeight:500 }}>{item.value}</span>
               </div>
             ))}
-
-            {/* Update Status */}
-            <div style={{ marginTop:'16px' }}>
-              <p style={{ color:'var(--text-muted)', fontSize:'12px', marginBottom:'10px' }}>Update Status:</p>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
-                {[
-                  { status:'in_progress', label:'Mulai Kerjakan', icon: PlayCircle, color:'#10b981' },
-                  { status:'completed',   label:'Selesai',        icon: CheckCircle, color:'#3b82f6' },
-                  { status:'on_hold',     label:'Tahan',          icon: Clock,       color:'#8b5cf6' },
-                  { status:'cancelled',   label:'Batalkan',       icon: XCircle,     color:'#ef4444' },
-                ].map(btn => {
-                  const Icon = btn.icon;
-                  const isActive = selectedJob.status === btn.status;
-                  return (
-                    <button key={btn.status} onClick={() => updateStatus(selectedJob.id, btn.status)} disabled={updatingStatus||isActive}
-                      style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 12px', borderRadius:'12px', border:'1px solid '+(isActive?btn.color+'44':'var(--border)'), background: isActive?btn.color+'22':'var(--glass)', color: btn.color, fontWeight:600, fontSize:'12px', cursor: isActive?'default':'pointer', opacity: updatingStatus?0.6:1 }}>
-                      <Icon size={15}/>{btn.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <p style={{ color:'var(--text-muted)', fontSize:'11px', marginTop:'12px', lineHeight:1.5 }}>
+              Estimasi dihitung kasar dari gaji/bulan; angka resmi ada di menu Gaji. Perubahan penempatan hubungi tim Customer Care.
+            </p>
           </div>
         </div>
       )}

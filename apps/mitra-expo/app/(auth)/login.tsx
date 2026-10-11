@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../lib/auth';
 import { Colors } from '../../lib/theme';
 
-const REGISTER_URL = 'https://mikala-web-mitra.vercel.app/auth/register';
+const REGISTER_URL = 'https://mitra.mikalaglobalmedika.com/auth/register';
 
 export default function LoginScreen() {
   const [email, setEmail]       = useState('');

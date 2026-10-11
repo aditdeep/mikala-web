@@ -68,8 +68,8 @@ export default function GajiScreen() {
     setSubmitting(false);
   };
 
-  const statusColor: any = { pending:Colors.warning, paid:Colors.success, approved:Colors.success, rejected:Colors.error, proses:Colors.primary, active:'#0ea5e9', lunas:Colors.success };
-  const statusLabel: any = { pending:'Menunggu', paid:'Dibayar ✓', approved:'Disetujui ✓', rejected:'Ditolak', proses:'Diproses', active:'Aktif', lunas:'Lunas ✓' };
+  const statusColor: any = { draft:Colors.primary, pending:Colors.warning, paid:Colors.success, approved:Colors.success, rejected:Colors.error, proses:Colors.primary, active:'#0ea5e9', lunas:Colors.success };
+  const statusLabel: any = { draft:'Diproses', pending:'Menunggu', paid:'Dibayar ✓', approved:'Disetujui ✓', rejected:'Ditolak', proses:'Diproses', active:'Aktif', lunas:'Lunas ✓' };
 
   if (loading) return (
     <View style={{flex:1,backgroundColor:colors.bg,justifyContent:'center',alignItems:'center'}}>
@@ -78,6 +78,12 @@ export default function GajiScreen() {
   );
 
   // Payroll detail screen
+  // Payroll dari backend: periode_mulai/periode_selesai (2x sebulan, tgl 15 & 30). Field lama
+  // periode/bulan/jumlah_job/gaji_kotor tidak ada, jadi sebelumnya judul selalu "Periode #id".
+  const fmtTgl = (d: any) => d ? new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '';
+  const periodeLabel = (p: any) => p.periode_mulai ? `${fmtTgl(p.periode_mulai)} – ${fmtTgl(p.periode_selesai)}` : (p.periode || p.bulan || `#${p.id}`);
+  const rp = (n: any) => `Rp ${Number(n||0).toLocaleString('id-ID')}`;
+
   if (selectedPayroll) return (
     <View style={{flex:1,backgroundColor:colors.bg}}>
       <LinearGradient colors={isDark?['#1a0f2e','#0f0f1a']:['#f0eeff','#f8f9fa']} style={{padding:20,paddingTop:56}}>
@@ -96,10 +102,16 @@ export default function GajiScreen() {
           </View>
         </View>
         {[
-          ['📅 Periode', selectedPayroll.periode||selectedPayroll.bulan||'-'],
-          ['📋 Jumlah Job', String(selectedPayroll.jumlah_job||'-')],
-          ['💵 Gaji Kotor', selectedPayroll.gaji_kotor?`Rp ${Number(selectedPayroll.gaji_kotor).toLocaleString('id-ID')}`:'-'],
-          ['✂️ Potongan', `Rp ${Number(selectedPayroll.potongan||0).toLocaleString('id-ID')}`],
+          ['📅 Periode', periodeLabel(selectedPayroll)],
+          ['📋 Hari Kerja', selectedPayroll.jumlah_hari_kerja != null ? `${selectedPayroll.jumlah_hari_kerja} hari` : '-'],
+          ['💵 Gaji Pokok', rp(selectedPayroll.gaji_pokok)],
+          ...(Number(selectedPayroll.uang_cuti) ? [[`🏖️ Uang Cuti (${selectedPayroll.hari_cuti||0} hari)`, rp(selectedPayroll.uang_cuti)]] : []),
+          ...(Number(selectedPayroll.bonus) ? [['🎁 Bonus', rp(selectedPayroll.bonus)]] : []),
+          ...(Number(selectedPayroll.transport) ? [['🚗 Transport', rp(selectedPayroll.transport)]] : []),
+          ...(Number(selectedPayroll.adjustment) ? [[`⚖️ Penyesuaian${selectedPayroll.catatan_adjustment ? ` (${selectedPayroll.catatan_adjustment})` : ''}`, rp(selectedPayroll.adjustment)]] : []),
+          ...(Number(selectedPayroll.potongan_kasbon) ? [['✂️ Potongan Kasbon', `-${rp(selectedPayroll.potongan_kasbon)}`]] : []),
+          ...(Number(selectedPayroll.potongan_kredit) ? [['✂️ Potongan Kredit Pelatihan', `-${rp(selectedPayroll.potongan_kredit)}`]] : []),
+          ...(Number(selectedPayroll.potongan) ? [['✂️ Potongan Lain', `-${rp(selectedPayroll.potongan)}`]] : []),
           ['🏦 Bank', selectedPayroll.bank_name||'-'],
           ['💳 Nomor Rekening', selectedPayroll.bank_account||'-'],
         ].map(([label,val])=>(
@@ -177,9 +189,9 @@ export default function GajiScreen() {
               style={{backgroundColor:colors.card,borderRadius:16,padding:16,marginBottom:12,borderWidth:1,borderColor:colors.glassBorder}}>
               <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
                 <View>
-                  <Text style={{color:colors.text,fontSize:15,fontWeight:'700'}}>Periode {p.periode||p.bulan||`#${p.id}`}</Text>
+                  <Text style={{color:colors.text,fontSize:15,fontWeight:'700'}}>{periodeLabel(p)}</Text>
                   <Text style={{color:Colors.success,fontSize:18,fontWeight:'800',marginTop:4}}>Rp {Number(p.total||p.gaji_bersih||0).toLocaleString('id-ID')}</Text>
-                  {p.jumlah_job && <Text style={{color:colors.text3,fontSize:12,marginTop:3}}>{p.jumlah_job} job</Text>}
+                  {p.jumlah_hari_kerja != null && <Text style={{color:colors.text3,fontSize:12,marginTop:3}}>{p.jumlah_hari_kerja} hari kerja</Text>}
                 </View>
                 <View style={{alignItems:'flex-end',gap:8}}>
                   <View style={{backgroundColor:`${statusColor[p.status]||Colors.warning}20`,borderRadius:8,paddingHorizontal:10,paddingVertical:4}}>

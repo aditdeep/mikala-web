@@ -100,10 +100,10 @@ export default function HomeScreen() {
         <Text style={{color:colors.text,fontSize:16,fontWeight:'700',marginBottom:14}}>Menu Cepat</Text>
         <View style={{flexDirection:'row',flexWrap:'wrap',gap:12}}>
           {[
-            {icon:'briefcase-outline',label:'Jobs',color:'#7c3aed',route:'/(app)/jobs'},
+            {icon:'briefcase-outline',label:'Tugas',color:'#7c3aed',route:'/(app)/jobs'},
             {icon:'book-outline',label:'Pelatihan',color:'#0ea5e9',route:'/(app)/pelatihan'},
             {icon:'wallet-outline',label:'Gaji',color:'#10b981',route:'/(app)/gaji'},
-            {icon:'calendar-outline',label:'Jadwal',color:'#f59e0b',route:'/(app)/gaji'},
+            {icon:'calendar-outline',label:'Cuti',color:'#f59e0b',route:'/(app)/cuti'},
           ].map(item=>(
             <TouchableOpacity key={item.label} onPress={()=>router.push(item.route as any)}
               style={{flex:1,minWidth:'45%',alignItems:'center',backgroundColor:colors.glass,borderWidth:1,borderColor:colors.glassBorder,borderRadius:16,padding:16}} activeOpacity={0.7}>

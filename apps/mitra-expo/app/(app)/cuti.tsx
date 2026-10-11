@@ -56,7 +56,7 @@ export default function CutiScreen() {
 
   return (
     <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
-      <View style={[styles.header, { borderColor: colors.border }]}>
+      <View style={[styles.header, { borderColor: colors.glassBorder }]}>
         <TouchableOpacity onPress={() => router.back()} style={[styles.headerBtn, { backgroundColor: colors.glass }]}>
           <ArrowLeft size={18} color={colors.text}/>
         </TouchableOpacity>
@@ -96,7 +96,7 @@ export default function CutiScreen() {
           data.data.map((c: any) => {
             const b = getBadge(c.status);
             return (
-              <View key={c.id} style={[styles.cutiCard, { backgroundColor: colors.glass, borderColor: colors.border }]}>
+              <View key={c.id} style={[styles.cutiCard, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}>
                 <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'flex-start' }}>
                   <View style={{ flex:1 }}>
                     <Text style={[styles.cutiDate, { color: colors.text }]}>
@@ -125,7 +125,7 @@ export default function CutiScreen() {
           <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
             <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>📝 Ajukan Cuti</Text>
-              <TouchableOpacity onPress={() => setShowForm(false)} style={[styles.closeBtn, { backgroundColor: colors.glass, borderColor: colors.border }]}>
+              <TouchableOpacity onPress={() => setShowForm(false)} style={[styles.closeBtn, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}>
                 <X size={16} color={colors.text}/>
               </TouchableOpacity>
             </View>
@@ -138,17 +138,17 @@ export default function CutiScreen() {
             <Text style={[styles.fieldLabel, { color: colors.text3 }]}>Tanggal Mulai *</Text>
             <TextInput value={tanggalMulai} onChangeText={setTanggalMulai} placeholder="YYYY-MM-DD"
               placeholderTextColor={colors.text3}
-              style={[styles.input, { backgroundColor: colors.glass, borderColor: colors.border, color: colors.text }]}/>
+              style={[styles.input, { backgroundColor: colors.glass, borderColor: colors.glassBorder, color: colors.text }]}/>
 
             <Text style={[styles.fieldLabel, { color: colors.text3 }]}>Tanggal Selesai *</Text>
             <TextInput value={tanggalSelesai} onChangeText={setTanggalSelesai} placeholder="YYYY-MM-DD"
               placeholderTextColor={colors.text3}
-              style={[styles.input, { backgroundColor: colors.glass, borderColor: colors.border, color: colors.text }]}/>
+              style={[styles.input, { backgroundColor: colors.glass, borderColor: colors.glassBorder, color: colors.text }]}/>
 
             <Text style={[styles.fieldLabel, { color: colors.text3 }]}>Alasan Cuti *</Text>
             <TextInput value={alasan} onChangeText={setAlasan} placeholder="Contoh: Acara keluarga"
               placeholderTextColor={colors.text3} multiline
-              style={[styles.input, { backgroundColor: colors.glass, borderColor: colors.border, color: colors.text, minHeight:70, textAlignVertical:'top' }]}/>
+              style={[styles.input, { backgroundColor: colors.glass, borderColor: colors.glassBorder, color: colors.text, minHeight:70, textAlignVertical:'top' }]}/>
 
             <TouchableOpacity onPress={handleSubmit} disabled={submitting} style={[styles.submitBtn, submitting && { backgroundColor:'#666' }]}>
               <Text style={styles.submitBtnText}>{submitting ? '⏳ Mengirim...' : '📤 Kirim Pengajuan'}</Text>

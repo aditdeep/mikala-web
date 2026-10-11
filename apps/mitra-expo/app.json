@@ -23,21 +23,36 @@
       },
       "package": "com.mikalaglobalmedika.mitra",
       "permissions": [
-        "android.permission.CAMERA",
+        "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-camera",
-      "expo-image-picker"
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Izinkan Mikala Mitra mengakses galeri untuk memilih foto profil.",
+          "cameraPermission": "Izinkan Mikala Mitra memakai kamera untuk mengambil foto profil.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#7c3aed",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://mikala-api.onrender.com/api",
+      "apiUrl": "https://api.mikalaglobalmedika.com/api",
       "router": {},
       "eas": {
         "projectId": "394405c3-ddab-43a0-a018-4fc13cee075f"

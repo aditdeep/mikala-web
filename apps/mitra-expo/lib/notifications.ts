@@ -1,14 +1,17 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import api from './api';
 
 // Handler — tampilkan notifikasi saat app foreground
 Notifications.setNotificationHandler({
+  // SDK 54: shouldShowAlert sudah deprecated -> pakai shouldShowBanner/shouldShowList
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge:  true,
+    shouldShowBanner: true,
+    shouldShowList:   true,
+    shouldPlaySound:  true,
+    shouldSetBadge:   true,
   }),
 });
 
@@ -63,9 +66,10 @@ export async function registerPushNotifications(): Promise<string | null> {
     }
 
     // Dapatkan Expo Push Token
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: undefined, // akan otomatis dari app.json
-    });
+    // Android butuh Firebase (google-services.json + FCM V1 key di EAS); tanpa itu baris ini
+    // throw dan ditangkap di catch bawah -- app tetap jalan, cuma push yang belum aktif.
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
     const token = tokenData.data;
     console.log('Expo Push Token:', token);
 

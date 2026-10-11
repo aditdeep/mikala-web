@@ -115,7 +115,7 @@ export default function NotifikasiScreen() {
                   <View style={{width:8,height:8,borderRadius:4,backgroundColor:'#7c3aed',marginTop:4,flexShrink:0}}/>
                 )}
               </View>
-              <Text style={{color:colors.text2,fontSize:13,marginTop:3,lineHeight:18}}>{n.body}</Text>
+              <Text style={{color:colors.text2,fontSize:13,marginTop:3,lineHeight:18}}>{n.message || n.body}</Text>
               <Text style={{color:colors.text3,fontSize:11,marginTop:6}}>
                 {n.created_at ? new Date(n.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''}
               </Text>
