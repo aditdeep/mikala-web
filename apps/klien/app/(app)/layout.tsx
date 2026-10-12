@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { useTheme } from '@/components/ThemeProvider';
 import { Sun, Moon } from 'lucide-react';
 import RealtimeNotifProvider from '@/components/RealtimeNotifProvider';
+import { NotifBell } from '@/components/NotifBell';
 
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
@@ -28,7 +29,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <RealtimeNotifProvider>
     <div className="min-h-screen pb-20 max-w-lg mx-auto relative">
-      <div className="fixed top-4 right-4 z-40"><ThemeToggle /></div>
+      <div className="fixed top-4 right-4 z-40" style={{ display: 'flex', gap: '8px' }}>
+        <NotifBell />
+        <ThemeToggle />
+      </div>
       {children}
       <BottomNav />
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
