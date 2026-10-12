@@ -406,8 +406,9 @@ export default function FinancePage() {
     setGeneratingPayroll(true);
     try {
       const res: any = await apiClient.post('/internal/finance/payroll/generate', { periode: periodePayroll, bagian: payrollBagian });
+      // Pesan backend sudah merinci: baru / draft dihitung ulang / approved-dibayar tidak diubah / draft lama dihapus
       const count = res.data?.data?.total_generated ?? res.data?.data?.length ?? 0;
-      alert('Berhasil generate ' + count + ' payroll untuk periode ' + periodePayroll + ' (tgl ' + payrollBagian + ')');
+      alert('Generate payroll periode ' + periodePayroll + ' (tgl ' + payrollBagian + '): ' + (res.data?.message || (count + ' payroll')));
       setShowGeneratePayroll(false);
       fetchAll();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal generate payroll'); }

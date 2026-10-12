@@ -1001,6 +1001,19 @@ export default function CustomerCarePage() {
   const layananFiltered = layanan.filter((l:any) => JSON.stringify(l).toLowerCase().includes(search.toLowerCase()));
   const klienFiltered = klien.filter((k:any) => JSON.stringify(k).toLowerCase().includes(search.toLowerCase()));
   const layananPg = usePagination(layananFiltered, 20, [search, activeTab]);
+  // Pagination tabel tab Layanan/Leads/Deal/Exchange. List-nya dihitung di dalam IIFE per tab
+  // (tidak bisa pakai hook usePagination di sana), jadi halaman disimpan per tab di sini dan
+  // dipotong via helper tabPage(); otomatis balik ke hal 1 saat tab/filter berubah.
+  const TAB_PER_PAGE = 20;
+  const [tabPageNo, setTabPageNo] = useState<Record<string, number>>({});
+  useEffect(() => { setTabPageNo({}); }, [activeTab, search, leadsStatusFilter, layananDrillFilter, dealColFilters, exchangeColFilters, leadsColFilters]);
+  const tabPage = <T,>(key: string, list: T[]) => {
+    const totalPages = Math.max(1, Math.ceil(list.length / TAB_PER_PAGE));
+    const page = Math.min(tabPageNo[key] || 1, totalPages);
+    const offset = (page - 1) * TAB_PER_PAGE;
+    return { rows: list.slice(offset, offset + TAB_PER_PAGE), offset, page, totalPages, total: list.length,
+             setPage: (p: number) => setTabPageNo(prev => ({ ...prev, [key]: p })) };
+  };
   const klienPg = usePagination(klienFiltered, 20, [search, activeTab]);
 
   const inp = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
@@ -1107,9 +1120,9 @@ export default function CustomerCarePage() {
                   ))}
                 </tr></thead>
                 <tbody>
-                  {(leadsSummary?.by_layanan || []).map((row: any, i: number) => (
-                    <tr key={i} style={{ borderBottom:'1px solid var(--border)' }}>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                  {(() => { const pg = tabPage('layanan', leadsSummary?.by_layanan || []); return pg.rows.map((row: any, i: number) => (
+                    <tr key={pg.offset + i} style={{ borderBottom:'1px solid var(--border)' }}>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{pg.offset + i + 1}</td>
                       <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{row.layanan_nama}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.tier_nama || '-'}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.leads}</td>
@@ -1123,12 +1136,13 @@ export default function CustomerCarePage() {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )); })()}
                 </tbody>
               </table>
               {(!leadsSummary?.by_layanan || leadsSummary.by_layanan.length === 0) && (
                 <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada data layanan</div>
               )}
+              {(() => { const pg = tabPage('layanan', leadsSummary?.by_layanan || []); return <Pagination page={pg.page} totalPages={pg.totalPages} total={pg.total} onPageChange={pg.setPage} label="layanan" />; })()}
             </div>
           )}
         </div>
@@ -1141,6 +1155,7 @@ export default function CustomerCarePage() {
           if (layananDrillFilter && (String(item.cms_layanan_id) !== String(layananDrillFilter.layanan_id) || (item.tier_nama || null) !== (layananDrillFilter.tier_nama || null))) return false;
           return true;
         }), leadsColFilters, leadsGetters);
+        const leadsPg = tabPage('leads', filteredLeads);
         return (
           <div className="space-y-3">
             {/* Filter status + export (gantikan baris sub-tab) */}
@@ -1184,12 +1199,12 @@ export default function CustomerCarePage() {
                       <ThSearch label="Status" value={leadsColFilters.status} onChange={v => setLeadsColFilters(f => ({ ...f, status: v }))} />
                     </tr></thead>
                     <tbody>
-                      {filteredLeads.map((item: any, i: number) => {
+                      {leadsPg.rows.map((item: any, i: number) => {
                         const s = getLeadStatusDisplay(item);
                         const Icon = s.icon;
                         return (
                           <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                            <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{leadsPg.offset + i + 1}</td>
                             <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.nomor||'-'}</td>
                             <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</td>
                             <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{item.nama_pasien||'-'}</td>
@@ -1208,6 +1223,7 @@ export default function CustomerCarePage() {
                     </tbody>
                   </table>
                   {filteredLeads.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads masuk</div>}
+                  <Pagination page={leadsPg.page} totalPages={leadsPg.totalPages} total={leadsPg.total} onPageChange={leadsPg.setPage} label="leads" />
                 </div>
               )}
             </div>
@@ -1218,6 +1234,7 @@ export default function CustomerCarePage() {
       {/* TAB DEAL (leads yang sudah closing) */}
       {activeTab === 'deal' && (() => {
         const filteredDeal = applyColFilters(dealLeadsList, dealColFilters, dealGetters);
+        const dealPg = tabPage('deal', filteredDeal);
         return (
         <div className="space-y-3">
           <div style={{ display:'flex', justifyContent:'flex-end' }}>
@@ -1232,6 +1249,7 @@ export default function CustomerCarePage() {
               <div style={{ overflowX:'auto' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
                   <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                    <ThSearch label="No" />
                     <ThSearch label="NIK" value={dealColFilters.nik} onChange={v => setDealColFilters(f => ({ ...f, nik: v }))} />
                     <ThSearch label="Nama Klien" value={dealColFilters.nama_klien} onChange={v => setDealColFilters(f => ({ ...f, nama_klien: v }))} />
                     <ThSearch label="Alamat Klien" value={dealColFilters.alamat_klien} onChange={v => setDealColFilters(f => ({ ...f, alamat_klien: v }))} />
@@ -1242,8 +1260,9 @@ export default function CustomerCarePage() {
                     <ThSearch label="Status" value={dealColFilters.status} onChange={v => setDealColFilters(f => ({ ...f, status: v }))} />
                   </tr></thead>
                   <tbody>
-                    {filteredDeal.map((item: any, i: number) => (
+                    {dealPg.rows.map((item: any, i: number) => (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{dealPg.offset + i + 1}</td>
                         <td style={{ padding:'12px 16px' }}>
                           <button onClick={() => setLeadDetail({ type:'lead', item })} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:700, color:'#ec4899', textDecoration:'underline', padding:0 }}>
                             {item.nik || item.nomor || '-'}
@@ -1272,6 +1291,7 @@ export default function CustomerCarePage() {
                   </tbody>
                 </table>
                 {filteredDeal.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada leads Deal</div>}
+                <Pagination page={dealPg.page} totalPages={dealPg.totalPages} total={dealPg.total} onPageChange={dealPg.setPage} label="deal" />
               </div>
             )}
           </div>
@@ -1282,6 +1302,7 @@ export default function CustomerCarePage() {
       {/* TAB EXCHANGE (histori tukar mitra) */}
       {activeTab === 'exchange' && (() => {
         const filteredExchange = applyColFilters(exchangeList, exchangeColFilters, exchangeGetters);
+        const exchangePg = tabPage('exchange', filteredExchange);
         return (
         <div className="space-y-3">
           <div style={{ display:'flex', justifyContent:'flex-end' }}>
@@ -1307,9 +1328,9 @@ export default function CustomerCarePage() {
                     <ThSearch label="Invoice Transport" />
                   </tr></thead>
                   <tbody>
-                    {filteredExchange.map((item: any, i: number) => (
+                    {exchangePg.rows.map((item: any, i: number) => (
                       <tr key={item.id||i} style={{ borderBottom:'1px solid var(--border)' }}>
-                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{i+1}</td>
+                        <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{exchangePg.offset + i + 1}</td>
                         <td style={{ padding:'12px 16px' }}>
                           <button onClick={() => setLeadDetail({ type:'exchange', item })} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontWeight:700, color:'#8b5cf6', textDecoration:'underline', padding:0 }}>
                             {item.nomor || '-'}
@@ -1341,6 +1362,7 @@ export default function CustomerCarePage() {
                   </tbody>
                 </table>
                 {filteredExchange.length === 0 && <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Belum ada histori exchange</div>}
+                <Pagination page={exchangePg.page} totalPages={exchangePg.totalPages} total={exchangePg.total} onPageChange={exchangePg.setPage} label="exchange" />
               </div>
             )}
           </div>
