@@ -7,6 +7,7 @@ import VideoSection from './(components)/VideoSection';
 import ImageFade from './(components)/ImageFade';
 import ScrollFade from './(components)/ScrollFade';
 import SecureGallery from './(components)/SecureGallery';
+import PengumumanPopup from './(components)/PengumumanPopup';
 import { slugify } from '@/lib/slug';
 
 const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
@@ -186,6 +187,7 @@ export default async function HomePage() {
   return (
     <div className="mgm-page-bg" style={{ minHeight:'100vh', background:`linear-gradient(150deg, #ffffff 0%, #f3fbfa 35%, #e2f5f1 62%, #cceee5 100%)` }}>
       <Navbar active="/" overlay />
+      <PengumumanPopup />
 
       {/* ═══ HERO ═══ */}
       <HeroSlider
