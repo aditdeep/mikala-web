@@ -6,7 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from '../lib/ThemeContext';
-import { registerPushNotifications, setupNotificationListeners } from '../lib/notifications';
+import { registerPushNotifications, setupNotificationListeners, clearAppBadge } from '../lib/notifications';
 import { authService } from '../lib/auth';
 
 SplashScreen.preventAutoHideAsync();
@@ -54,7 +54,11 @@ function AppStack() {
       }
     );
 
-    return cleanup;
+    // Badge ikon app & notif di bar dibersihkan saat app dibuka / kembali ke depan
+    clearAppBadge();
+    const appStateSub = AppState.addEventListener('change', (st) => { if (st === 'active') clearAppBadge(); });
+
+    return () => { cleanup(); appStateSub.remove(); };
   }, []);
 
   return (

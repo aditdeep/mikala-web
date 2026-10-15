@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   View, Text, ScrollView, TouchableOpacity, ActivityIndicator,
-  RefreshControl, Alert, TextInput, Modal, StyleSheet,
+  RefreshControl, Alert, TextInput, Modal, StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -349,9 +349,12 @@ export default function GajiScreen() {
       </ScrollView>
 
       {/* Modal Kasbon Form */}
-      <Modal visible={showKasbonForm} animationType="slide" transparent>
+      <Modal visible={showKasbonForm} animationType="slide" transparent onRequestClose={()=>setShowKasbonForm(false)}>
+        {/* Android SDK 54 edge-to-edge: panel didorong naik sendiri saat keyboard muncul */}
+        <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':'height'}>
         <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.6)',justifyContent:'flex-end'}}>
-          <View style={{backgroundColor:isDark?'#1a1a2e':'white',borderTopLeftRadius:28,borderTopRightRadius:28,padding:24,paddingBottom:40}}>
+          <View style={{backgroundColor:isDark?'#1a1a2e':'white',borderTopLeftRadius:28,borderTopRightRadius:28,padding:24,paddingBottom:40,maxHeight:'90%'}}>
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
               <Text style={{color:colors.text,fontSize:18,fontWeight:'800'}}>Ajukan Kasbon</Text>
               <TouchableOpacity onPress={()=>setShowKasbonForm(false)}
@@ -377,8 +380,10 @@ export default function GajiScreen() {
                 {submitting?<ActivityIndicator color="white"/>:<Text style={{color:'white',fontSize:15,fontWeight:'700'}}>Kirim Pengajuan</Text>}
               </LinearGradient>
             </TouchableOpacity>
+          </ScrollView>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

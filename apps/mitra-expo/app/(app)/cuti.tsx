@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Calendar, Plus, Check, X, Clock, ArrowLeft } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -121,8 +121,12 @@ export default function CutiScreen() {
 
       {/* Modal Form Ajukan */}
       <Modal visible={showForm} animationType="slide" transparent onRequestClose={() => setShowForm(false)}>
+        {/* Android SDK 54 edge-to-edge: layar tidak lagi otomatis menyusut saat keyboard muncul,
+            jadi panel bawah ini harus didorong naik sendiri + bisa di-scroll. */}
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.modalBackdrop}>
           <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>📝 Ajukan Cuti</Text>
               <TouchableOpacity onPress={() => setShowForm(false)} style={[styles.closeBtn, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}>
@@ -153,8 +157,10 @@ export default function CutiScreen() {
             <TouchableOpacity onPress={handleSubmit} disabled={submitting} style={[styles.submitBtn, submitting && { backgroundColor:'#666' }]}>
               <Text style={styles.submitBtnText}>{submitting ? '⏳ Mengirim...' : '📤 Kirim Pengajuan'}</Text>
             </TouchableOpacity>
+          </ScrollView>
           </View>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -183,7 +189,7 @@ const styles = StyleSheet.create({
   badge: { flexDirection:'row', alignItems:'center', gap:4, paddingHorizontal:9, paddingVertical:3, borderRadius:8 },
   badgeText: { fontSize:11, fontWeight:'700' },
   modalBackdrop: { flex:1, backgroundColor:'rgba(0,0,0,0.75)', justifyContent:'flex-end' },
-  modalContent: { borderTopLeftRadius:24, borderTopRightRadius:24, padding:20, maxHeight:'85%' },
+  modalContent: { borderTopLeftRadius:24, borderTopRightRadius:24, padding:20, paddingBottom:28, maxHeight:'90%' },
   modalTitle: { fontSize:16, fontWeight:'800' },
   closeBtn: { width:30, height:30, borderRadius:8, borderWidth:1, justifyContent:'center', alignItems:'center' },
   quotaInfo: { backgroundColor:'rgba(245,158,11,0.08)', borderColor:'rgba(245,158,11,0.25)', borderWidth:1, borderRadius:10, padding:10, marginBottom:14 },

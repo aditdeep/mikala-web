@@ -61,7 +61,7 @@ export function NotifBell() {
       if (payload) setItems((prev) => [payload, ...prev]);
     };
     window.addEventListener('notif-received', handler);
-    const poll = setInterval(fetchUnread, 60000);
+    const poll = setInterval(fetchUnread, 30000); // admin lihat notif pengajuan (cuti/kasbon) maks 30 dtk
     return () => {
       window.removeEventListener('notif-received', handler);
       clearInterval(poll);

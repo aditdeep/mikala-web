@@ -106,3 +106,14 @@ export function setupNotificationListeners(
     responseSub.remove();
   };
 }
+
+/**
+ * Bersihkan notif di bar notifikasi HP + nol-kan badge angka di ikon app. Dipanggil tiap app
+ * dibuka / kembali ke depan. Di Android angka badge mengikuti jumlah notif yg masih ada di bar,
+ * jadi tanpa ini badge tetap muncul walau app sudah dibuka. Isi notif tetap ada di layar
+ * Notifikasi dalam app (tersimpan di server).
+ */
+export async function clearAppBadge() {
+  try { await Notifications.dismissAllNotificationsAsync(); } catch {}
+  try { await Notifications.setBadgeCountAsync(0); } catch {}
+}

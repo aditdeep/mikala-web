@@ -229,7 +229,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <KeyboardAvoidingView style={{ flex:1 }} behavior={Platform.OS==='ios'?'padding':undefined}>
+    <KeyboardAvoidingView style={{ flex:1 }} behavior={Platform.OS==='ios'?'padding':'height'}>
       <ScrollView style={{ flex:1, backgroundColor:colors.bg }} keyboardShouldPersistTaps="handled"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={()=>{setRefreshing(true);loadProfile();}} tintColor={colors.primary}/>}>
 
