@@ -279,7 +279,17 @@ export default function CustomerCarePage() {
   const [leadsList, setLeadsList] = useState<any[]>([]);
   const [loadingLeadsList, setLoadingLeadsList] = useState(false);
   const [leadsStatusFilter, setLeadsStatusFilter] = useState('');
-  const [layananDrillFilter, setLayananDrillFilter] = useState<{ layanan_id: any; tier_nama: string|null; label: string }|null>(null);
+  const [layananDrillFilter, setLayananDrillFilter] = useState<{ layanan_id: any; tier_nama: string|null; label: string; mode?: string; tier_dikenal?: string[] }|null>(null);
+  // Cocokkan lead dgn baris tabel Layanan yg diklik "Detail". mode: 'tier' (layanan+tier persis),
+  // 'tanpa_tier' (layanan sama, tier kosong/tidak dikenal), 'tanpa_layanan' (layanan kosong, mis. Deal migrasi).
+  const cocokDrill = (item: any) => {
+    const f = layananDrillFilter;
+    if (!f) return true;
+    if (f.mode === 'tanpa_layanan') return !item.cms_layanan_id || !(leadsSummary?.by_layanan || []).some((r: any) => r.layanan_id && String(r.layanan_id) === String(item.cms_layanan_id));
+    if (String(item.cms_layanan_id) !== String(f.layanan_id)) return false;
+    if (f.mode === 'tanpa_tier') return !item.tier_nama || !(f.tier_dikenal || []).includes(item.tier_nama);
+    return (item.tier_nama || null) === (f.tier_nama || null);
+  };
 
   // Search per kolom (mirip filter Excel) di tabel Leads/Deal/Exchange
   const [leadsColFilters, setLeadsColFilters] = useState<Record<string,string>>({});
@@ -854,7 +864,7 @@ export default function CustomerCarePage() {
     } else {
       const source = applyColFilters(leadsList.filter((item: any) => {
         if (leadsStatusFilter !== '' && String(item.status) !== leadsStatusFilter) return false;
-        if (layananDrillFilter && (String(item.cms_layanan_id) !== String(layananDrillFilter.layanan_id) || (item.tier_nama || null) !== (layananDrillFilter.tier_nama || null))) return false;
+        if (!cocokDrill(item)) return false;
         return true;
       }), leadsColFilters, leadsGetters);
       // Kolom mengikuti persis Tabel 2 - Leads (excel): No. Order, Tgl. Order, PIC Leads, Data
@@ -1123,14 +1133,14 @@ export default function CustomerCarePage() {
                   {(() => { const pg = tabPage('layanan', leadsSummary?.by_layanan || []); return pg.rows.map((row: any, i: number) => (
                     <tr key={pg.offset + i} style={{ borderBottom:'1px solid var(--border)' }}>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text3)', fontWeight:600 }}>{pg.offset + i + 1}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{row.layanan_nama}</td>
-                      <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.tier_nama || '-'}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'13px', fontWeight:600, color: row.mode === 'tanpa_layanan' ? '#f59e0b' : 'var(--text)', fontStyle: row.mode === 'tanpa_layanan' ? 'italic' : 'normal' }}>{row.layanan_nama}</td>
+                      <td style={{ padding:'12px 16px', fontSize:'12px', color: row.mode === 'tanpa_tier' ? '#f59e0b' : 'var(--text2)', fontStyle: row.mode === 'tanpa_tier' ? 'italic' : 'normal' }}>{row.tier_nama || '-'}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.leads}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'#10b981', fontWeight:600 }}>{row.deal}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'#ef4444', fontWeight:600 }}>{row.loss}</td>
                       <td style={{ padding:'12px 16px', fontSize:'12px', color:'var(--text2)' }}>{row.exchange}</td>
                       <td style={{ padding:'12px 16px' }}>
-                        <button onClick={() => { setLayananDrillFilter({ layanan_id: row.layanan_id, tier_nama: row.tier_nama, label: row.layanan_nama + (row.tier_nama ? ' · '+row.tier_nama : '') }); setLeadsStatusFilter(''); setActiveTab('leads'); }}
+                        <button onClick={() => { setLayananDrillFilter({ layanan_id: row.layanan_id, tier_nama: row.tier_nama, label: row.layanan_nama + (row.tier_nama ? ' · '+row.tier_nama : ''), mode: row.mode, tier_dikenal: row.tier_dikenal }); setLeadsStatusFilter(''); setActiveTab('leads'); }}
                           style={{ display:'inline-flex', alignItems:'center', gap:'4px', padding:'5px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'8px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                           <Eye size={12}/>Detail
                         </button>
@@ -1152,7 +1162,7 @@ export default function CustomerCarePage() {
       {activeTab === 'leads' && (() => {
         const filteredLeads = applyColFilters(leadsList.filter((item: any) => {
           if (leadsStatusFilter !== '' && String(item.status) !== leadsStatusFilter) return false;
-          if (layananDrillFilter && (String(item.cms_layanan_id) !== String(layananDrillFilter.layanan_id) || (item.tier_nama || null) !== (layananDrillFilter.tier_nama || null))) return false;
+          if (!cocokDrill(item)) return false;
           return true;
         }), leadsColFilters, leadsGetters);
         const leadsPg = tabPage('leads', filteredLeads);

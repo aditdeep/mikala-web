@@ -214,9 +214,13 @@ export default function FinancePage() {
   useEffect(() => {
     if (activeTab === 'jurnal') fetchJurnal();
     if (activeTab === 'report') fetchReport();
-    if (activeTab === 'cuti') fetchCuti();
-    if (activeTab === 'kasbon') fetchKasbon();
   }, [activeTab]);
+
+  // Cuti & Kasbon diambil ulang tiap tab ATAU filter status berubah. Sebelumnya tombol filter
+  // memanggil setTimeout(fetchX) yg masih memegang nilai filter LAMA (stale closure), jadi list
+  // yg tampil selalu milik filter sebelumnya (mis. klik "Pending" malah muncul yg Disetujui).
+  useEffect(() => { if (activeTab === 'cuti') fetchCuti(); }, [activeTab, cutiFilter]);
+  useEffect(() => { if (activeTab === 'kasbon') fetchKasbon(); }, [activeTab, kasbonFilter]);
 
   const fetchAll = () => {
     setLoading(true);
@@ -948,7 +952,7 @@ export default function FinancePage() {
           <div style={{ display:'flex', gap:'8px', marginBottom:'14px', alignItems:'center', flexWrap:'wrap' }}>
             <span style={{ fontSize:'13px', color:'var(--text3)' }}>Filter:</span>
             {[['all','Semua'],['pending','Pending'],['approved','Disetujui'],['rejected','Ditolak']].map(([k,l]) => (
-              <button key={k} onClick={() => { setCutiFilter(k); setTimeout(fetchCuti, 50); }}
+              <button key={k} onClick={() => setCutiFilter(k)}
                 style={{ padding:'5px 12px', borderRadius:'8px', fontSize:'12px', fontWeight:600, cursor:'pointer',
                   background: cutiFilter===k ? '#7c3aed' : 'var(--glass)',
                   color: cutiFilter===k ? 'white' : 'var(--text3)',
@@ -1005,8 +1009,8 @@ export default function FinancePage() {
         <div>
           <div style={{ display:'flex', gap:'8px', marginBottom:'14px', alignItems:'center', flexWrap:'wrap' }}>
             <span style={{ fontSize:'13px', color:'var(--text3)' }}>Filter:</span>
-            {[['all','Semua'],['pending','Pending'],['approved','Disetujui'],['rejected','Ditolak']].map(([k,l]) => (
-              <button key={k} onClick={() => { setKasbonFilter(k); setTimeout(fetchKasbon, 50); }}
+            {[['all','Semua'],['pending','Pending'],['approved','Disetujui'],['rejected','Ditolak'],['paid','Lunas']].map(([k,l]) => (
+              <button key={k} onClick={() => setKasbonFilter(k)}
                 style={{ padding:'5px 12px', borderRadius:'8px', fontSize:'12px', fontWeight:600, cursor:'pointer',
                   background: kasbonFilter===k ? '#7c3aed' : 'var(--glass)',
                   color: kasbonFilter===k ? 'white' : 'var(--text3)',
@@ -1036,10 +1040,10 @@ export default function FinancePage() {
                       <div style={{ textAlign:'right' }}>
                         <span style={{
                           padding:'3px 10px', borderRadius:'8px', fontSize:'11px', fontWeight:700,
-                          background: k.status === 'pending' ? 'rgba(245,158,11,0.15)' : k.status === 'approved' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
-                          color: k.status === 'pending' ? '#f59e0b' : k.status === 'approved' ? '#10b981' : '#ef4444',
+                          background: k.status === 'pending' ? 'rgba(245,158,11,0.15)' : k.status === 'approved' ? 'rgba(16,185,129,0.15)' : k.status === 'paid' ? 'rgba(59,130,246,0.15)' : 'rgba(239,68,68,0.15)',
+                          color: k.status === 'pending' ? '#f59e0b' : k.status === 'approved' ? '#10b981' : k.status === 'paid' ? '#3b82f6' : '#ef4444',
                         }}>
-                          {k.status === 'pending' ? 'Pending' : k.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                          {k.status === 'pending' ? 'Pending' : k.status === 'approved' ? 'Disetujui' : k.status === 'paid' ? 'Lunas (dipotong gaji)' : 'Ditolak'}
                         </span>
                         {k.status === 'pending' && (
                           <div style={{ display:'flex', gap:'6px', marginTop:'8px' }}>
