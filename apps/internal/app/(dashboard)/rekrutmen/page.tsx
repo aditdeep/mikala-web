@@ -382,6 +382,15 @@ export default function RekrutmenPage() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDetail, setShowDetail] = useState<any>(null);
+  // Riwayat pasien/klien yg pernah ditangani mitra (dari Deal CC, termasuk yg sudah diganti/exchange)
+  const [riwayat, setRiwayat] = useState<any[] | null>(null);
+  useEffect(() => {
+    if (!showDetail?.id) { setRiwayat(null); return; }
+    setRiwayat(null);
+    apiClient.get(`/internal/rekrutmen/mitra/${showDetail.id}/riwayat`)
+      .then((r: any) => setRiwayat(Array.isArray(r.data?.data) ? r.data.data : []))
+      .catch(() => setRiwayat([]));
+  }, [showDetail?.id]);
   // Reset password mitra (tindak lanjut 'Lupa Password' via WA): null = tutup, {} = cari akun, {target} = akun tertentu
   const [resetPw, setResetPw] = useState<{ target?: any } | null>(null);
   const [editItem, setEditItem] = useState<any>(null);
@@ -912,6 +921,39 @@ export default function RekrutmenPage() {
                 <span style={{ color:'var(--text)', fontSize:'12px', fontWeight:500, wordBreak:'break-word' }}>{f.val || '-'}</span>
               </div>
             ))}
+
+            {/* ── RIWAYAT PASIEN / KLIEN ── */}
+            <div style={{ marginTop:'16px' }}>
+              <p style={{ fontSize:'13px', fontWeight:700, color:'var(--text)', marginBottom:'8px' }}>
+                Riwayat Pasien / Klien {riwayat && riwayat.length > 0 && <span style={{ color:'var(--text3)', fontWeight:500 }}>({riwayat.length})</span>}
+              </p>
+              {riwayat === null ? (
+                <p style={{ fontSize:'12px', color:'var(--text3)' }}>Memuat...</p>
+              ) : riwayat.length === 0 ? (
+                <p style={{ fontSize:'12px', color:'var(--text3)' }}>Belum pernah ditempatkan ke pasien.</p>
+              ) : (
+                <div style={{ display:'flex', flexDirection:'column', gap:'6px', maxHeight:'260px', overflowY:'auto' }}>
+                  {riwayat.map((r: any, i: number) => {
+                    const warna = r.status === 'Berjalan' ? '#10b981' : r.status.startsWith('Diganti') ? '#f59e0b' : '#64748b';
+                    const tgl = (d: string) => d ? new Date(d).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '';
+                    return (
+                      <div key={i} style={{ border:'1px solid var(--border)', borderRadius:'10px', padding:'8px 10px' }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', gap:'8px', alignItems:'flex-start' }}>
+                          <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>{r.pasien || '-'}</p>
+                          <span style={{ fontSize:'10px', fontWeight:600, padding:'2px 7px', borderRadius:'6px', background: warna + '22', color: warna, whiteSpace:'nowrap' }}>{r.status}</span>
+                        </div>
+                        <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>
+                          {r.layanan} · PJ: {r.pj || '-'}{r.kontak_pj ? ` (${r.kontak_pj})` : ''}
+                        </p>
+                        <p style={{ fontSize:'11px', color:'var(--text2)', marginTop:'2px' }}>
+                          {tgl(r.mulai) || '?'} – {r.selesai ? tgl(r.selesai) : 'sekarang'}{r.alasan ? ` · ${r.alasan}` : ''}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Status buttons */}
             <div style={{ display:'flex', gap:'8px', marginTop:'16px' }}>
