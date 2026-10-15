@@ -37,3 +37,7 @@ yarn-error.log*
 .DS_Store
 *.pem
 *.tsbuildinfo
+
+# Kunci rahasia Firebase (service account) -- JANGAN di-commit, cukup upload ke expo.dev Credentials
+*firebase-adminsdk*.json
+*service-account*.json

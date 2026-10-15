@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "373662961990",
+    "project_id": "mikala-global-medika",
+    "storage_bucket": "mikala-global-medika.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373662961990:android:7efd1249cd01cd0f1c9547",
+        "android_client_info": {
+          "package_name": "com.mikalaglobalmedika.mitra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCP1V0PGeMJaK259kaHqvMk4Ctn4t2bFNc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

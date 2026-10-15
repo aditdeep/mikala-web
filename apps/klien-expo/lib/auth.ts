@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import api from './api';
+import { registerPushNotifications } from './notifications';
 
 export const authService = {
   async login(email: string, password: string) {
@@ -7,6 +8,8 @@ export const authService = {
     const { token, user } = res.data.data || res.data;
     await SecureStore.setItemAsync('auth_token', token);
     await SecureStore.setItemAsync('auth_user', JSON.stringify(user));
+    // daftarkan HP utk push notif langsung setelah login (sebelumnya baru saat app dibuka ulang)
+    registerPushNotifications().catch(() => {});
     return { token, user };
   },
   async logout() {
