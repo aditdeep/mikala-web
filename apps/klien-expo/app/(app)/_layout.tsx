@@ -23,6 +23,11 @@ function TabIcon({ name, color, label, focused, badge }: any) {
   );
 }
 
+// Layar detail/form (punya tombol kembali sendiri): menu bawah disembunyikan. Menu mengambang
+// + blur real-time menutupi tombol di bawah layar (mis. Beri Rating) dan bikin scroll berat di
+// layar yg isinya panjang.
+const SUB_SCREEN = { href: null, tabBarStyle: { display: 'none' as const } };
+
 export default function AppLayout() {
   const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
@@ -74,13 +79,13 @@ export default function AppLayout() {
         options={{ tabBarIcon: ({ color, focused }) => <TabIcon name={focused ? 'receipt' : 'receipt-outline'} color={color} focused={focused} label="Tagihan" /> }} />
       <Tabs.Screen name="profile"
         options={{ tabBarIcon: ({ color, focused }) => <TabIcon name={focused ? 'person' : 'person-outline'} color={color} focused={focused} label="Profil" /> }} />
-      <Tabs.Screen name="pasien-new" options={{ href: null }} />
-      <Tabs.Screen name="layanan-new" options={{ href: null }} />
-      <Tabs.Screen name="pasien/[id]" options={{ href: null }} />
-      <Tabs.Screen name="layanan/[id]" options={{ href: null }} />
-      <Tabs.Screen name="notifikasi" options={{ href: null }} />
-      <Tabs.Screen name="syarat-ketentuan" options={{ href: null }} />
-      <Tabs.Screen name="privacy-policy" options={{ href: null }} />
+      <Tabs.Screen name="pasien-new" options={SUB_SCREEN} />
+      <Tabs.Screen name="layanan-new" options={SUB_SCREEN} />
+      <Tabs.Screen name="pasien/[id]" options={SUB_SCREEN} />
+      <Tabs.Screen name="layanan/[id]" options={SUB_SCREEN} />
+      <Tabs.Screen name="notifikasi" options={SUB_SCREEN} />
+      <Tabs.Screen name="syarat-ketentuan" options={SUB_SCREEN} />
+      <Tabs.Screen name="privacy-policy" options={SUB_SCREEN} />
     </Tabs>
   );
 }

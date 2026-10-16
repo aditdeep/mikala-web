@@ -5,6 +5,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../lib/ThemeContext';
 import api from '../../../lib/api';
 
@@ -25,6 +26,7 @@ const STATUS_MAP: any = {
 
 export default function DetailLayanan() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams();
   const [layanan, setLayanan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +86,7 @@ export default function DetailLayanan() {
 
   return (
     <KeyboardAvoidingView enabled={showFeedback} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 60 }}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 40 + insets.bottom }}>
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, alignItems: 'center', justifyContent: 'center' }}>

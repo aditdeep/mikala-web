@@ -3,11 +3,13 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, KeyboardAvo
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../lib/ThemeContext';
 import api from '../../lib/api';
 
 export default function PasienNewScreen() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   // Pakai ref biar ketik nggak trigger re-render (keyboard nggak turun)
@@ -66,7 +68,7 @@ export default function PasienNewScreen() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 40 + insets.bottom }} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, alignItems: 'center', justifyContent: 'center' }}>
