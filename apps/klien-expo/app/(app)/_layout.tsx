@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../lib/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -42,13 +41,10 @@ export default function AppLayout() {
         tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: '#10b981',
         tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)',
+        // Tanpa efek blur: BlurView (dimezisBlurView) di Android menahan layar di belakangnya
+        // tidak digambar ulang -> saat ganti Dark/Light isi layar telat berubah. Latar solid.
         tabBarBackground: () => (
-          <BlurView
-            intensity={isDark ? 40 : 60}
-            tint={isDark ? 'dark' : 'light'}
-            experimentalBlurMethod="dimezisBlurView"
-            style={[StyleSheet.absoluteFill, { borderRadius: 28, overflow: 'hidden' }]}
-          />
+          <View style={[StyleSheet.absoluteFill, { borderRadius: 28, backgroundColor: isDark ? 'rgba(20,15,40,0.92)' : 'rgba(255,255,255,0.95)' }]} />
         ),
         tabBarStyle: {
           position: 'absolute',

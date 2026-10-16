@@ -45,7 +45,8 @@ export default function Beranda() {
   }
 
   return (
-    <LinearGradient colors={isDark ? ['#0a1f1a', '#0f0f1a'] : ['#d1fae5', '#f8f9fa']} style={{ flex: 1 }}>
+    // latar polos spt apps mitra: gradien layar penuh lambat berganti warna saat switch tema
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 110 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#10b981" />}
@@ -164,6 +165,6 @@ export default function Beranda() {
           </View>
         </View>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 }
