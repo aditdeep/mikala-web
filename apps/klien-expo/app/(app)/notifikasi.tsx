@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshCon
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { bukaNotif } from '../../lib/notifications';
 import { useTheme } from '../../lib/ThemeContext';
 import api from '../../lib/api';
 
@@ -41,11 +42,11 @@ export default function NotifikasiScreen() {
   };
 
   const typeIcon: any = {
-    layanan: 'pulse', order: 'pulse', tagihan: 'receipt', billing: 'receipt',
+    layanan: 'pulse', order: 'pulse', tagihan: 'receipt', billing: 'receipt', invoice: 'receipt', refund: 'cash', welcome: 'happy',
     pasien: 'people', general: 'notifications',
   };
   const typeColor: any = {
-    layanan: '#10b981', order: '#10b981', tagihan: '#f59e0b', billing: '#f59e0b',
+    layanan: '#10b981', order: '#10b981', tagihan: '#f59e0b', billing: '#f59e0b', invoice: '#f59e0b', refund: '#3b82f6', welcome: '#10b981',
     pasien: '#0d9488', general: '#6b7280',
   };
 
@@ -101,7 +102,7 @@ export default function NotifikasiScreen() {
               const ic = typeIcon[n.type] || 'notifications';
               const col = typeColor[n.type] || '#6b7280';
               return (
-                <TouchableOpacity key={n.id} onPress={() => !n.is_read && markRead(n.id)} activeOpacity={0.8}
+                <TouchableOpacity key={n.id} onPress={() => { if (!n.is_read) markRead(n.id); bukaNotif(n, false); }} activeOpacity={0.8}
                   style={{ flexDirection: 'row', gap: 12, backgroundColor: n.is_read ? colors.glass : `${col}14`, borderWidth: 1, borderColor: n.is_read ? colors.glassBorder : `${col}40`, borderRadius: 16, padding: 14 }}>
                   <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: `${col}1a`, alignItems: 'center', justifyContent: 'center' }}>
                     <Ionicons name={ic} size={18} color={col} />

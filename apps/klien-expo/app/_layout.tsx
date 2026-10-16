@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from '../lib/ThemeContext';
-import { registerPushNotifications, setupNotificationListeners, clearAppBadge } from '../lib/notifications';
+import { registerPushNotifications, setupNotificationListeners, clearAppBadge, bukaNotif, bukaNotifColdStart } from '../lib/notifications';
 import { authService } from '../lib/auth';
 
 SplashScreen.preventAutoHideAsync();
@@ -19,22 +19,17 @@ function AppStack() {
 
     const initPush = async () => {
       const isAuth = await authService.isAuthenticated();
-      if (isAuth) { await registerPushNotifications(); }
+      if (isAuth) {
+        await registerPushNotifications();
+        // tunggu layar (app) siap dulu baru navigasi ke tujuan notif
+        setTimeout(() => { bukaNotifColdStart(); }, 1200);
+      }
     };
     initPush();
 
     const cleanup = setupNotificationListeners(
       (notification) => {},
-      (response) => {
-        const data = response.notification.request.content.data;
-        if (data?.type === 'layanan' || data?.type === 'order') {
-          router.push('/(app)/layanan');
-        } else if (data?.type === 'tagihan' || data?.type === 'billing') {
-          router.push('/(app)/tagihan');
-        } else if (data?.type === 'pasien') {
-          router.push('/(app)/pasien');
-        }
-      }
+      (response) => { bukaNotif(response.notification.request.content.data); }
     );
     // Badge ikon app & notif di bar dibersihkan saat app dibuka / kembali ke depan
     clearAppBadge();

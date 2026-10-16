@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import api from './api';
 
@@ -44,7 +45,7 @@ export async function registerPushNotifications(): Promise<string | null> {
     // Setup Android channel
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
-        name: 'Mikala Mitra',
+        name: 'Mikala Klien',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#7c3aed',
@@ -52,14 +53,14 @@ export async function registerPushNotifications(): Promise<string | null> {
       });
 
       await Notifications.setNotificationChannelAsync('jobs', {
-        name: 'Job Baru',
+        name: 'Layanan',
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#10b981',
       });
 
       await Notifications.setNotificationChannelAsync('gaji', {
-        name: 'Gaji & Pembayaran',
+        name: 'Tagihan & Pembayaran',
         importance: Notifications.AndroidImportance.HIGH,
         lightColor: '#f59e0b',
       });
@@ -116,4 +117,40 @@ export function setupNotificationListeners(
 export async function clearAppBadge() {
   try { await Notifications.dismissAllNotificationsAsync(); } catch {}
   try { await Notifications.setBadgeCountAsync(0); } catch {}
+}
+
+/**
+ * Buka layar yg sesuai isi notif (dipakai saat notif HP di-tap & item di layar Notifikasi).
+ * Notif Deal (related_type cc_lead) -> detail layanan; tagihan/refund -> Tagihan.
+ */
+export function bukaNotif(data: any, keDaftarNotif = true) {
+  const type = data?.type;
+  const relType = data?.related_type;
+  const relId = data?.related_id;
+  if (['invoice', 'tagihan', 'billing', 'refund', 'payment'].includes(type)) {
+    router.push('/(app)/tagihan');
+  } else if ((relType === 'cc_lead' || relType === 'lead') && relId) {
+    router.push(`/(app)/layanan/${relId}`);
+  } else if (['layanan', 'order'].includes(type)) {
+    router.push('/(app)/layanan');
+  } else if (type === 'pasien') {
+    router.push('/(app)/pasien');
+  } else if (keDaftarNotif) {
+    router.push('/(app)/notifikasi');
+  }
+}
+
+/**
+ * Notif yg di-tap waktu app tertutup total (cold start) tidak lewat listener -> ambil manual
+ * sekali saat app siap. Dicatat id-nya supaya tidak dibuka ulang tiap app dibuka.
+ */
+let terakhirDibuka: string | null = null;
+export async function bukaNotifColdStart() {
+  try {
+    const res = await Notifications.getLastNotificationResponseAsync();
+    const id = res?.notification?.request?.identifier;
+    if (!res || !id || id === terakhirDibuka) return;
+    terakhirDibuka = id;
+    bukaNotif(res.notification.request.content.data);
+  } catch {}
 }
