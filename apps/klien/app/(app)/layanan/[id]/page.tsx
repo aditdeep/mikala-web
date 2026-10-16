@@ -14,11 +14,10 @@ export default function DetailLayananPage() {
   const [feedback, setFeedback] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    apiClient.get(`/klien/layanan/${params.id}`)
-      .then((r: any) => { setLayanan(r.data?.data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [params.id]);
+  const load = () => apiClient.get(`/klien/layanan/${params.id}`)
+    .then((r: any) => { setLayanan(r.data?.data); setLoading(false); })
+    .catch(() => setLoading(false));
+  useEffect(() => { load(); }, [params.id]);
 
   const handleFeedback = async (e: any) => {
     e.preventDefault();
@@ -26,7 +25,8 @@ export default function DetailLayananPage() {
     try {
       await apiClient.post(`/klien/layanan/${params.id}/feedback`, { rating, catatan: feedback });
       setShowFeedback(false);
-      alert('Feedback berhasil dikirim!');
+      alert('Terima kasih, rating Anda sudah terkirim!');
+      load();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Gagal kirim feedback');
     } finally { setSubmitting(false); }
@@ -65,6 +65,7 @@ export default function DetailLayananPage() {
   );
 
   const s = statusMap[layanan.status] || statusMap.pending;
+  const fmt = (d: string) => d ? new Date(d).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' }) : '-';
 
   return (
     <div style={{ padding:'16px', paddingBottom:'80px' }}>
@@ -95,7 +96,8 @@ export default function DetailLayananPage() {
           { icon: Calendar, label:'Tanggal Selesai', value: layanan.tanggal_selesai ? new Date(layanan.tanggal_selesai).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' }) : 'Belum ditentukan' },
           { icon: User, label:'Mitra/Perawat', value: layanan.mitra?.user?.name || 'Belum ditentukan' },
           { icon: User, label:'Pasien', value: layanan.pasien?.nama_lengkap || '-' },
-          { icon: FileText, label:'Catatan', value: layanan.catatan || '-' },
+          ...(layanan.alamat_layanan ? [{ icon: FileText, label:'Alamat Layanan', value: layanan.alamat_layanan }] : []),
+          ...(layanan.status === 'pending' ? [{ icon: FileText, label:'Keterangan', value: 'Permintaan sedang diproses. Tim Customer Care Mikala akan menghubungi Anda.' }] : []),
         ].map(item => {
           const Icon = item.icon;
           return (
@@ -112,10 +114,35 @@ export default function DetailLayananPage() {
         })}
       </div>
 
-      {/* Feedback button - only for completed */}
-      {layanan.status === 'completed' && (
+      {/* Riwayat mitra yg bertugas (termasuk pergantian mitra) */}
+      {layanan.riwayat_mitra?.length > 0 && (
+        <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'20px', overflow:'hidden', marginBottom:'12px' }}>
+          <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)' }}>
+            <p style={{ fontWeight:700, fontSize:'14px', color:'var(--text)' }}>Mitra yang Bertugas</p>
+          </div>
+          {layanan.riwayat_mitra.map((r: any, i: number) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderBottom: i < layanan.riwayat_mitra.length - 1 ? '1px solid var(--border)' : 'none' }}>
+              <User size={15} style={{ color: r.berjalan ? '#10b981' : 'var(--text3)', flexShrink:0 }} />
+              <div style={{ flex:1 }}>
+                <p style={{ color:'var(--text)', fontSize:'13px', fontWeight:600 }}>{r.nama}</p>
+                <p style={{ color:'var(--text3)', fontSize:'11px' }}>{fmt(r.mulai)} – {r.berjalan ? 'sekarang' : fmt(r.selesai)}</p>
+              </div>
+              {r.berjalan && <span style={{ color:'#10b981', fontSize:'11px', fontWeight:700 }}>Bertugas</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {layanan.sudah_feedback && (
+        <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'14px', textAlign:'center', color:'var(--text2)', fontSize:'13px' }}>
+          ★ Terima kasih, Anda sudah memberi rating
+        </div>
+      )}
+
+      {/* Rating mitra: Deal berjalan/selesai, 1x per layanan */}
+      {(layanan.bisa_feedback ?? layanan.status === 'completed') && (
         <button onClick={() => setShowFeedback(true)} style={{ width:'100%', padding:'14px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'16px', color:'white', fontWeight:700, fontSize:'15px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
-          <Star size={18} />Beri Penilaian
+          <Star size={18} />Beri Rating Mitra
         </button>
       )}
 

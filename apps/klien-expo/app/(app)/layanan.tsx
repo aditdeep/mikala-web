@@ -35,7 +35,7 @@ export default function LayananScreen() {
 
   const filtered = layanan.filter(l =>
     l.tipe_layanan?.toLowerCase().includes(search.toLowerCase()) ||
-    l.catatan?.toLowerCase().includes(search.toLowerCase())
+    l.pasien?.nama_lengkap?.toLowerCase().includes(search.toLowerCase())
   );
 
   const statusColor = (s: string) => s === 'active' || s === 'confirmed' ? '#10b981' : s === 'completed' ? '#3b82f6' : s === 'cancelled' ? '#ef4444' : '#f59e0b';

@@ -110,12 +110,36 @@ export default function DetailLayanan() {
           <Row icon="calendar-outline" label="Tanggal Mulai" value={fmtDate(layanan.tanggal_mulai)} />
           {layanan.tanggal_selesai ? <Row icon="calendar-outline" label="Tanggal Selesai" value={fmtDate(layanan.tanggal_selesai)} /> : null}
           {layanan.mitra?.user?.name ? <Row icon="medkit-outline" label="Mitra" value={layanan.mitra.user.name} /> : null}
-          {layanan.total ? <Row icon="cash-outline" label="Total" value={`Rp ${Number(layanan.total).toLocaleString('id-ID')}`} /> : null}
-          {layanan.catatan ? <Row icon="document-text-outline" label="Catatan" value={layanan.catatan} /> : null}
+          {layanan.alamat_layanan ? <Row icon="location-outline" label="Alamat Layanan" value={layanan.alamat_layanan} /> : null}
+          {layanan.status === 'pending' ? <Row icon="information-circle-outline" label="Keterangan" value="Permintaan sedang diproses. Tim Customer Care Mikala akan menghubungi Anda." /> : null}
         </View>
 
-        {/* Feedback (kalau completed) */}
-        {layanan.status === 'completed' && (
+        {/* Riwayat mitra yg bertugas (termasuk pergantian mitra) */}
+        {layanan.riwayat_mitra?.length > 0 && (
+          <View style={{ backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 20, padding: 20, marginBottom: 12 }}>
+            <Text style={{ fontWeight: '700', fontSize: 14, color: colors.text, marginBottom: 8 }}>Mitra yang Bertugas</Text>
+            {layanan.riwayat_mitra.map((r: any, i: number) => (
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: i < layanan.riwayat_mitra.length - 1 ? 1 : 0, borderBottomColor: colors.glassBorder }}>
+                <Ionicons name={r.berjalan ? 'medkit' : 'medkit-outline'} size={16} color={r.berjalan ? '#10b981' : colors.text3} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: colors.text, fontSize: 13, fontWeight: '600' }}>{r.nama}</Text>
+                  <Text style={{ color: colors.text3, fontSize: 11, marginTop: 2 }}>{fmtDate(r.mulai)} – {r.berjalan ? 'sekarang' : fmtDate(r.selesai)}</Text>
+                </View>
+                {r.berjalan && <Text style={{ color: '#10b981', fontSize: 11, fontWeight: '700' }}>Bertugas</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {layanan.sudah_feedback && (
+          <View style={{ backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Ionicons name="star" size={16} color="#f59e0b" />
+            <Text style={{ color: colors.text2, fontSize: 13 }}>Terima kasih, Anda sudah memberi rating</Text>
+          </View>
+        )}
+
+        {/* Rating mitra (Deal berjalan/selesai, 1x per layanan) */}
+        {(layanan.bisa_feedback ?? layanan.status === 'completed') && (
           <View style={{ backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 20, padding: 20 }}>
             {!showFeedback ? (
               <TouchableOpacity onPress={() => setShowFeedback(true)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>

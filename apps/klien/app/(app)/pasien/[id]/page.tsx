@@ -66,7 +66,7 @@ export default function DetailPasienPage() {
           </button>
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Detail Pasien</h1>
         </div>
-        {!editing ? (
+        {pasien.bisa_edit === false ? null : !editing ? (
           <button onClick={() => setEditing(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'12px', color:'#10b981', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>
             <Edit2 size={14} />Edit
           </button>
@@ -83,6 +83,11 @@ export default function DetailPasienPage() {
       </div>
 
       {error && <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'12px', padding:'10px 14px', color:'#ef4444', fontSize:'13px', marginBottom:'12px' }}>{error}</div>}
+      {pasien.bisa_edit === false && (
+        <div style={{ background:'rgba(59,130,246,0.08)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'12px', padding:'10px 14px', color:'var(--text2)', fontSize:'12px', marginBottom:'12px', lineHeight:1.5 }}>
+          Data pasien ini tercatat di kontrak layanan. Untuk perubahan data, silakan hubungi Customer Care Mikala.
+        </div>
+      )}
 
       <div style={{ background:'linear-gradient(135deg, #10b981, #059669)', borderRadius:'20px', padding:'24px', textAlign:'center', marginBottom:'16px', boxShadow:'0 8px 24px rgba(16,185,129,0.4)' }}>
         <div style={{ width:'64px', height:'64px', borderRadius:'20px', margin:'0 auto 12px', background:'rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', fontWeight:700, color:'white' }}>

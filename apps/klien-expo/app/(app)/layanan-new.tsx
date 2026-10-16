@@ -6,20 +6,17 @@ import { router } from 'expo-router';
 import { useTheme } from '../../lib/ThemeContext';
 import api from '../../lib/api';
 
-const TIPE_LAYANAN = [
-  ['homecare_harian', 'Homecare Harian'], ['homecare_live_in', 'Homecare Live In'],
-  ['medical_checkup', 'Medical Checkup'], ['konsultasi', 'Konsultasi'],
-  ['fisioterapi', 'Fisioterapi'], ['perawatan_luka', 'Perawatan Luka'],
-  ['vaksinasi', 'Vaksinasi'], ['lainnya', 'Lainnya'],
-];
 
 export default function LayananNewScreen() {
   const { colors } = useTheme();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [pasienList, setPasienList] = useState<any[]>([]);
+  // jenis layanan = daftar layanan di website (CMS), permintaan masuk ke Leads Customer Care
+  const [layananList, setLayananList] = useState<any[]>([]);
   const [form, setForm] = useState<any>({
-    service_type: 'homecare_harian',
+    cms_layanan_id: '',
+    service_type: '',
     pasien_id: '',
     tanggal_mulai: '',
     catatan: '',
@@ -29,17 +26,21 @@ export default function LayananNewScreen() {
     api.get('/klien/pasien')
       .then((r) => { const d = r.data?.data; setPasienList(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []); })
       .catch(() => {});
+    api.get('/cms/layanan')
+      .then((r) => setLayananList((r.data?.data || []).filter((l: any) => l.is_active !== false && l.is_active !== 0)))
+      .catch(() => {});
   }, []);
 
   const set = (k: string, v: string) => setForm((p: any) => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
     if (!form.pasien_id) { setError('Pilih pasien terlebih dahulu'); return; }
-    if (!form.tanggal_mulai) { setError('Tanggal mulai wajib diisi'); return; }
+    if (!form.cms_layanan_id) { setError('Pilih jenis layanan terlebih dahulu'); return; }
+    if (form.tanggal_mulai && !/^\d{4}-\d{2}-\d{2}$/.test(form.tanggal_mulai)) { setError('Format tanggal: TAHUN-BULAN-TANGGAL, contoh 2026-11-01'); return; }
     setSaving(true); setError('');
     try {
       await api.post('/klien/layanan', form);
-      Alert.alert('Berhasil', 'Permintaan layanan terkirim', [
+      Alert.alert('Berhasil', 'Permintaan layanan terkirim. Tim Customer Care Mikala akan segera menghubungi Anda.', [
         { text: 'OK', onPress: () => router.replace('/(app)/layanan') },
       ]);
     } catch (err: any) {
@@ -75,14 +76,18 @@ export default function LayananNewScreen() {
 
         {/* Tipe Layanan */}
         <View style={{ backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 20, padding: 20, marginBottom: 14 }}>
-          <Text style={{ color: colors.text2, fontSize: 12, fontWeight: '500', marginBottom: 10 }}>Tipe Layanan *</Text>
+          <Text style={{ color: colors.text2, fontSize: 12, fontWeight: '500', marginBottom: 10 }}>Jenis Layanan *</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {TIPE_LAYANAN.map(([val, lbl]) => (
-              <TouchableOpacity key={val} onPress={() => set('service_type', val)}
-                style={{ paddingVertical: 9, paddingHorizontal: 13, borderRadius: 10, backgroundColor: form.service_type === val ? 'rgba(16,185,129,0.15)' : (colors.bg2 || colors.glass), borderWidth: 1, borderColor: form.service_type === val ? '#10b981' : colors.glassBorder }}>
-                <Text style={{ color: form.service_type === val ? '#10b981' : colors.text3, fontWeight: '600', fontSize: 12 }}>{lbl}</Text>
-              </TouchableOpacity>
-            ))}
+            {layananList.map((l) => {
+              const on = String(form.cms_layanan_id) === String(l.id);
+              return (
+                <TouchableOpacity key={l.id} onPress={() => setForm((p: any) => ({ ...p, cms_layanan_id: String(l.id), service_type: l.nama }))}
+                  style={{ paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: on ? 'rgba(16,185,129,0.15)' : (colors.bg2 || colors.glass), borderWidth: 1, borderColor: on ? '#10b981' : colors.glassBorder }}>
+                  <Text style={{ color: on ? '#10b981' : colors.text3, fontWeight: '600', fontSize: 13 }}>{l.nama}</Text>
+                </TouchableOpacity>
+              );
+            })}
+            {layananList.length === 0 && <Text style={{ color: colors.text3, fontSize: 13 }}>Memuat daftar layanan...</Text>}
           </View>
         </View>
 
@@ -109,7 +114,7 @@ export default function LayananNewScreen() {
         {/* Tanggal + Catatan */}
         <View style={{ backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 20, padding: 20, gap: 14, marginBottom: 14 }}>
           <View>
-            <Text style={{ color: colors.text2, fontSize: 12, fontWeight: '500', marginBottom: 6 }}>Tanggal Mulai * (YYYY-MM-DD)</Text>
+            <Text style={{ color: colors.text2, fontSize: 12, fontWeight: '500', marginBottom: 6 }}>Rencana Mulai (opsional, contoh 2026-11-01)</Text>
             <TextInput defaultValue={form.tanggal_mulai} onChangeText={(v) => set('tanggal_mulai', v)} placeholder="2026-07-01" placeholderTextColor={colors.text3}
               style={{ backgroundColor: colors.bg2 || colors.glass, borderWidth: 1, borderColor: colors.glassBorder, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 11, color: colors.text, fontSize: 14 }} />
           </View>

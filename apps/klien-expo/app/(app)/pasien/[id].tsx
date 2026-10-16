@@ -105,7 +105,7 @@ export default function DetailPasien() {
             </TouchableOpacity>
             <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>Detail Pasien</Text>
           </View>
-          {!editing ? (
+          {pasien.bisa_edit === false ? null : !editing ? (
             <TouchableOpacity onPress={() => setEditing(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 12, backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 1, borderColor: 'rgba(16,185,129,0.25)' }}>
               <Ionicons name="create-outline" size={14} color="#10b981" />
               <Text style={{ color: '#10b981', fontSize: 13, fontWeight: '700' }}>Edit</Text>
@@ -127,6 +127,12 @@ export default function DetailPasien() {
         {!!error && (
           <View style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)', borderRadius: 12, padding: 12, marginBottom: 16 }}>
             <Text style={{ color: '#ef4444', fontSize: 13 }}>{error}</Text>
+          </View>
+        )}
+
+        {pasien.bisa_edit === false && (
+          <View style={{ backgroundColor: 'rgba(59,130,246,0.08)', borderWidth: 1, borderColor: 'rgba(59,130,246,0.2)', borderRadius: 12, padding: 12, marginBottom: 16 }}>
+            <Text style={{ color: colors.text2, fontSize: 12, lineHeight: 18 }}>Data pasien ini tercatat di kontrak layanan. Untuk perubahan data, silakan hubungi Customer Care Mikala.</Text>
           </View>
         )}
 

@@ -9,8 +9,11 @@ export default function TambahLayananPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [pasienList, setPasienList] = useState([]);
+  // jenis layanan = daftar layanan di website (CMS); permintaan masuk ke Leads Customer Care
+  const [layananList, setLayananList] = useState<any[]>([]);
   const [form, setForm] = useState({
-    service_type: 'homecare_harian',
+    cms_layanan_id: '',
+    service_type: '',
     pasien_id: '',
     tanggal_mulai: '',
     catatan: '',
@@ -23,6 +26,9 @@ export default function TambahLayananPage() {
     apiClient.get('/klien/pasien')
       .then((r) => { const d = r.data?.data; setPasienList(Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []); })
       .catch(() => {});
+    apiClient.get('/cms/layanan')
+      .then((r: any) => setLayananList((r.data?.data || []).filter((l: any) => l.is_active !== false && l.is_active !== 0)))
+      .catch(() => {});
   }, []);
 
   const handleSubmit = async (e) => {
@@ -32,22 +38,12 @@ export default function TambahLayananPage() {
     setError('');
     try {
       await apiClient.post('/klien/layanan', form);
+      alert('Permintaan layanan terkirim. Tim Customer Care Mikala akan segera menghubungi Anda.');
       router.push('/layanan');
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal membuat permintaan layanan');
     } finally { setSaving(false); }
   };
-
-  const tipeLayanan = [
-    { value:'homecare_harian', label:'Homecare Harian' },
-    { value:'homecare_live_in', label:'Homecare Live In' },
-    { value:'medical_checkup', label:'Medical Checkup' },
-    { value:'konsultasi', label:'Konsultasi' },
-    { value:'fisioterapi', label:'Fisioterapi' },
-    { value:'perawatan_luka', label:'Perawatan Luka' },
-    { value:'vaksinasi', label:'Vaksinasi' },
-    { value:'lainnya', label:'Lainnya' },
-  ];
 
   return (
     <div style={{ padding:'16px', paddingBottom:'80px' }}>
@@ -72,9 +68,10 @@ export default function TambahLayananPage() {
       <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
         <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'20px', padding:'20px', display:'flex', flexDirection:'column', gap:'14px' }}>
           <div>
-            <label style={labelStyle}>Tipe Layanan *</label>
-            <select required value={form.service_type} onChange={e => setForm(p => ({...p, service_type: e.target.value}))} style={inputStyle}>
-              {tipeLayanan.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            <label style={labelStyle}>Jenis Layanan *</label>
+            <select required value={form.cms_layanan_id} onChange={e => { const l = layananList.find(x => String(x.id) === e.target.value); setForm(p => ({...p, cms_layanan_id: e.target.value, service_type: l?.nama || ''})); }} style={inputStyle}>
+              <option value="">-- Pilih Layanan --</option>
+              {layananList.map(l => <option key={l.id} value={l.id}>{l.nama}</option>)}
             </select>
           </div>
           <div>
@@ -87,8 +84,8 @@ export default function TambahLayananPage() {
             </select>
           </div>
           <div>
-            <label style={labelStyle}>Tanggal Mulai *</label>
-            <input required type="date" value={form.tanggal_mulai} onChange={e => setForm(p => ({...p, tanggal_mulai: e.target.value}))} style={inputStyle} />
+            <label style={labelStyle}>Rencana Mulai (opsional)</label>
+            <input type="date" value={form.tanggal_mulai} onChange={e => setForm(p => ({...p, tanggal_mulai: e.target.value}))} style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Catatan / Kebutuhan Khusus</label>

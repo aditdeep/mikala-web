@@ -22,7 +22,7 @@ export default function LayananPage() {
 
   const filtered = Array.isArray(layanan) ? layanan.filter(l =>
     l.tipe_layanan?.toLowerCase().includes(search.toLowerCase()) ||
-    l.catatan?.toLowerCase().includes(search.toLowerCase())
+    l.pasien?.nama_lengkap?.toLowerCase().includes(search.toLowerCase())
   ) : [];
 
   return (
@@ -53,13 +53,13 @@ export default function LayananPage() {
                   <HeartPulse size={20} color="white" />
                 </div>
                 <span style={{ background: service.status==='active' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)', color: service.status==='active' ? '#10b981' : '#f59e0b', border:`1px solid ${service.status==='active' ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius:'8px', padding:'4px 10px', fontSize:'11px', fontWeight:600 }}>
-                  {service.status === 'active' ? 'Aktif' : service.status}
+                  {service.status_label || (service.status === 'active' ? 'Aktif' : service.status)}
                 </span>
               </div>
               <h3 className="font-bold text-base mb-1" style={{ color:'var(--text-primary)' }}>{service.tipe_layanan}</h3>
               <div className="flex items-center gap-4 text-xs" style={{ color:'var(--text-muted)' }}>
                 <div className="flex items-center gap-1.5"><User size={12} /><span>{service.pasien?.nama_lengkap}</span></div>
-                <div className="flex items-center gap-1.5"><Calendar size={12} /><span>{new Date(service.tanggal_mulai).toLocaleDateString('id-ID')}</span></div>
+                {service.tanggal_mulai && <div className="flex items-center gap-1.5"><Calendar size={12} /><span>{new Date(service.tanggal_mulai).toLocaleDateString('id-ID')}</span></div>}
               </div>
               {service.mitra?.user?.name && (
                 <div style={{ marginTop:'10px', paddingTop:'10px', borderTop:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
