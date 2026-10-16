@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
-  ActivityIndicator, Alert, RefreshControl,
+  View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, RefreshControl, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -100,8 +99,8 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 110 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProfile(); }} tintColor="#10b981" />}
       >
@@ -211,6 +210,6 @@ export default function ProfileScreen() {
           <Text style={{ color: '#ef4444', fontSize: 14, fontWeight: '700' }}>Keluar dari Akun</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

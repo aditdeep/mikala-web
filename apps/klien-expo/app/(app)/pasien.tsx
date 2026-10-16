@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, RefreshControl } from 'react-native';
+import {
+  View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, RefreshControl, KeyboardAvoidingView, Platform,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
@@ -34,8 +36,8 @@ export default function PasienScreen() {
   const umur = (tgl: string) => tgl ? new Date().getFullYear() - new Date(tgl).getFullYear() : null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 110 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#10b981" />}
       >
@@ -122,6 +124,6 @@ export default function PasienScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

@@ -148,7 +148,7 @@ export default function DetailLayananPage() {
 
       {/* Feedback Modal */}
       {showFeedback && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', overflowY:'auto' }}>
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'400px', padding:'24px' }}>
             <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)', marginBottom:'16px' }}>Beri Penilaian</h2>
             <form onSubmit={handleFeedback} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>

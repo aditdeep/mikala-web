@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import {
+  View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -81,8 +83,8 @@ export default function DetailLayanan() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 60 }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 60 }}>
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, alignItems: 'center', justifyContent: 'center' }}>
@@ -176,6 +178,6 @@ export default function DetailLayanan() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

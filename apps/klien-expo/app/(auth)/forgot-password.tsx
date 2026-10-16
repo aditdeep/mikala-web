@@ -24,7 +24,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <LinearGradient colors={['#0a1f1a', '#0d2818', '#0a1f1a']} style={{ flex: 1 }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
           {/* Back */}
           <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', top: 56, left: 20, width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}>

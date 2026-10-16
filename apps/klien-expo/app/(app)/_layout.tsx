@@ -34,6 +34,7 @@ export default function AppLayout() {
         animation: 'shift',
         sceneStyle: { backgroundColor: isDark ? '#0f0f1a' : '#f8f9fa' },
         tabBarShowLabel: false,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: '#10b981',
         tabBarInactiveTintColor: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)',
         tabBarBackground: () => (

@@ -49,7 +49,7 @@ export default function LayananNewScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 }}>

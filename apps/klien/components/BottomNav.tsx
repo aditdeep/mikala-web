@@ -15,7 +15,7 @@ export function BottomNav() {
   const router = useRouter();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50" style={{
+    <nav data-bottom-nav className="fixed bottom-0 left-0 right-0 z-50" style={{
       background: 'var(--glass)',
       backdropFilter: 'blur(24px)',
       WebkitBackdropFilter: 'blur(24px)',
