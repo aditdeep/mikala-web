@@ -21,6 +21,9 @@ export default function NotifikasiScreen() {
       const res = await api.get('/notifikasi');
       setNotifs(res.data?.data?.data || res.data?.data || []);
       setUnread(res.data?.unread_count || 0);
+      // layar Notifikasi sudah dibuka -> tandai semua dibaca di server supaya angka badge
+      // lonceng di Beranda hilang (item yg baru tetap disorot sampai layar ini ditutup)
+      if ((res.data?.unread_count || 0) > 0) api.post('/notifikasi/mark-all-read').catch(() => {});
     } catch {}
     setLoading(false); setRefreshing(false);
   };

@@ -29,7 +29,14 @@ export default function NotifikasiPage() {
 
   const load = () => {
     apiClient.get('/notifikasi')
-      .then((r: any) => { const l = r.data?.data?.data ?? r.data?.data ?? []; setItems(Array.isArray(l) ? l : []); })
+      .then((r: any) => {
+        const l = r.data?.data?.data ?? r.data?.data ?? [];
+        setItems(Array.isArray(l) ? l : []);
+        // halaman dibuka = semua dianggap dibaca -> badge lonceng hilang (sorotan item baru tetap)
+        if ((r.data?.unread_count ?? 0) > 0) {
+          apiClient.post('/notifikasi/mark-all-read').then(() => window.dispatchEvent(new Event('notif-read'))).catch(() => {});
+        }
+      })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
   };
@@ -46,6 +53,11 @@ export default function NotifikasiPage() {
       setItems(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
       try { await apiClient.patch(`/notifikasi/${n.id}/read`); } catch {}
       window.dispatchEvent(new Event('notif-read'));
+    }
+    // notif Deal -> langsung detail layanannya
+    if (['cc_lead', 'lead'].includes(n.related_type) && n.related_id && !['invoice', 'tagihan', 'billing', 'refund'].includes(n.type)) {
+      router.push(`/layanan/${n.related_id}`);
+      return;
     }
     const tujuan = TUJUAN[n.type];
     if (tujuan) router.push(tujuan);

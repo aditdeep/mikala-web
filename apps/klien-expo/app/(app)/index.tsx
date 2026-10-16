@@ -32,7 +32,6 @@ export default function Beranda() {
     setLoading(false); setRefreshing(false);
   };
 
-  useEffect(() => { loadData(); }, []);
   useFocusEffect(useCallback(() => { loadData(); }, []));
 
   const onRefresh = () => { setRefreshing(true); loadData(); };

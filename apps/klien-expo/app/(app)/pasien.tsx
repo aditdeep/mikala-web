@@ -24,7 +24,8 @@ export default function PasienScreen() {
     setLoading(false); setRefreshing(false);
   };
 
-  useEffect(() => { load(); }, []);
+  // useFocusEffect juga jalan saat layar pertama dibuka -> tidak perlu useEffect (dulu load 2x,
+  // daftar diganti ulang di tengah scroll -> scroll patah-patah)
   useFocusEffect(useCallback(() => { load(); }, []));
 
   const filtered = pasien.filter(p =>
@@ -36,7 +37,7 @@ export default function PasienScreen() {
   const umur = (tgl: string) => tgl ? new Date().getFullYear() - new Date(tgl).getFullYear() : null;
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 110 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#10b981" />}
@@ -124,6 +125,6 @@ export default function PasienScreen() {
           </View>
         )}
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

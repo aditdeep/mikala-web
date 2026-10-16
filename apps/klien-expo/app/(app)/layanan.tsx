@@ -32,7 +32,8 @@ export default function LayananScreen() {
     setLoading(false); setRefreshing(false);
   };
 
-  useEffect(() => { load(); }, []);
+  // useFocusEffect juga jalan saat layar pertama dibuka -> tidak perlu useEffect (dulu load 2x,
+  // daftar diganti ulang di tengah scroll -> scroll patah-patah)
   useFocusEffect(useCallback(() => { load(); }, []));
 
   const filtered = layanan.filter(l =>
@@ -43,7 +44,7 @@ export default function LayananScreen() {
   const statusColor = (s: string) => s === 'active' || s === 'confirmed' ? '#10b981' : s === 'completed' ? '#3b82f6' : s === 'cancelled' ? '#ef4444' : '#f59e0b';
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 110 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#10b981" />}
@@ -119,6 +120,6 @@ export default function LayananScreen() {
           </View>
         )}
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

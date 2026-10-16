@@ -124,6 +124,8 @@ export async function clearAppBadge() {
  * Notif Deal (related_type cc_lead) -> detail layanan; tagihan/refund -> Tagihan.
  */
 export function bukaNotif(data: any, keDaftarNotif = true) {
+  // dari push: tandai notif ybs dibaca supaya badge lonceng tidak nyangkut
+  if (data?.notif_id) api.patch(`/notifikasi/${data.notif_id}/read`).catch(() => {});
   const type = data?.type;
   const relType = data?.related_type;
   const relId = data?.related_id;

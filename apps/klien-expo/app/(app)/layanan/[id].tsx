@@ -41,14 +41,14 @@ export default function DetailLayanan() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => { setLoading(true); setShowFeedback(false); setFeedback(''); setRating(5); load(); }, [id]);
 
   const handleFeedback = async () => {
     setSubmitting(true);
     try {
       await api.post(`/klien/layanan/${id}/feedback`, { rating, catatan: feedback });
       setShowFeedback(false);
-      Alert.alert('Berhasil', 'Feedback berhasil dikirim!');
+      Alert.alert('Berhasil', 'Terima kasih, rating Anda sudah terkirim!');
       load();
     } catch (err: any) {
       Alert.alert('Gagal', err.response?.data?.message || 'Gagal kirim feedback');
@@ -83,7 +83,7 @@ export default function DetailLayanan() {
   );
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <KeyboardAvoidingView enabled={showFeedback} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 60 }}>
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 }}>
