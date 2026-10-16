@@ -8,9 +8,9 @@ import api from '../../lib/api';
 import { authService } from '../../lib/auth';
 
 export default function Beranda() {
-  const { colors, isDark, toggleTheme, themeVersion } = useTheme();
-  const [, _forceTick] = useState(0);
-  useEffect(() => { console.log('THEME CHANGED, version:', themeVersion, 'isDark:', isDark); _forceTick(t => t + 1); }, [themeVersion]);
+  // Ganti tema cukup lewat context (semua komponen yg pakai useTheme ikut render ulang).
+  // Dulu seluruh layar di-remount (key={themeVersion}) + render paksa ke-2 -> ganti tema ngelag.
+  const { colors, isDark, toggleTheme } = useTheme();
   const [stats, setStats] = useState<any>(null);
   const [userName, setUserName] = useState('Klien');
   const [greeting, setGreeting] = useState('');
@@ -45,7 +45,7 @@ export default function Beranda() {
   }
 
   return (
-    <LinearGradient key={themeVersion} colors={isDark ? ['#0a1f1a', '#0f0f1a'] : ['#d1fae5', '#f8f9fa']} style={{ flex: 1 }}>
+    <LinearGradient colors={isDark ? ['#0a1f1a', '#0f0f1a'] : ['#d1fae5', '#f8f9fa']} style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 56, paddingBottom: 110 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#10b981" />}
