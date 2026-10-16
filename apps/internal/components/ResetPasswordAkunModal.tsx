@@ -51,7 +51,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
 
   const copyText = () => {
     if (!result) return;
-    navigator.clipboard?.writeText(`Email: ${result.email}\nPassword baru: ${result.new_password}`);
+    navigator.clipboard?.writeText(`${result.email ? `Email: ${result.email}\n` : ''}No HP: ${result.phone || '-'}\nPassword/PIN baru: ${result.new_password}`);
     setCopied(true); setTimeout(() => setCopied(false), 1500);
   };
 
@@ -87,7 +87,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
                   <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
                     {nama(a)}{a.mitra?.nomor_induk ? <span style={{ color:'var(--text3)', fontWeight:400 }}> · {a.mitra.nomor_induk}</span> : null}
                   </p>
-                  <p style={{ fontSize:'11px', color:'var(--text3)' }}>{a.email} · {a.phone || '-'}</p>
+                  <p style={{ fontSize:'11px', color:'var(--text3)' }}>{a.email || 'tanpa email'} · {a.phone || '-'}</p>
                 </button>
               ))}
             </div>
@@ -99,7 +99,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
           <>
             <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', marginBottom:'14px' }}>
               <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)' }}>{nama(akun)}</p>
-              <p style={{ fontSize:'12px', color:'var(--text3)' }}>{akun.email} · {akun.phone || '-'}</p>
+              <p style={{ fontSize:'12px', color:'var(--text3)' }}>{akun.email || 'tanpa email'} · {akun.phone || '-'}</p>
               {!target && (
                 <button onClick={() => { setAkun(null); setError(''); }} style={{ marginTop:'6px', background:'none', border:'none', padding:0, color:'#3b82f6', fontSize:'12px', cursor:'pointer' }}>
                   Ganti akun
@@ -119,7 +119,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
               ))}
             </div>
             {mode === 'manual' && (
-              <input value={manualPw} onChange={e => setManualPw(e.target.value)} placeholder="Password baru (min. 8 karakter)" style={{ ...inp, marginBottom:'12px' }} />
+              <input value={manualPw} onChange={e => setManualPw(e.target.value)} placeholder="Password baru (min. 6 karakter, klien boleh PIN 6 angka)" style={{ ...inp, marginBottom:'12px' }} />
             )}
             <p style={{ fontSize:'11px', color:'var(--text3)', marginBottom:'12px', lineHeight:1.5 }}>
               Password lama langsung tidak berlaku dan {label.toLowerCase()} otomatis ter-logout dari semua perangkat.
@@ -137,7 +137,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
           <>
             <div style={{ background:'rgba(16,185,129,0.08)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'12px', padding:'14px', marginBottom:'12px' }}>
               <p style={{ fontSize:'13px', fontWeight:700, color:'#10b981', marginBottom:'8px' }}>✓ Password berhasil direset</p>
-              <p style={{ fontSize:'12px', color:'var(--text2)' }}>Email: <b style={{ color:'var(--text)' }}>{result.email}</b></p>
+              <p style={{ fontSize:'12px', color:'var(--text2)' }}>{result.email ? <>Email: <b style={{ color:'var(--text)' }}>{result.email}</b></> : <>No HP (login): <b style={{ color:'var(--text)' }}>{result.phone || '-'}</b></>}</p>
               <p style={{ fontSize:'12px', color:'var(--text2)' }}>Password baru: <b style={{ color:'var(--text)', fontFamily:'monospace', fontSize:'14px' }}>{result.new_password}</b></p>
             </div>
             {result.warning && (

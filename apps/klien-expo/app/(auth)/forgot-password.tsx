@@ -12,7 +12,7 @@ export default function ForgotPasswordScreen() {
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
-    if (!email) { setError('Masukkan email Anda'); return; }
+    if (!email) { setError('Masukkan email atau No HP Anda'); return; }
     setLoading(true); setError('');
     try {
       const res = await api.post('/auth/forgot-password', { email });
@@ -38,7 +38,7 @@ export default function ForgotPasswordScreen() {
             </View>
             <Text style={{ color: 'white', fontSize: 22, fontWeight: '800' }}>Lupa Password</Text>
             <Text style={{ color: 'rgba(110,231,183,0.8)', fontSize: 13, marginTop: 6, textAlign: 'center' }}>
-              Masukkan email untuk menerima instruksi reset password
+              Masukkan email atau No HP yang terdaftar
             </Text>
           </View>
 
@@ -50,13 +50,13 @@ export default function ForgotPasswordScreen() {
                 </View>
               )}
 
-              <Text style={{ color: 'rgba(110,231,183,0.8)', fontSize: 13, fontWeight: '500', marginBottom: 8 }}>Email</Text>
+              <Text style={{ color: 'rgba(110,231,183,0.8)', fontSize: 13, fontWeight: '500', marginBottom: 8 }}>Email atau No WA / HP</Text>
               <View style={{ position: 'relative', marginBottom: 20 }}>
                 <Ionicons name="mail-outline" size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: 14, top: 15, zIndex: 1 }} />
                 <TextInput
                   value={email} onChangeText={setEmail}
-                  placeholder="nama@email.com" placeholderTextColor="rgba(255,255,255,0.3)"
-                  keyboardType="email-address" autoCapitalize="none" autoCorrect={false}
+                  placeholder="email@contoh.com / 0812xxxx" placeholderTextColor="rgba(255,255,255,0.3)"
+                  autoCapitalize="none" autoCorrect={false}
                   style={{ width: '100%', padding: 13, paddingLeft: 42, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 14, color: 'white', fontSize: 14 }}
                 />
               </View>
@@ -77,12 +77,12 @@ export default function ForgotPasswordScreen() {
                 <Ionicons name="checkmark-circle" size={32} color="#10b981" />
               </View>
               <Text style={{ color: 'white', fontSize: 17, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>
-                {result.email_sent ? 'Email Terkirim!' : 'Permintaan Diterima'}
+                {result.email_sent ? 'Email Terkirim!' : 'Hubungi Admin'}
               </Text>
               <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 20 }}>
                 {result.email_sent
                   ? 'Silakan cek inbox email Anda untuk instruksi reset password. Cek juga folder spam.'
-                  : 'Link reset tidak bisa dikirim ke email. Hubungi admin via WhatsApp di bawah, admin akan me-reset password dan mengirim password baru ke WhatsApp Anda.'}
+                  : 'Silakan hubungi admin via WhatsApp di bawah. Admin akan me-reset dan mengirim PIN/password baru ke WhatsApp Anda.'}
               </Text>
 
               {result.wa_url && (

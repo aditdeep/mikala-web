@@ -13,7 +13,7 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) { setError('Masukkan email'); return; }
+    if (!email) { setError('Masukkan email atau No HP'); return; }
     setLoading(true); setError('');
     try {
       const res: any = await apiClient.post('/auth/forgot-password', { email });
@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
           <img src="https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png" alt="Mikala" style={{ height:'36px', marginBottom:'8px' }}/>
           <h1 style={{ color:'white', fontSize:'22px', fontWeight:800 }}>Lupa Password</h1>
           <p style={{ color:'rgba(16,185,129,0.7)', fontSize:'13px', marginTop:'4px' }}>
-            Masukkan email untuk menerima instruksi reset
+            Masukkan email atau No HP yang terdaftar
           </p>
         </div>
 
@@ -54,11 +54,11 @@ export default function ForgotPasswordPage() {
               )}
               <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                 <div>
-                  <label style={{ color:'rgba(16,185,129,0.8)', fontSize:'13px', fontWeight:500, display:'block', marginBottom:'8px' }}>Email</label>
+                  <label style={{ color:'rgba(16,185,129,0.8)', fontSize:'13px', fontWeight:500, display:'block', marginBottom:'8px' }}>Email atau No WA / HP</label>
                   <div style={{ position:'relative' }}>
                     <Mail size={17} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'rgba(16,185,129,0.6)' }}/>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                      placeholder="email@contoh.com" required style={inp}/>
+                    <input type="text" value={email} onChange={e => setEmail(e.target.value)}
+                      placeholder="email@contoh.com / 0812xxxx" required style={inp}/>
                   </div>
                 </div>
                 <button type="submit" disabled={loading} style={{
@@ -76,11 +76,11 @@ export default function ForgotPasswordPage() {
               <div style={{ width:'64px', height:'64px', borderRadius:'50%', background:'rgba(16,185,129,0.15)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
                 <CheckCircle2 size={32} style={{ color:'#10b981' }}/>
               </div>
-              <h3 style={{ color:'white', fontSize:'17px', fontWeight:700, marginBottom:'8px' }}>{result.email_sent ? 'Instruksi Terkirim!' : 'Permintaan Diterima'}</h3>
+              <h3 style={{ color:'white', fontSize:'17px', fontWeight:700, marginBottom:'8px' }}>{result.email_sent ? 'Instruksi Terkirim!' : 'Hubungi Admin'}</h3>
               <p style={{ color:'rgba(255,255,255,0.6)', fontSize:'13px', lineHeight:'1.6', marginBottom:'20px' }}>
                 {result.email_sent
                   ? `Link reset password telah dikirim ke ${email}. Cek inbox atau folder spam.`
-                  : `Link reset tidak bisa dikirim ke email. Hubungi admin via WhatsApp di bawah, admin akan me-reset password dan mengirim password baru ke WhatsApp Anda.`}
+                  : `Silakan hubungi admin via WhatsApp di bawah. Admin akan me-reset dan mengirim PIN/password baru ke WhatsApp Anda.`}
               </p>
 
               {/* Email info */}

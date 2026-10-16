@@ -19,13 +19,14 @@ export default function LoginScreen() {
   const [error, setError]       = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) { setError('Email dan password wajib diisi'); return; }
+    if (!email || !password) { setError('No HP/Email dan PIN wajib diisi'); return; }
     setLoading(true); setError('');
     try {
+      // API menerima email ATAU No HP/WA di field yg sama
       await authService.login(email.trim().toLowerCase(), password);
       router.replace('/(app)');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Email atau password salah');
+      setError(err.response?.data?.message || 'No HP/Email atau PIN salah');
     } finally { setLoading(false); }
   };
 
@@ -49,19 +50,19 @@ export default function LoginScreen() {
               </View>
             )}
 
-            <Text style={s.label}>Email</Text>
+            <Text style={s.label}>No WA / HP atau Email</Text>
             <View style={s.inputWrap}>
-              <Ionicons name="mail-outline" size={17} color="rgba(16,185,129,0.6)" style={s.icon}/>
+              <Ionicons name="call-outline" size={17} color="rgba(16,185,129,0.6)" style={s.icon}/>
               <TextInput value={email} onChangeText={setEmail}
-                placeholder="nama@email.com" placeholderTextColor="rgba(255,255,255,0.3)"
-                keyboardType="email-address" autoCapitalize="none" style={s.input}/>
+                placeholder="Contoh: 081234567890" placeholderTextColor="rgba(255,255,255,0.3)"
+                autoCapitalize="none" autoCorrect={false} style={s.input}/>
             </View>
 
-            <Text style={[s.label,{marginTop:12}]}>Password</Text>
+            <Text style={[s.label,{marginTop:12}]}>PIN / Password</Text>
             <View style={s.inputWrap}>
               <Ionicons name="lock-closed-outline" size={17} color="rgba(16,185,129,0.6)" style={s.icon}/>
               <TextInput value={password} onChangeText={setPassword}
-                placeholder="••••••••" placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholder="PIN 6 angka" placeholderTextColor="rgba(255,255,255,0.3)"
                 secureTextEntry={!showPass} style={[s.input,{paddingRight:44}]}/>
               <TouchableOpacity onPress={()=>setShowPass(!showPass)} style={s.eye}>
                 <Ionicons name={showPass?'eye-off-outline':'eye-outline'} size={17} color="rgba(16,185,129,0.6)"/>
@@ -70,7 +71,7 @@ export default function LoginScreen() {
 
             <TouchableOpacity onPress={()=>router.push('/(auth)/forgot-password')}
               style={{alignSelf:'flex-end',marginTop:6,marginBottom:16}}>
-              <Text style={{color:'rgba(16,185,129,0.6)',fontSize:12}}>Lupa password?</Text>
+              <Text style={{color:'rgba(16,185,129,0.6)',fontSize:12}}>Lupa PIN / password?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleLogin} disabled={loading} activeOpacity={0.8}>
@@ -80,6 +81,7 @@ export default function LoginScreen() {
               </LinearGradient>
             </TouchableOpacity>
           </View>
+          <Text style={s.regNote}>PIN dikirim oleh admin Mikala lewat WhatsApp. Belum terima atau lupa PIN? Hubungi admin Mikala.</Text>
           <Text style={s.footer}>© 2026 Mikala Global Medika</Text>
         </ScrollView>
       </KeyboardAvoidingView>
