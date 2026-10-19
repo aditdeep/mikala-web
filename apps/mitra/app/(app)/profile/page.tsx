@@ -25,10 +25,17 @@ export default function ProfilePage() {
       .then((r: any) => {
         const data = r.data?.data;
         const m = data?.mitra || data?.profile || data;
+        // Data akun (email, No HP, nama) diambil dari server, bukan salinan saat login -- dulu
+        // email yg dikoreksi admin tidak muncul ('-') sampai mitra logout-login ulang.
+        const fresh = data?.user ? { ...(u || {}), ...data.user } : u;
+        if (data?.user) {
+          setUser(fresh);
+          try { localStorage.setItem('mikala_user', JSON.stringify(fresh)); } catch {}
+        }
         setMitra(m);
         setFotoUrl(m?.foto_url || '');
         setForm({
-          phone:        u?.phone || '',
+          phone:        fresh?.phone || '',
           // alamat server = gabungan "jalan, kelurahan, kecamatan, kota, provinsi" (format admin);
           // diedit per bagian, server menyusun ulang (sinkron dgn admin)
           alamat_jalan: m?.alamat_parts ? (m.alamat_parts.alamat_jalan || '') : (m?.alamat || ''),

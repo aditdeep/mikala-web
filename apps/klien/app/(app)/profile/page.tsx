@@ -22,8 +22,14 @@ export default function ProfilePage() {
         const data = r.data?.data;
         setProfile(data);
         const klien = data?.klien || data;
+        // data akun dari server (bukan salinan saat login) supaya koreksi admin langsung tampil
+        const fresh = data?.user ? { ...(u || {}), ...data.user } : u;
+        if (data?.user) {
+          setUser(fresh);
+          try { localStorage.setItem('mikala_user', JSON.stringify(fresh)); } catch {}
+        }
         setForm({
-          phone: u?.phone || '',
+          phone: fresh?.phone || '',
           alamat: klien?.alamat || '',
           kota: klien?.kota || '',
           provinsi: klien?.provinsi || '',
@@ -107,7 +113,7 @@ export default function ProfilePage() {
           {/* Read-only fields */}
           {[
             { icon: User, label:'Nama Lengkap', value: klien?.nama_lengkap || user?.name },
-            { icon: Mail, label:'Email', value: user?.email },
+            { icon: Mail, label:'Email', value: user?.email || 'Belum diisi (login pakai No HP)' },
           ].map(item => {
             const Icon = item.icon;
             return (
