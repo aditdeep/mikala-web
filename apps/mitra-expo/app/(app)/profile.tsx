@@ -6,18 +6,14 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useTheme } from '../../lib/ThemeContext';
 import api from '../../lib/api';
 import { authService } from '../../lib/auth';
 
-const CLOUDINARY_URL    = 'https://api.cloudinary.com/v1_1/djgtchmsx/image/upload';
-const CLOUDINARY_PRESET = 'ml_default';
 
 const makeStyles = (colors: any) => StyleSheet.create({
   avatar:       { width:96, height:96, borderRadius:30, borderWidth:3, borderColor:'rgba(124,58,237,0.5)' },
-  cameraBtn:    { position:'absolute', bottom:0, right:0, width:30, height:30, borderRadius:10, backgroundColor:colors.primary, alignItems:'center', justifyContent:'center', borderWidth:2, borderColor:colors.bg },
   card:         { backgroundColor:colors.glass, borderWidth:1, borderColor:colors.glassBorder, borderRadius:20, padding:20, marginBottom:16 },
   sectionTitle: { color:colors.text, fontSize:16, fontWeight:'700', marginBottom:16 },
   label:        { color:colors.primary, fontSize:12, fontWeight:'600', marginBottom:6 },
@@ -57,7 +53,6 @@ export default function ProfileScreen() {
   const [stats, setStats]     = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'info'|'bank'|'password'>('info');
   const [editing, setEditing] = useState(false);
@@ -126,52 +121,8 @@ export default function ProfileScreen() {
     setLoading(false); setRefreshing(false);
   };
 
-  const pickImage = () => {
-    Alert.alert('Upload Foto', 'Pilih sumber foto', [
-      { text: 'Kamera', onPress: openCamera },
-      { text: 'Galeri', onPress: openGallery },
-      { text: 'Batal', style: 'cancel' },
-    ]);
-  };
-
-  const openCamera = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permission', 'Izin kamera diperlukan'); return; }
-    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1,1], quality: 0.7 });
-    if (!result.canceled) uploadToCloudinary(result.assets[0].uri);
-  };
-
-  const openGallery = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permission', 'Izin galeri diperlukan'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1,1], quality: 0.7, mediaTypes: ImagePicker.MediaTypeOptions.Images });
-    if (!result.canceled) uploadToCloudinary(result.assets[0].uri);
-  };
-
-  const uploadToCloudinary = async (uri: string) => {
-    setUploading(true);
-    try {
-      const filename = uri.split('/').pop() || 'photo.jpg';
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
-      const formData = new FormData();
-      formData.append('file', { uri, name: filename, type } as any);
-      formData.append('upload_preset', CLOUDINARY_PRESET);
-      formData.append('folder', 'mikala/mitra');
-      const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } });
-      const data = await res.json();
-      if (data.secure_url) {
-        setFotoUrl(data.secure_url);
-        await api.patch('/mitra/profile', { foto_url: data.secure_url });
-        Alert.alert('✅ Berhasil', 'Foto profil berhasil diupdate!');
-      } else {
-        Alert.alert('Error', data.error?.message || 'Gagal upload foto');
-      }
-    } catch (e: any) {
-      Alert.alert('Error', 'Gagal upload: ' + e.message);
-    }
-    setUploading(false);
-  };
+  // Foto profil sengaja TIDAK bisa diubah dari apps: foto dipakai di CV & ID card mitra,
+  // jadi hanya admin (menu Rekrutmen) yg boleh mengganti.
 
   const handleSave = async () => {
     setSaving(true);
@@ -247,7 +198,7 @@ export default function ProfileScreen() {
 
         {/* Header */}
         <LinearGradient colors={grad} style={{ padding:20, paddingTop:56, alignItems:'center' }}>
-          <TouchableOpacity onPress={pickImage} activeOpacity={0.8} style={{ marginBottom:16 }}>
+          <View style={{ marginBottom:16 }}>
             {fotoUrl ? (
               <Image source={{ uri: fotoUrl }} style={s.avatar}/>
             ) : (
@@ -255,10 +206,7 @@ export default function ProfileScreen() {
                 <Text style={{ color:colors.primary, fontSize:40, fontWeight:'800' }}>{user?.name?.[0]?.toUpperCase()||'M'}</Text>
               </View>
             )}
-            <View style={s.cameraBtn}>
-              {uploading ? <ActivityIndicator size="small" color="white"/> : <Ionicons name="camera" size={14} color="white"/>}
-            </View>
-          </TouchableOpacity>
+          </View>
           <Text style={{ color:colors.text, fontSize:20, fontWeight:'800' }}>{user?.name||'-'}</Text>
           <Text style={{ color:colors.text3, fontSize:13, marginTop:3 }}>{user?.email}</Text>
           <View style={{ flexDirection:'row', gap:12, marginTop:20 }}>
