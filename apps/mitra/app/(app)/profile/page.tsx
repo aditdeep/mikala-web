@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, authService } from '@mikala/lib';
-import { User, Phone, Mail, LogOut, Shield, Edit2, Save, X, MapPin, CreditCard, Home } from 'lucide-react';
+import { User, Phone, Mail, LogOut, Shield, Edit2, Save, X, MapPin, CreditCard, Home, ShieldCheck } from 'lucide-react';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -31,8 +31,13 @@ export default function ProfilePage() {
         setFotoUrl(m?.foto_url || '');
         setForm({
           phone:        u?.phone || '',
-          alamat:       m?.alamat || '',
+          // alamat server = gabungan "jalan, kelurahan, kecamatan, kota, provinsi" (format admin);
+          // diedit per bagian, server menyusun ulang (sinkron dgn admin)
+          alamat_jalan: m?.alamat_parts ? (m.alamat_parts.alamat_jalan || '') : (m?.alamat || ''),
+          kelurahan:    m?.alamat_parts?.kelurahan || '',
+          kecamatan:    m?.alamat_parts?.kecamatan || '',
           kota:         m?.kota || '',
+          vaksin:       m?.vaksin || '',
           provinsi:     m?.provinsi || '',
           bank_name:    m?.bank_name || '',
           bank_account: m?.bank_account || '',
@@ -177,9 +182,12 @@ export default function ProfilePage() {
           {/* Editable */}
           {[
             { key:'phone', icon: Phone, label:'Nomor HP' },
-            { key:'alamat', icon: MapPin, label:'Alamat' },
+            { key:'alamat_jalan', icon: MapPin, label:'Alamat (jalan, nomor, RT/RW)' },
+            { key:'kelurahan', icon: MapPin, label:'Kelurahan / Desa' },
+            { key:'kecamatan', icon: MapPin, label:'Kecamatan' },
             { key:'kota', icon: Home, label:'Kota' },
             { key:'provinsi', icon: MapPin, label:'Provinsi' },
+            { key:'vaksin', icon: ShieldCheck, label:'Vaksin' },
           ].map(item => {
             const Icon = item.icon;
             return (

@@ -67,7 +67,10 @@ export default function ProfileScreen() {
     name:         { current: '' },
     phone:        { current: '' },
     alamat:       { current: '' },
+    kelurahan:    { current: '' },
+    kecamatan:    { current: '' },
     kota:         { current: '' },
+    vaksin:       { current: '' },
     provinsi:     { current: '' },
     tglLahir:     { current: '' },
     jenisKelamin: { current: '' },
@@ -98,8 +101,13 @@ export default function ProfileScreen() {
       const vals = {
         name:         u?.name || '',
         phone:        u?.phone || '',
-        alamat:       m?.alamat || '',
+        // alamat di server = gabungan "jalan, kelurahan, kecamatan, kota, provinsi" (format admin);
+        // server mengirim pecahannya di alamat_parts supaya bisa diedit per bagian
+        alamat:       m?.alamat_parts ? (m.alamat_parts.alamat_jalan || '') : (m?.alamat || ''),
+        kelurahan:    m?.alamat_parts?.kelurahan || '',
+        kecamatan:    m?.alamat_parts?.kecamatan || '',
         kota:         m?.kota || '',
+        vaksin:       m?.vaksin || '',
         provinsi:     m?.provinsi || '',
         tglLahir:     m?.tanggal_lahir?.split('T')[0] || '',
         pendidikan:   m?.pendidikan_terakhir || '',
@@ -184,8 +192,12 @@ export default function ProfileScreen() {
         payload = {
           name:              form.name.current || initialValues.name || '',
           phone:             form.phone.current || initialValues.phone || '',
-          alamat:            form.alamat.current !== '' ? form.alamat.current : (initialValues.alamat || ''),
+          // dikirim per bagian; server menyusun ulang alamat gabungan (sinkron dgn admin)
+          alamat_jalan:      form.alamat.current !== '' ? form.alamat.current : (initialValues.alamat || ''),
+          kelurahan:         form.kelurahan.current !== '' ? form.kelurahan.current : (initialValues.kelurahan || ''),
+          kecamatan:         form.kecamatan.current !== '' ? form.kecamatan.current : (initialValues.kecamatan || ''),
           kota:              form.kota.current !== '' ? form.kota.current : (initialValues.kota || ''),
+          vaksin:            form.vaksin.current !== '' ? form.vaksin.current : (initialValues.vaksin || ''),
           provinsi:          form.provinsi.current !== '' ? form.provinsi.current : (initialValues.provinsi || ''),
           tanggal_lahir:     tgl || undefined,
           jenis_kelamin:     jenisKelamin || initialValues.jenisKelamin || undefined,
@@ -309,9 +321,12 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-              <Field label="Alamat" value={initialValues.alamat} onChangeText={(v:string)=>form.alamat.current=v} placeholder="Alamat lengkap" editable={editing}/>
+              <Field label="Alamat (jalan, nomor, RT/RW)" value={initialValues.alamat} onChangeText={(v:string)=>form.alamat.current=v} placeholder="Jl. ... No. ..., RT/RW" editable={editing}/>
+              <Field label="Kelurahan / Desa" value={initialValues.kelurahan} onChangeText={(v:string)=>form.kelurahan.current=v} placeholder="Kelurahan / Desa" editable={editing}/>
+              <Field label="Kecamatan" value={initialValues.kecamatan} onChangeText={(v:string)=>form.kecamatan.current=v} placeholder="Kecamatan" editable={editing}/>
               <Field label="Kota" value={initialValues.kota} onChangeText={(v:string)=>form.kota.current=v} placeholder="Kota" editable={editing}/>
               <Field label="Provinsi" value={initialValues.provinsi} onChangeText={(v:string)=>form.provinsi.current=v} placeholder="Provinsi" editable={editing}/>
+              <Field label="Vaksin" value={initialValues.vaksin} onChangeText={(v:string)=>form.vaksin.current=v} placeholder="Covid, Hepatitis B" editable={editing}/>
               <Field label="Pendidikan" value={initialValues.pendidikan} onChangeText={(v:string)=>form.pendidikan.current=v} placeholder="D3/S1 Keperawatan..." editable={editing}/>
               <Field label="Pengalaman" value={initialValues.pengalaman} onChangeText={(v:string)=>form.pengalaman.current=v} placeholder="Pengalaman kerja..." multiline editable={editing}/>
             </>}

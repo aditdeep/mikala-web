@@ -128,17 +128,16 @@ function parsePengalamanBlob(raw: string) {
 // Parse balik alamat gabungan "alamat, kelurahan, kecamatan, kota, provinsi" (lihat handleSubmit)
 // supaya kelurahan/kecamatan tidak hilang & tidak terduplikasi tiap kali form Edit disimpan ulang.
 function parseAlamatBlob(rawAlamat: string, kota: string, provinsi: string) {
-  let sisa = rawAlamat || '';
-  const suffix = `, ${kota || ''}, ${provinsi || ''}`;
-  if (kota && provinsi && sisa.endsWith(suffix)) {
-    sisa = sisa.slice(0, -suffix.length);
+  // Sama persis dgn Mitra::pecahAlamat di backend (dipakai juga apps mitra): 2 bagian terakhir
+  // = kota, provinsi; sebelumnya kecamatan, kelurahan; sisanya jalan (boleh mengandung koma,
+  // mis. "Jl. Mawar 5, RT 01/02"). Alamat teks bebas (bukan format ini) = jalan seluruhnya.
+  const parts = (rawAlamat || '').split(',').map(p => p.trim());
+  const sama = (x: string, y: string) => !!y && x.toLowerCase() === y.trim().toLowerCase();
+  const n = parts.length;
+  if (n >= 5 && (sama(parts[n - 1], provinsi) || sama(parts[n - 2], kota))) {
+    return { alamat: parts.slice(0, n - 4).join(', '), kelurahan: parts[n - 4], kecamatan: parts[n - 3] };
   }
-  const parts = sisa.split(',').map(p => p.trim());
-  return {
-    alamat: parts[0] || '',
-    kelurahan: parts[1] || '',
-    kecamatan: parts[2] || '',
-  };
+  return { alamat: (rawAlamat || '').trim(), kelurahan: '', kecamatan: '' };
 }
 
 // ── Kemampuan Khusus -- input list bebas (tag), ditampilkan di CV mitra ──────
@@ -1181,7 +1180,8 @@ export default function RekrutmenPage() {
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                   <div style={{ gridColumn:'1/-1' }}>
                     <label style={labelStyle}>Email {!editItem && '*'}</label>
-                    <input required={!editItem} type="email" value={form.email} onChange={e => set('email', e.target.value)} style={inputStyle} placeholder="email@contoh.com" disabled={!!editItem} />
+                    <input required={!editItem} type="email" value={form.email} onChange={e => set('email', e.target.value)} style={inputStyle} placeholder="email@contoh.com" />
+                    {editItem && <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>Email ini dipakai mitra untuk login ke apps. Kalau diubah, mitra login dengan email baru (password tetap).</p>}
                   </div>
                   {!editItem && (
                     <div>
