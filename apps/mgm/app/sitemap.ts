@@ -15,6 +15,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/artikel`, lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
     { url: `${BASE}/galeri`,  lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/kontak`,  lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.7 },
+    { url: `${BASE}/kebijakan-privasi`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${BASE}/syarat-ketentuan`,  lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${BASE}/hapus-akun`,        lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
   ];
 
   // Dynamic artikel pages

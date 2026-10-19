@@ -138,6 +138,11 @@ export default async function Footer() {
         </div>
         <div style={{ borderTop:'1px solid rgba(26,46,37,0.15)', paddingTop:'20px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
           <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'13px', margin:0 }}>Copyright © 2026 mikalaglobalmedika.com. All Rights Reserved</p>
+          <div style={{ display:'flex', gap:'16px', flexWrap:'wrap' }}>
+            <Link href="/kebijakan-privasi" style={{ color:'rgba(26,46,37,0.7)', fontSize:'13px', textDecoration:'none' }}>Kebijakan Privasi</Link>
+            <Link href="/syarat-ketentuan" style={{ color:'rgba(26,46,37,0.7)', fontSize:'13px', textDecoration:'none' }}>Syarat &amp; Ketentuan</Link>
+            <Link href="/hapus-akun" style={{ color:'rgba(26,46,37,0.7)', fontSize:'13px', textDecoration:'none' }}>Hapus Akun</Link>
+          </div>
           <p style={{ color:'rgba(26,46,37,0.55)', fontSize:'13px', margin:0, fontStyle:'italic' }}>With Love We Serve ❤️</p>
         </div>
       </div>
