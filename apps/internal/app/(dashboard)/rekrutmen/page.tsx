@@ -3,8 +3,9 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText, Download, Upload, KeyRound } from 'lucide-react';
+import { Users, Plus, Search, X, Eye, CheckCircle, XCircle, Clock, Pencil, Trash2, FileText, Download, Upload, KeyRound, Contact } from 'lucide-react';
 import ResetPasswordAkunModal from '@/components/ResetPasswordAkunModal';
+import IdCardMitraModal from '@/components/IdCardMitraModal';
 import * as XLSX from 'xlsx';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','MA, MAN, atau Sekolah Keagamaan Lainnya','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
@@ -392,6 +393,8 @@ export default function RekrutmenPage() {
   }, [showDetail?.id]);
   // Reset password mitra (tindak lanjut 'Lupa Password' via WA): null = tutup, {} = cari akun, {target} = akun tertentu
   const [resetPw, setResetPw] = useState<{ target?: any } | null>(null);
+  // ID card mitra (template sistem lama): null = tutup, isi = mitra yg dicetak
+  const [idCard, setIdCard] = useState<any>(null);
   const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
@@ -825,6 +828,10 @@ export default function RekrutmenPage() {
                             style={{ padding:'5px 8px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
                             <FileText size={13} />CV
                           </button>
+                          <button onClick={() => setIdCard(item)} title="ID Card"
+                            style={{ padding:'5px 8px', background:'rgba(156,72,139,0.1)', border:'1px solid rgba(156,72,139,0.25)', borderRadius:'8px', color:'#9c488b', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'3px' }}>
+                            <Contact size={13} />ID
+                          </button>
                           <button onClick={() => setShowDeleteConfirm(item)} title="Hapus"
                             style={{ padding:'5px 8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', fontSize:'12px', cursor:'pointer', display:'flex', alignItems:'center' }}>
                             <Trash2 size={13} />
@@ -873,6 +880,10 @@ export default function RekrutmenPage() {
                 <button onClick={() => { setShowDetail(null); router.push(`/rekrutmen/cv/${showDetail.id}`); }}
                   style={{ display:'flex', alignItems:'center', gap:'4px', padding:'7px 12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'10px', color:'#10b981', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
                   <FileText size={14} />CV
+                </button>
+                <button onClick={() => setIdCard(showDetail)} title="ID Card"
+                  style={{ display:'flex', alignItems:'center', gap:'4px', padding:'7px 12px', background:'rgba(156,72,139,0.1)', border:'1px solid rgba(156,72,139,0.25)', borderRadius:'10px', color:'#9c488b', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                  <Contact size={14} />ID Card
                 </button>
                 <button onClick={() => setShowDetail(null)}
                   style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}>
@@ -1129,6 +1140,8 @@ export default function RekrutmenPage() {
           </div>
         </div>
       )}
+
+      {idCard && <IdCardMitraModal mitra={idCard} onClose={() => setIdCard(null)} />}
 
       {resetPw && (
         <ResetPasswordAkunModal role="mitra" target={resetPw.target} onClose={() => setResetPw(null)} />
