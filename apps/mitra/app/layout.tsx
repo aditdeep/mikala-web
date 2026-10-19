@@ -1,5 +1,6 @@
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import { ThemeProvider } from '../components/ThemeProvider';
+import KeyboardFix from '../components/KeyboardFix';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
@@ -8,6 +9,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  // Android Chrome: layar ikut mengecil saat keyboard muncul -> field & popup tidak tertutup
+  interactiveWidget: 'resizes-content',
 };
 
 export const metadata: Metadata = {
@@ -39,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider>
+          <KeyboardFix />
           {children}
           <PWAInstallPrompt appName="Mikala Mitra" color="#7c3aed" icon="https://res.cloudinary.com/djgtchmsx/image/upload/v1779036177/icon_mitra_shjtze.png" />
         </ThemeProvider>

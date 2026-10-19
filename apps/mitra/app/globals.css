@@ -45,3 +45,7 @@ select, select option {
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
+
+/* Keyboard HP terbuka (lihat components/KeyboardFix): sembunyikan menu bawah supaya tidak
+   menutupi field yg sedang diketik */
+html.kb-open [data-bottom-nav] { display: none; }
