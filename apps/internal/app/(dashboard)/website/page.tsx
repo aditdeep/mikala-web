@@ -42,6 +42,8 @@ export default function WebsitePage() {
   const [formPenunjang, setFormPenunjang] = useState({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' });
   const [penunjangManfaat, setPenunjangManfaat] = useState<string[]>([]);
   const [formGaleri, setFormGaleri] = useState({ judul:'', url:'', kategori:'', deskripsi:'' });
+  const TESTI_KOSONG = { nama:'', layanan:'', rating:5, komentar:'', foto:'', status:'approved' };
+  const [formTesti, setFormTesti] = useState<any>(TESTI_KOSONG);
   const [formSettings, setFormSettings] = useState<any>({});
   const [heroSlides, setHeroSlides] = useState<{ image:string; title:string; subtitle:string }[]>([]);
   const [profileImages, setProfileImages] = useState<string[]>([]);
@@ -80,8 +82,9 @@ export default function WebsitePage() {
         const r: any = await apiClient.get('/internal/cms/galeri');
         setGaleri(Array.isArray(r.data?.data) ? r.data.data : []);
       } else if (activeTab === 'testimoni') {
-        const r: any = await apiClient.get('/internal/cms/testimoni');
+        const [r, rl]: any = await Promise.all([apiClient.get('/internal/cms/testimoni'), apiClient.get('/internal/cms/layanan').catch(() => null)]);
         setTestimoni(Array.isArray(r.data?.data) ? r.data.data : []);
+        if (Array.isArray(rl?.data?.data)) setLayanan(rl.data.data); // saran isian kolom Layanan
       } else if (activeTab === 'settings' || activeTab === 'perusahaan') {
         const r: any = await apiClient.get('/internal/cms/settings');
         const s = r.data?.data || {};
@@ -288,6 +291,20 @@ export default function WebsitePage() {
     } catch {}
   };
 
+  const handleSaveTestimoni = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = { ...formTesti, rating: Number(formTesti.rating) || 5 };
+      if (editItem) await apiClient.patch('/internal/cms/testimoni/' + editItem.id, payload);
+      else await apiClient.post('/internal/cms/testimoni', payload);
+      setShowForm(false); setEditItem(null); setFormTesti(TESTI_KOSONG);
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal menyimpan testimoni');
+    } finally { setSaving(false); }
+  };
+
   const handleApproveTestimoni = async (id: number, status: string) => {
     try {
       await apiClient.patch('/internal/cms/testimoni/'+id, { status });
@@ -309,10 +326,10 @@ export default function WebsitePage() {
             style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontSize:'13px', textDecoration:'none' }}>
             <Eye size={14}/>Preview Website
           </a>
-          {['artikel','layanan','penunjang','galeri'].includes(activeTab) && (
-            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'layanan') { setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); setLayananTiers([]); } if (activeTab === 'penunjang') { setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setPenunjangManfaat([]); } }}
+          {['artikel','layanan','penunjang','galeri','testimoni'].includes(activeTab) && (
+            <button onClick={() => { setShowForm(true); setEditItem(null); if (activeTab === 'testimoni') setFormTesti(TESTI_KOSONG); if (activeTab === 'layanan') { setFormLayanan({ nama:'', subjudul:'', deskripsi:'', deskripsi_panjang:'', gambar:'', icon:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setLayananManfaat([]); setLayananTiers([]); } if (activeTab === 'penunjang') { setFormPenunjang({ nama:'', tipe:'', deskripsi:'', deskripsi_panjang:'', icon:'', gambar:'', wa_link:'http://wa.me/6282114488878', urutan:'1', is_active:true, meta_title:'', meta_description:'' }); setPenunjangManfaat([]); } }}
               style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-              <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : activeTab === 'penunjang' ? 'Penunjang' : 'Foto'}
+              <Plus size={15}/>Tambah {activeTab === 'artikel' ? 'Artikel' : activeTab === 'layanan' ? 'Layanan' : activeTab === 'penunjang' ? 'Penunjang' : activeTab === 'testimoni' ? 'Testimoni' : 'Foto'}
             </button>
           )}
         </div>
@@ -545,23 +562,38 @@ export default function WebsitePage() {
                 testimoni.length === 0 ? <tr><td colSpan={6} style={{ padding:'40px', textAlign:'center', color:'var(--text3)' }}>Belum ada testimoni</td></tr> :
                 testimoni.map((t: any) => (
                   <tr key={t.id} style={{ borderBottom:'1px solid var(--border)' }}>
-                    <td style={{ padding:'10px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{t.nama}</td>
+                    <td style={{ padding:'10px 16px', fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                        {t.foto ? <img src={t.foto} alt="" style={{ width:'28px', height:'28px', borderRadius:'50%', objectFit:'cover' }} />
+                          : <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'linear-gradient(135deg,#0e92b3,#9c488b)', color:'white', fontSize:'12px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center' }}>{t.nama?.[0]?.toUpperCase()}</div>}
+                        {t.nama}
+                      </div>
+                    </td>
                     <td style={{ padding:'10px 16px', fontSize:'12px', color:'var(--text2)' }}>{t.layanan||'-'}</td>
                     <td style={{ padding:'10px 16px', fontSize:'12px', color:'#f59e0b' }}>{'★'.repeat(t.rating||5)}</td>
                     <td style={{ padding:'10px 16px', fontSize:'12px', color:'var(--text2)', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.komentar}</td>
                     <td style={{ padding:'10px 16px' }}>
                       <span style={{ background: t.status==='approved'?'rgba(16,185,129,0.15)':'rgba(245,158,11,0.15)', color: t.status==='approved'?'#10b981':'#f59e0b', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>
-                        {t.status==='approved'?'Approved':'Pending'}
+                        {t.status==='approved'?'Tampil di website':'Pending (belum tampil)'}
                       </span>
                     </td>
                     <td style={{ padding:'10px 16px' }}>
                       <div style={{ display:'flex', gap:'6px' }}>
-                        {t.status !== 'approved' && (
-                          <button onClick={() => handleApproveTestimoni(t.id, 'approved')}
+                        {t.status !== 'approved' ? (
+                          <button onClick={() => handleApproveTestimoni(t.id, 'approved')} title="Tampilkan di website"
                             style={{ padding:'5px 10px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'8px', color:'#10b981', fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
                             Approve
                           </button>
+                        ) : (
+                          <button onClick={() => handleApproveTestimoni(t.id, 'pending')} title="Sembunyikan dari website tanpa menghapus"
+                            style={{ padding:'5px 10px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.25)', borderRadius:'8px', color:'#d97706', fontSize:'11px', fontWeight:600, cursor:'pointer' }}>
+                            Sembunyikan
+                          </button>
                         )}
+                        <button onClick={() => { setEditItem(t); setFormTesti({ nama:t.nama||'', layanan:t.layanan||'', rating:t.rating||5, komentar:t.komentar||'', foto:t.foto||'', status:t.status||'approved' }); setShowForm(true); }} title="Edit"
+                          style={{ padding:'5px 8px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', cursor:'pointer', display:'flex', alignItems:'center' }}>
+                          <Edit2 size={12}/>
+                        </button>
                         <button onClick={() => handleDelete('testimoni', t.id)}
                           style={{ padding:'5px 8px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', cursor:'pointer', display:'flex', alignItems:'center' }}>
                           <Trash2 size={12}/>
@@ -1209,6 +1241,59 @@ export default function WebsitePage() {
                 <button type="submit" disabled={saving} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {saving ? 'Menyimpan...' : 'Simpan'}
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Form Testimoni (tambah / edit) */}
+      {showForm && activeTab === 'testimoni' && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', overflowY:'auto' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'460px', padding:'24px', maxHeight:'92vh', overflowY:'auto' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
+              <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>{editItem ? 'Edit Testimoni' : 'Tambah Testimoni'}</h2>
+              <button onClick={() => { setShowForm(false); setEditItem(null); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+            </div>
+            <form onSubmit={handleSaveTestimoni} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Nama *</label><input required maxLength={100} value={formTesti.nama} onChange={e => setFormTesti((p: any) => ({...p, nama:e.target.value}))} style={inp} placeholder="Contoh: Ibu Kartika" /></div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Layanan</label>
+                <input list="testi-layanan" maxLength={100} value={formTesti.layanan} onChange={e => setFormTesti((p: any) => ({...p, layanan:e.target.value}))} style={inp} placeholder="Contoh: Caregiver" />
+                <datalist id="testi-layanan">{layanan.map((l: any) => <option key={l.id} value={l.nama} />)}</datalist>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Rating</label>
+                <div style={{ display:'flex', gap:'6px' }}>
+                  {[1,2,3,4,5].map(n => (
+                    <button type="button" key={n} onClick={() => setFormTesti((p: any) => ({...p, rating:n}))}
+                      style={{ width:'36px', height:'36px', borderRadius:'10px', border:'1px solid var(--border)', background: n <= formTesti.rating ? 'rgba(245,158,11,0.18)' : 'var(--glass)', color: n <= formTesti.rating ? '#f59e0b' : 'var(--text3)', fontSize:'18px', cursor:'pointer' }}>★</button>
+                  ))}
+                </div>
+              </div>
+              <div><label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Komentar *</label><textarea required maxLength={1000} value={formTesti.komentar} onChange={e => setFormTesti((p: any) => ({...p, komentar:e.target.value}))} style={{...inp, minHeight:'90px', resize:'vertical'}} /></div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Foto (opsional)</label>
+                <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                  {formTesti.foto && <img src={formTesti.foto} alt="" style={{ width:'44px', height:'44px', borderRadius:'50%', objectFit:'cover' }} />}
+                  <label style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 12px', background:'var(--glass)', border:'1px dashed var(--border)', borderRadius:'10px', color:'var(--text2)', fontSize:'12px', cursor:'pointer' }}>
+                    <Upload size={14}/>{formTesti.foto ? 'Ganti foto' : 'Upload foto'}
+                    <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], (url) => setFormTesti((p: any) => ({...p, foto:url}))); }} />
+                  </label>
+                  {formTesti.foto && <button type="button" onClick={() => setFormTesti((p: any) => ({...p, foto:''}))} style={{ background:'none', border:'none', color:'#ef4444', fontSize:'12px', cursor:'pointer' }}>Hapus foto</button>}
+                </div>
+                <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>Tanpa foto, kartu menampilkan huruf awal nama.</p>
+              </div>
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Status</label>
+                <select value={formTesti.status} onChange={e => setFormTesti((p: any) => ({...p, status:e.target.value}))} style={inp}>
+                  <option value="approved">Tampil di website</option>
+                  <option value="pending">Pending (belum tampil)</option>
+                </select>
+              </div>
+              <div style={{ display:'flex', gap:'10px', marginTop:'4px' }}>
+                <button type="button" onClick={() => { setShowForm(false); setEditItem(null); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="submit" disabled={saving} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #2d7a5e, #d63a7a)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer', opacity: saving ? 0.6 : 1 }}>{saving ? 'Menyimpan...' : 'Simpan'}</button>
               </div>
             </form>
           </div>

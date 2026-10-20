@@ -85,12 +85,6 @@ export default async function HomePage() {
     { nama:'Medikal Evakuasi', deskripsi:'Ambulan dengan peralatan lengkap', gambar:'https://res.cloudinary.com/djgtchmsx/image/upload/mikala/galeri/medikal-evakuasi.jpg', icon:'🚑' },
   ];
 
-  const defaultTestimoni = [
-    { nama:'Anna', komentar:'Layanan ramah dan bermanfaat bagi masyarakat luas. Semoga terus berkembang!', rating:5, layanan:'Pelayanan Penunjang' },
-    { nama:'Kartika', komentar:'Sangat puas, sesuai harapan. Pertahankan pelayanan yang sudah sangat baik!', rating:5, layanan:'Perawat Medis' },
-    { nama:'Andi', komentar:'Sangat bagus, bisa update kondisi kesehatan saya. Mudah-mudahan berkah ya!', rating:5, layanan:'Caregiver' },
-    { nama:'John', komentar:'Program berjalan baik dan timeline sesuai yang direncanakan. Recommended!', rating:5, layanan:'Perawat Jiwa' },
-  ];
 
   const layananData = layanan.length > 0 ? layanan : defaultLayanan;
   const layananHighlight = (() => {
@@ -100,7 +94,9 @@ export default async function HomePage() {
       .filter(Boolean);
     return picked.length === 3 ? picked : layananData.slice(0, 3);
   })();
-  const testimoniData = testimoni.length > 0 ? testimoni : defaultTestimoni;
+  // testimoni sepenuhnya dari CMS (dulu ada 4 contoh tertulis di kode yg tidak bisa dihapus admin);
+  // kosong -> bagian Testimoni disembunyikan
+  const testimoniData = testimoni;
   const penunjangData = (penunjang || []).filter((p: any) => p.is_active !== false).sort((a: any, b: any) => (a.urutan||0)-(b.urutan||0));
   const penunjangHighlight = (() => {
     const targets = ['terapi', 'alat kesehatan', 'alat medis'];
@@ -318,6 +314,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══ TESTIMONI ═══ */}
+      {testimoniData.length > 0 && (
       <section style={{ padding:'80px 0', background:'transparent', overflow:'hidden' }} className="section-pad">
         <div style={{ textAlign:'center', marginBottom:'48px', padding:'0 20px' }}>
           <span style={{ display:'inline-block', background:`linear-gradient(135deg, ${GREEN}20, ${PINK}20)`, color:GREEN, borderRadius:'30px', padding:'6px 18px', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'12px' }}>Testimoni</span>
@@ -349,6 +346,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ═══ VIDEO ═══ */}
       {videoId && <VideoSection videoId={videoId} title={videoTitle} />}
