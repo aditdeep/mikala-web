@@ -12,6 +12,11 @@ const statusMap: any = {
   failed:      { label:'Gagal',    color:'#ef4444', bg:'rgba(239,68,68,0.15)',   border:'rgba(239,68,68,0.3)',   icon: XCircle },
 };
 
+// Kategori materi checklist: CG -> Dasar | BS -> Dasar + BS | PHC -> Dasar + PHC
+// (aturan per tipe pekerjaan ada di backend: Mitra::kategoriTraining)
+const KAT_WARNA: Record<string, string> = { Dasar: '#7c3aed', BS: '#ec4899', PHC: '#0ea5e9' };
+const KAT_LABEL: Record<string, string> = { Dasar: 'Dasar (CG)', BS: 'Baby Sitter (BS)', PHC: 'Perawat Homecare (PHC)' };
+
 export default function TrainingPage() {
   const [activeTab, setActiveTab] = useState('training');
 
@@ -51,7 +56,7 @@ const [tempRating, setTempRating] = useState(5);
   const [savingBulk, setSavingBulk] = useState(false);
   const [defaultTgl, setDefaultTgl] = useState(new Date().toISOString().split('T')[0]);
   const [defaultPengajar, setDefaultPengajar] = useState('');
-  const [openKat, setOpenKat] = useState<string[]>(['Dasar','PHC']);
+  const [openKat, setOpenKat] = useState<string[]>(['Dasar','BS','PHC']);
   const [checkInputs, setCheckInputs] = useState<Record<number,{tanggal:string,pengajar:string}>>({});
 
   useEffect(() => { fetchData(); }, []);
@@ -394,11 +399,11 @@ const [tempRating, setTempRating] = useState(5);
                   {checklistMitra.by_kategori?.map((k: any) => (
                     <div key={k.kategori} style={{ background:'rgba(255,255,255,0.04)', borderRadius:'10px', padding:'10px' }}>
                       <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'4px' }}>
-                        <span style={{ fontSize:'12px', fontWeight:600, color: k.kategori==='PHC'?'#0ea5e9':'#7c3aed' }}>{k.kategori}</span>
+                        <span style={{ fontSize:'12px', fontWeight:600, color: KAT_WARNA[k.kategori] || '#7c3aed' }}>{KAT_LABEL[k.kategori] || k.kategori}</span>
                         <span style={{ fontSize:'11px', color:'var(--text3)' }}>{k.selesai}/{k.total}</span>
                       </div>
                       <div style={{ height:'4px', background:'rgba(255,255,255,0.08)', borderRadius:'99px' }}>
-                        <div style={{ height:'100%', borderRadius:'99px', width:`${k.persen}%`, background: k.kategori==='PHC'?'#0ea5e9':'#7c3aed' }}/>
+                        <div style={{ height:'100%', borderRadius:'99px', width:`${k.persen}%`, background: KAT_WARNA[k.kategori] || '#7c3aed' }}/>
                       </div>
                     </div>
                   ))}
@@ -425,14 +430,14 @@ const [tempRating, setTempRating] = useState(5);
                 const items = katData?.materi || [];
                 const isOpen = openKat.includes(kat);
                 const selesai = items.filter((m: any) => m.checked).length;
-                const katColor = kat==='PHC'?'#0ea5e9':'#7c3aed';
+                const katColor = KAT_WARNA[kat] || '#7c3aed';
                 return (
                   <div key={kat} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', overflow:'hidden' }}>
                     <div style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 16px' }}>
                       <button onClick={() => setOpenKat(prev => prev.includes(kat)?prev.filter(k=>k!==kat):[...prev,kat])}
                         style={{ flex:1, display:'flex', justifyContent:'space-between', alignItems:'center', background:'transparent', border:'none', cursor:'pointer', padding:0, textAlign:'left' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                          <span style={{ fontSize:'13px', fontWeight:700, color:katColor }}>Materi {kat}</span>
+                          <span style={{ fontSize:'13px', fontWeight:700, color:katColor }}>Materi {KAT_LABEL[kat] || kat}</span>
                           <span style={{ fontSize:'11px', color:'var(--text3)', background:'var(--bg)', padding:'2px 8px', borderRadius:'99px' }}>{selesai}/{items.length}</span>
                         </div>
                         {isOpen ? <ChevronDown size={16} style={{ color:'var(--text3)' }}/> : <ChevronRight size={16} style={{ color:'var(--text3)' }}/>}

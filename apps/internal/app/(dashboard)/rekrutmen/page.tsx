@@ -28,6 +28,7 @@ const EXPORT_FIELDS: { header: string; key: string }[] = [
   { header: 'Kota', key: 'kota' },
   { header: 'Provinsi', key: 'provinsi' },
   { header: 'Pendidikan Terakhir', key: 'pendidikan_terakhir' },
+  { header: 'Tahun Lulus', key: 'tahun_lulus' },
   { header: 'Suku', key: 'suku' },
   { header: 'Tinggi Badan (cm)', key: 'tinggi_badan' },
   { header: 'Berat Badan (kg)', key: 'berat_badan' },
@@ -63,6 +64,7 @@ const emptyForm = {
   agama:'Islam', takut_hewan:'Tidak takut semua hewan',
   bisa_memasak:'Bisa', tipe_pekerjaan:'Perawat Homecare',
   pengalaman_pelatihan:'', pengalaman:'',
+  tahun_lulus:'', tahun_pelatihan:'',
   // Kemampuan (list bebas, diisi mitra sendiri saat daftar) -- ditampilkan di CV mitra
   kemampuan: [] as string[],
   payment_type: 'cash' as 'cash' | 'kredit',
@@ -142,7 +144,9 @@ function parseAlamatBlob(rawAlamat: string, kota: string, provinsi: string) {
 }
 
 // ── Kemampuan Khusus -- input list bebas (tag), ditampilkan di CV mitra ──────
-function KemampuanTagInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+// Input daftar (tambah per item, Enter/+). Mode "baris" (Pengalaman) tampil sbg daftar bernomor
+// satu item per baris; default tampil sbg pill (Kemampuan Khusus).
+function KemampuanTagInput({ value, onChange, placeholder, baris = false }: { value: string[]; onChange: (v: string[]) => void; placeholder?: string; baris?: boolean }) {
   const [draft, setDraft] = React.useState('');
   const add = () => {
     const v = draft.trim();
@@ -157,12 +161,24 @@ function KemampuanTagInput({ value, onChange }: { value: string[]; onChange: (v:
           value={draft}
           onChange={e => setDraft(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+          onBlur={add} // isian yg belum di-Enter tetap masuk (tidak hilang saat langsung Simpan)
           style={{ ...inputStyle, flex:1 }}
-          placeholder="mis. Merawat luka, Injeksi -- Enter utk tambah"
+          placeholder={placeholder || "mis. Merawat luka, Injeksi -- Enter utk tambah"}
         />
         <button type="button" onClick={add} style={{ padding:'0 16px', borderRadius:'10px', border:'1px solid var(--border)', background:'rgba(124,58,237,0.15)', color:'var(--purple-light)', fontWeight:700, cursor:'pointer' }}>+</button>
       </div>
-      {value.length > 0 && (
+      {value.length > 0 && baris && (
+        <div style={{ display:'flex', flexDirection:'column', gap:'6px', marginTop:'10px' }}>
+          {value.map((k, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px', borderRadius:'10px', background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.25)' }}>
+              <span style={{ fontSize:'12px', color:'var(--text3)', minWidth:'18px' }}>{i + 1}.</span>
+              <span style={{ flex:1, fontSize:'13px', color:'var(--text)' }}>{k}</span>
+              <button type="button" title="Hapus" onClick={() => onChange(value.filter((_, idx) => idx !== i))} style={{ background:'none', border:'none', color:'var(--text3)', cursor:'pointer', fontSize:'16px', lineHeight:1, padding:0 }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {value.length > 0 && !baris && (
         <div style={{ display:'flex', flexWrap:'wrap', gap:'6px', marginTop:'10px' }}>
           {value.map((k, i) => (
             <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'5px 10px', borderRadius:'20px', background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', color:'var(--purple-light)', fontSize:'12px' }}>
@@ -454,6 +470,11 @@ export default function RekrutmenPage() {
     e.preventDefault();
     setSaving(true);
     setErrorMsg('');
+    if (!(form.pengalaman || '').trim()) {
+      setErrorMsg("Pengalaman Kerja / Magang wajib diisi (tambahkan minimal 1 baris, atau tulis 'Tidak ada').");
+      setSaving(false);
+      return;
+    }
     try {
       const payload = {
         foto_url: fotoUrl || undefined,
@@ -475,6 +496,7 @@ export default function RekrutmenPage() {
         // balik pakai regex saat Edit dibuka -- rapuh & gampang gagal. Sekarang dikirim sbg field
         // terpisah, masing2 punya kolom asli sendiri di backend (lihat RekrutmenController).
         pengalaman_pelatihan: form.pengalaman_pelatihan,
+        tahun_lulus: form.tahun_lulus, tahun_pelatihan: form.tahun_pelatihan,
         pengalaman: form.pengalaman,
         kemampuan: form.kemampuan,
         tempat_lahir: form.tempat_lahir,
@@ -522,6 +544,8 @@ export default function RekrutmenPage() {
       nik: item.nik || '',
       nomor_induk: item.nomor_induk || '',
       pendidikan: item.pendidikan_terakhir || '',
+      tahun_lulus: item.tahun_lulus || '',
+      tahun_pelatihan: item.tahun_pelatihan || '',
       kota: item.kota || '',
       provinsi: item.provinsi || '',
       alamat: parsedAlamat.alamat,
@@ -921,7 +945,7 @@ export default function RekrutmenPage() {
               { label:'Usia',       val: calcUsia(showDetail.tanggal_lahir) != null ? `${calcUsia(showDetail.tanggal_lahir)} tahun` : '-' },
               { label:'Kelamin',    val: showDetail.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
               { label:'Kota',       val: showDetail.kota },
-              { label:'Pendidikan', val: showDetail.pendidikan_terakhir },
+              { label:'Pendidikan', val: [showDetail.pendidikan_terakhir, showDetail.tahun_lulus && `lulus ${showDetail.tahun_lulus}`].filter(Boolean).join(', ') },
               { label:'Tipe Pekerjaan', val: showDetail.tipe_pekerjaan },
               { label:'Status',     val: showDetail.status },
               { label:'Pengalaman', val: showDetail.pengalaman },
@@ -1316,16 +1340,28 @@ export default function RekrutmenPage() {
               <div style={sectionStyle}>
                 <p style={{ fontWeight:700, color:'var(--purple-light)', fontSize:'13px', marginBottom:'14px' }}>🎓 Pendidikan & Pekerjaan</p>
                 <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-                  <div>
-                    <label style={labelStyle}>Pendidikan Terakhir *</label>
-                    <select required value={form.pendidikan} onChange={e => set('pendidikan', e.target.value)} style={inputStyle}>
-                      <option value="">-- Pilih --</option>
-                      {PENDIDIKAN.map(p => <option key={p}>{p}</option>)}
-                    </select>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 120px', gap:'10px' }}>
+                    <div>
+                      <label style={labelStyle}>Pendidikan Terakhir *</label>
+                      <select required value={form.pendidikan} onChange={e => set('pendidikan', e.target.value)} style={inputStyle}>
+                        <option value="">-- Pilih --</option>
+                        {PENDIDIKAN.map(p => <option key={p}>{p}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Tahun Lulus</label>
+                      <input inputMode="numeric" maxLength={4} value={form.tahun_lulus} onChange={e => set('tahun_lulus', e.target.value.replace(/\D/g, ''))} style={inputStyle} placeholder="2015" />
+                    </div>
                   </div>
-                  <div>
-                    <label style={labelStyle}>Pelatihan / Pendidikan non-formal *</label>
-                    <textarea required value={form.pengalaman_pelatihan} onChange={e => set('pengalaman_pelatihan', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pelatihan, atau 'Tidak ada'" />
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 120px', gap:'10px' }}>
+                    <div>
+                      <label style={labelStyle}>Pelatihan / Pendidikan non-formal *</label>
+                      <textarea required value={form.pengalaman_pelatihan} onChange={e => set('pengalaman_pelatihan', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pelatihan, atau 'Tidak ada'" />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Tahun</label>
+                      <input maxLength={30} value={form.tahun_pelatihan} onChange={e => set('tahun_pelatihan', e.target.value)} style={inputStyle} placeholder="2023" />
+                    </div>
                   </div>
                   <div>
                     <label style={labelStyle}>Tipe Pekerjaan *</label>
@@ -1377,7 +1413,11 @@ export default function RekrutmenPage() {
                 <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                   <div>
                     <label style={labelStyle}>Pengalaman Kerja / Magang *</label>
-                    <textarea required value={form.pengalaman} onChange={e => set('pengalaman', e.target.value)} style={{ ...inputStyle, minHeight:'70px', resize:'vertical' }} placeholder="Tulis pengalaman, atau 'Tidak ada'" />
+                    {/* disimpan sbg teks per baris (1 baris = 1 pengalaman), sama spt data lama */}
+                    <KemampuanTagInput baris
+                      value={(form.pengalaman || '').split('\n').map((x: string) => x.trim()).filter(Boolean)}
+                      onChange={(v: string[]) => set('pengalaman', v.join('\n'))}
+                      placeholder="mis. ART di Kupang 3 thn -- Enter utk tambah (atau tulis 'Tidak ada')" />
                   </div>
                   <div>
                     <label style={labelStyle}>Kemampuan Khusus (opsional)</label>

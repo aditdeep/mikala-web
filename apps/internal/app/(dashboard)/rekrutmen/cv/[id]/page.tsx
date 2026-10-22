@@ -340,7 +340,7 @@ export default function CVPage() {
                   </div>
                   <div>
                     <p style={{ fontWeight:700, fontSize:'12px', color:DARK, margin:0 }}>{mitra?.pendidikan_terakhir || '-'}</p>
-                    <p style={{ fontSize:'10px', color:GRAY, margin:'2px 0 0' }}>Pendidikan Terakhir</p>
+                    <p style={{ fontSize:'10px', color:GRAY, margin:'2px 0 0' }}>Pendidikan Terakhir{mitra?.tahun_lulus ? ` · Lulus ${mitra.tahun_lulus}` : ''}</p>
                   </div>
                 </div>
               </div>
@@ -355,6 +355,7 @@ export default function CVPage() {
                     <ListItem key={i} text={line} color={GREEN} />
                   ))}
                 </div>
+                {mitra?.tahun_pelatihan && <p style={{ fontSize:'10px', color:GRAY, margin:'4px 0 0' }}>Tahun: {mitra.tahun_pelatihan}</p>}
               </div>
             )}
 
@@ -385,6 +386,7 @@ export default function CVPage() {
               {(() => {
                 const KATEGORI_LABEL: Record<string, string> = {
                   'Dasar': 'Materi Dasar',
+                  'BS': 'Baby Sitter (BS)',
                   'PHC': 'Perawat Homecare (PHC)',
                 };
                 const grup = cvMateri.reduce((acc: Record<string, string[]>, m: any) => {

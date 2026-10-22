@@ -54,7 +54,8 @@ const lbl: React.CSSProperties = {
 const STEPS = ['Akun','Data Diri','Keahlian','Sumber','Pembayaran','Kontrak'];
 
 // ── Kemampuan Khusus -- input list bebas (tag), ditampilkan di CV mitra ──────
-function KemampuanTagInput({ value, onChange, inputStyle }: { value: string[]; onChange: (v: string[]) => void; inputStyle: React.CSSProperties }) {
+// baris = true -> tampil sbg daftar bernomor 1 item per baris (Pengalaman Kerja)
+function KemampuanTagInput({ value, onChange, inputStyle, placeholder, baris = false }: { value: string[]; onChange: (v: string[]) => void; inputStyle: React.CSSProperties; placeholder?: string; baris?: boolean }) {
   const [draft, setDraft] = useState('');
   const add = () => {
     const v = draft.trim();
@@ -69,12 +70,24 @@ function KemampuanTagInput({ value, onChange, inputStyle }: { value: string[]; o
           value={draft}
           onChange={e => setDraft(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+          onBlur={add} // isian yg belum di-Enter tetap masuk
           style={{ ...inputStyle, flex:1 }}
-          placeholder="mis. Merawat luka, Injeksi -- Enter utk tambah"
+          placeholder={placeholder || "mis. Merawat luka, Injeksi -- Enter utk tambah"}
         />
         <button type="button" onClick={add} style={{ padding:'0 16px', borderRadius:'12px', border:'none', background:'rgba(124,58,237,0.8)', color:'white', fontWeight:700, cursor:'pointer' }}>+</button>
       </div>
-      {value.length > 0 && (
+      {value.length > 0 && baris && (
+        <div style={{ display:'flex', flexDirection:'column', gap:'6px', marginTop:'10px' }}>
+          {value.map((k, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px', borderRadius:'12px', background:'rgba(124,58,237,0.15)', border:'1px solid rgba(124,58,237,0.4)', color:'white', fontSize:'13px' }}>
+              <span style={{ opacity:0.6, minWidth:'18px' }}>{i + 1}.</span>
+              <span style={{ flex:1 }}>{k}</span>
+              <button type="button" onClick={() => onChange(value.filter((_, idx) => idx !== i))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.6)', cursor:'pointer', fontSize:'16px', lineHeight:1, padding:0 }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {value.length > 0 && !baris && (
         <div style={{ display:'flex', flexWrap:'wrap', gap:'6px', marginTop:'10px' }}>
           {value.map((k, i) => (
             <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'5px 10px', borderRadius:'20px', background:'rgba(124,58,237,0.15)', border:'1px solid rgba(124,58,237,0.4)', color:'white', fontSize:'12px' }}>
@@ -232,6 +245,7 @@ export default function RegisterPage() {
     // Step 2
     pendidikan:'', tipe_pekerjaan:'Perawat Homecare',
     pengalaman_pelatihan:'', pengalaman:'', vaksin:'',
+    tahun_lulus:'', tahun_pelatihan:'',
     // Kemampuan (list bebas, mis. "Merawat luka", "Injeksi") -- ditampilkan di CV bagian
     // "Kemampuan Khusus". Disimpan sbg array of string.
     kemampuan: [] as string[],
@@ -282,6 +296,7 @@ export default function RegisterPage() {
         // vaksin/tinggi/berat/tipe_pekerjaan sama sekali) -- sekarang dikirim sbg field terpisah,
         // masing2 punya kolom sendiri di backend.
         pengalaman_pelatihan: form.pengalaman_pelatihan,
+        tahun_lulus: form.tahun_lulus, tahun_pelatihan: form.tahun_pelatihan,
         pengalaman: form.pengalaman,
         kemampuan: form.kemampuan,
         agama: form.agama, status_nikah: form.status_nikah,
@@ -387,18 +402,28 @@ export default function RegisterPage() {
         {/* ── STEP 2: Keahlian ── */}
         {step === 2 && (
           <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-            <div><label style={lbl}>Pendidikan *</label>
-              <select value={form.pendidikan} onChange={e=>s('pendidikan',e.target.value)} style={inp}>
-                <option value="">-- Pilih --</option>
-                {PENDIDIKAN.map(p=><option key={p}>{p}</option>)}
-              </select>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 100px', gap:'10px' }}>
+              <div><label style={lbl}>Pendidikan *</label>
+                <select value={form.pendidikan} onChange={e=>s('pendidikan',e.target.value)} style={inp}>
+                  <option value="">-- Pilih --</option>
+                  {PENDIDIKAN.map(p=><option key={p}>{p}</option>)}
+                </select>
+              </div>
+              <div><label style={lbl}>Tahun Lulus</label>
+                <input inputMode="numeric" maxLength={4} value={form.tahun_lulus} onChange={e=>s('tahun_lulus',e.target.value.replace(/\D/g,''))} style={inp} placeholder="2015"/>
+              </div>
             </div>
             {/* FIX: Pelatihan/Pendidikan non-formal digeser ke sini (persis di bawah Pendidikan),
                 sebelumnya nyempil di antara Vaksin & Pengalaman Kerja -- disamakan sama urutan
                 di form Edit Mitra internal (apps/internal rekrutmen/page.tsx). */}
-            <div><label style={lbl}>Pelatihan / Pendidikan Non-Formal *</label>
-              <textarea value={form.pengalaman_pelatihan} onChange={e=>s('pengalaman_pelatihan',e.target.value)}
-                style={{...inp,minHeight:'70px',resize:'vertical' as const}} placeholder="Pelatihan diikuti, atau 'Tidak ada'"/>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 100px', gap:'10px' }}>
+              <div><label style={lbl}>Pelatihan / Pendidikan Non-Formal *</label>
+                <textarea value={form.pengalaman_pelatihan} onChange={e=>s('pengalaman_pelatihan',e.target.value)}
+                  style={{...inp,minHeight:'70px',resize:'vertical' as const}} placeholder="Pelatihan diikuti, atau 'Tidak ada'"/>
+              </div>
+              <div><label style={lbl}>Tahun</label>
+                <input maxLength={30} value={form.tahun_pelatihan} onChange={e=>s('tahun_pelatihan',e.target.value)} style={inp} placeholder="2023"/>
+              </div>
             </div>
             <div><label style={lbl}>Tipe Pekerjaan *</label>
               <select value={form.tipe_pekerjaan} onChange={e=>s('tipe_pekerjaan',e.target.value)} style={inp}>
@@ -407,8 +432,11 @@ export default function RegisterPage() {
             </div>
             <div><label style={lbl}>Vaksin *</label><input value={form.vaksin} onChange={e=>s('vaksin',e.target.value)} style={inp} placeholder="Covid, Hepatitis B"/></div>
             <div><label style={lbl}>Pengalaman Kerja *</label>
-              <textarea value={form.pengalaman} onChange={e=>s('pengalaman',e.target.value)}
-                style={{...inp,minHeight:'70px',resize:'vertical' as const}} placeholder="Pengalaman kerja, atau 'Belum ada'"/>
+              {/* disimpan sbg teks per baris (1 baris = 1 pengalaman), sama dgn form admin */}
+              <KemampuanTagInput baris inputStyle={inp}
+                value={(form.pengalaman || '').split('\n').map((x:string)=>x.trim()).filter(Boolean)}
+                onChange={(v:string[])=>s('pengalaman', v.join('\n'))}
+                placeholder="mis. ART di Kupang 3 thn -- Enter utk tambah (atau 'Belum ada')"/>
             </div>
             {/* Kemampuan (opsional) -- list bebas, ditampilkan di kartu CV sbg "Kemampuan Khusus" */}
             <div>
