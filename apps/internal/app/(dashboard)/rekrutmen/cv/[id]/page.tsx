@@ -2,20 +2,17 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { ArrowLeft, Download, AlertCircle, Phone, Mail, MapPin, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Download, AlertCircle } from 'lucide-react';
 
 const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
-const FAVICON = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779020551/Favicon_MGM_nmpyxc.png";
 
-// Colors
-const GREEN = '#2d7a5e';
-const GREEN2 = '#3a9e78';
-const PINK = '#d63a7a';
-const PINK2 = '#e8699a';
-const DARK = '#1a2e25';
-const GRAY = '#4a5568';
-const LIGHT_GREEN = '#e8f5f0';
-const LIGHT_PINK = '#fce8f0';
+// Warna template CV
+const UNGU = '#a35597';
+const TEAL = '#3f88a2';
+const TEKS = '#1c1c1c';
+const HAL = 1122.5; // tinggi 1 halaman A4 dlm px (794px lebar)
+// tekstur bintik (noise) di atas gradasi, spt template desain
+const NOISE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>";
 
 export default function CVPage() {
   const params = useParams();
@@ -54,6 +51,31 @@ export default function CVPage() {
       .catch(() => setCvMateri([]));
   }, [params.id]);
 
+  // Atur halaman cetak (A4 = 1122.5px): baris yg jatuh di batas halaman didorong ke halaman
+  // berikutnya + jarak atas, lalu tinggi kartu dibulatkan ke kelipatan 1 halaman spy latar
+  // gradasi & kolom ungu penuh sampai bawah kertas terakhir.
+  useEffect(() => {
+    const atur = () => {
+      const kartu = document.getElementById('cv-content');
+      if (!kartu) return;
+      const blok = Array.from(kartu.querySelectorAll<HTMLElement>('[data-blok]'));
+      kartu.style.minHeight = '';
+      blok.forEach(b => { b.style.paddingTop = ''; });
+      const atas = kartu.getBoundingClientRect().top;
+      for (const b of blok) {
+        const r = b.getBoundingClientRect();
+        const y0 = r.top - atas, y1 = r.bottom - atas;
+        const batas = Math.floor(y1 / HAL) * HAL; // batas halaman tepat di atas bawah blok
+        if (batas > 0 && y0 < batas + 40) b.style.paddingTop = `${batas + 40 - y0}px`; // padding, bukan margin: margin di batas halaman dibuang browser saat cetak
+      }
+      kartu.style.minHeight = `${Math.max(1, Math.ceil((kartu.scrollHeight - 2) / HAL)) * HAL - 1}px`;
+    };
+    const t = setTimeout(atur, 300);
+    document.fonts?.ready.then(atur); // font Hind mengubah tinggi baris -> hitung ulang
+    window.addEventListener('beforeprint', atur);
+    return () => { clearTimeout(t); window.removeEventListener('beforeprint', atur); };
+  }, [mitra, cvMateri]);
+
   const getExtra = (p: string, field: string) => {
     const m = p?.match(new RegExp(`${field}:\\s*([^,\\n]+)`, 'i'));
     return m ? m[1].trim() : '';
@@ -91,7 +113,7 @@ export default function CVPage() {
   if (loading) return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'400px' }}>
       <div style={{ textAlign:'center' }}>
-        <div style={{ width:'40px', height:'40px', borderRadius:'50%', border:`3px solid ${GREEN}`, borderTopColor:'transparent', animation:'spin 1s linear infinite', margin:'0 auto 12px' }} />
+        <div style={{ width:'40px', height:'40px', borderRadius:'50%', border:`3px solid ${UNGU}`, borderTopColor:'transparent', animation:'spin 1s linear infinite', margin:'0 auto 12px' }} />
         <p style={{ color:'#666' }}>Memuat CV...</p>
       </div>
     </div>
@@ -168,30 +190,34 @@ export default function CVPage() {
   const foto = mitra?.foto_url || mitra?.ktp_file || null;
   const nik = mitra?.nik || '-';
 
-  const SectionTitle = ({ title, color = GREEN }: { title: string; color?: string }) => (
-    <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'10px' }}>
-      <div style={{ width:'4px', height:'20px', borderRadius:'2px', background:`linear-gradient(to bottom, ${color}, ${color === GREEN ? PINK : GREEN})` }} />
-      <h2 style={{ fontSize:'13px', fontWeight:800, color, margin:0, letterSpacing:'0.5px', textTransform:'uppercase' }}>{title}</h2>
-      <div style={{ flex:1, height:'1px', background:`linear-gradient(to right, ${color}44, transparent)` }} />
-    </div>
-  );
 
-  const BioRow = ({ label, value }: { label: string; value: string }) => (
-    <div style={{ display:'flex', gap:'8px', padding:'3px 0', borderBottom:'1px solid rgba(45,122,94,0.08)', fontSize:'11px', color:DARK }}>
-      <span style={{ minWidth:'110px', color:GRAY, fontWeight:500 }}>{label}</span>
-      <span style={{ fontWeight:600, color:DARK }}>{value}</span>
-    </div>
-  );
+  // Layout mengikuti template CV desain (contoh: "CV Nita Agnes R.pdf"): latar gradasi pink ->
+  // krem -> cyan bertekstur, blok teal + foto bulat di kanan atas, kolom ungu di kiri (Profil &
+  // materi training) dan kolom kanan di atas gradasi (pendidikan, kemampuan, pengalaman).
+  // Ukuran = template asli (A4 1131px) x 0.702 -> lebar 794px.
+  const namaFs = Math.max(30, Math.min(48, Math.floor(400 / (nama.length * 0.6))));
+  const tglLahirTeks = [mitra?.tempat_lahir || getExtra(p, 'Tempat Lahir'), tglLahir !== '-' ? tglLahir : ''].filter(Boolean).join(', ') || '-';
+  const asal = mitra?.kota || '';
+  const linesPelatihan = pelatihan && pelatihan !== 'Tidak ada' ? pelatihan.split('\n').map((l: string) => l.replace(/^[-•◆]\s*/, '').trim()).filter(Boolean) : [];
+  const linesPengalaman = pengalamanKerja && pengalamanKerja !== 'Tidak ada' ? pengalamanKerja.split('\n').map((l: string) => l.replace(/^[-•◆]\s*/, '').trim()).filter(Boolean) : [];
+  const materiDidapat: string[] = cvMateri.map((m: any) => m.nama).filter(Boolean);
 
-  const ListItem = ({ text, color = GREEN }: { text: string; color?: string }) => (
-    <div style={{ display:'flex', gap:'8px', marginBottom:'4px', fontSize:'11px', color:DARK, lineHeight:'1.6' }}>
-      <span style={{ color, fontWeight:700, flexShrink:0, marginTop:'1px' }}>◆</span>
-      <span>{text.replace(/^[-•◆]\s*/, '')}</span>
-    </div>
+  const Judul = ({ teks, warna }: { teks: string; warna: string }) => (
+    <h2 data-blok style={{ display:'flex', alignItems:'baseline', gap:'12px', fontSize:'21px', fontWeight:700, color:warna, margin:'0 0 8px', lineHeight:1.2, breakAfter:'avoid' as const }}>
+      <span style={{ fontSize:'20px' }}>+</span>{teks}
+    </h2>
+  );
+  const Baris = ({ label, value }: { label: string; value: string }) => (
+    <div data-blok style={{ fontSize:'13px', lineHeight:'18px' }}><b style={{ fontWeight:600 }}>{label} :</b> {value}</div>
+  );
+  const Poin = ({ teks, warna }: { teks: string; warna: string }) => (
+    <li data-blok style={{ display:'flex', gap:'12px', fontSize:'13px', lineHeight:'18.5px', marginBottom:'1px', color:warna, breakInside:'avoid' as const }}>
+      <span style={{ flexShrink:0 }}>•</span><span>{teks}</span>
+    </li>
   );
 
   return (
-    <div className="cv-page-wrapper" style={{ background:'#f0f4f0', minHeight:'100vh', padding:'20px' }}>
+    <div className="cv-page-wrapper" style={{ background:'#eef0f3', minHeight:'100vh', padding:'20px' }}>
       {/* Control Bar */}
       <div className="no-print" style={{ maxWidth:'794px', margin:'0 auto 20px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'10px' }}>
         <button onClick={() => router.back()} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 16px', background:'white', border:'1px solid #ddd', borderRadius:'12px', color:'#555', cursor:'pointer', fontSize:'13px', fontWeight:600 }}>
@@ -203,271 +229,128 @@ export default function CVPage() {
               <AlertCircle size={14} />Data kurang: {missing.join(', ')}
             </div>
           )}
-          <button onClick={() => window.print()} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 18px', background:`linear-gradient(135deg, ${GREEN}, ${GREEN2})`, border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer', boxShadow:`0 4px 12px ${GREEN}44` }}>
+          <button onClick={() => window.print()} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 18px', background:`linear-gradient(135deg, ${UNGU}, ${TEAL})`, border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
             <Download size={15} />Download PDF
           </button>
         </div>
       </div>
 
-      {/* CV A4 -- tinggi TIDAK dipatok (biar bisa lebih dari 1 halaman kalau kontennya panjang,
-          browser print yg atur pemotongan halaman). overflow TIDAK hidden di level ini (supaya
-          konten yg lebih panjang dari 1123px gak ke-crop -- dekorasi lingkaran di header sudah
-          di-clip di level headernya sendiri, lihat di bawah). */}
+      {/* CV A4 -- tinggi minimal 1 halaman (1123px), boleh memanjang ke halaman 2 kalau materi
+          training banyak. Kolom ungu digambar sbg lapisan absolut setinggi kartu, jadi selalu
+          sampai bawah berapa pun panjang isinya. */}
       <div id="cv-content" style={{
-        width:'794px', margin:'0 auto',
-        background:'white', fontFamily:'"Segoe UI", Arial, sans-serif',
-        position:'relative', boxShadow:'0 8px 40px rgba(0,0,0,0.18)',
-        borderRadius:'4px',
+        width:'794px', minHeight:'1123px', margin:'0 auto', position:'relative', overflow:'hidden',
+        backgroundImage:`radial-gradient(ellipse 60% 40% at 0% 0%, #e27cb8 0%, rgba(226,124,184,0) 100%), linear-gradient(155deg, #dc8fc0 0%, #e9c3c2 22%, #f0e6b2 38%, #c8edd2 58%, #92e4ea 80%, #7fe0f3 100%)`,
+        backgroundSize:`100% ${HAL}px`, backgroundRepeat:'repeat-y', backgroundColor:'#7fe0f3',
+        fontFamily:'"Hind", "Segoe UI", Arial, sans-serif', boxShadow:'0 8px 40px rgba(0,0,0,0.18)',
       }}>
-
-        {/* Background subtle pattern */}
-        <div style={{ position:'absolute', inset:0, backgroundImage:`radial-gradient(circle at 20% 20%, ${LIGHT_GREEN} 0%, transparent 50%), radial-gradient(circle at 80% 80%, ${LIGHT_PINK} 0%, transparent 50%)`, opacity:0.5, zIndex:0, pointerEvents:'none' }} />
-
-        {/* ═══ HEADER ═══ */}
-        <div style={{ position:'relative', zIndex:1, background:`linear-gradient(135deg, ${GREEN} 0%, ${GREEN2} 40%, ${PINK} 100%)`, padding:'0', overflow:'hidden' }}>
-          {/* Header bg pattern */}
-          <div style={{ position:'absolute', top:'-40px', right:'-40px', width:'200px', height:'200px', borderRadius:'50%', background:'rgba(255,255,255,0.08)' }} />
-          <div style={{ position:'absolute', bottom:'-30px', left:'30%', width:'150px', height:'150px', borderRadius:'50%', background:'rgba(255,255,255,0.05)' }} />
-
-          <div style={{ padding:'24px 30px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'relative', zIndex:2 }}>
-            {/* Left: Logo + Name */}
-            <div style={{ flex:1 }}>
-              {/* Logo */}
-              <div style={{ marginBottom:'14px' }}>
-                <img src={LOGO} alt="Mikala Global Medika" style={{ height:'36px', objectFit:'contain', filter:'brightness(0) invert(1)' }} />
-              </div>
-              {/* Name */}
-              <div style={{ marginBottom:'6px' }}>
-                <span style={{ fontSize:'38px', fontWeight:900, color:'white', lineHeight:1, textShadow:'0 2px 8px rgba(0,0,0,0.2)' }}>{namaDepan} </span>
-                {namaBelakang && <span style={{ fontSize:'38px', fontWeight:300, color:'rgba(255,255,255,0.9)', lineHeight:1 }}>{namaBelakang}</span>}
-              </div>
-              {/* Job Title */}
-              <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'rgba(255,255,255,0.2)', backdropFilter:'blur(10px)', borderRadius:'20px', padding:'5px 14px', border:'1px solid rgba(255,255,255,0.3)' }}>
-                <span style={{ color:'white', fontSize:'12px', fontWeight:600, letterSpacing:'0.5px' }}>{tipeJob}</span>
-              </div>
-            </div>
-
-            {/* Right: Photo -- FIX: box-shadow blur+spread (dulu dipakai buat efek "ring" transparan
-                di belakang foto) dirender Chrome sbg kotak hitam solid pas print/save-as-PDF (bug
-                lawas box-shadow+overflow:hidden+border-radius di print engine). Ring transparan
-                sekarang dibikin pakai div bulat solid (bukan shadow) di belakangnya, jadi hasil
-                print-nya konsisten sama tampilan di layar. */}
-            <div className="cv-avatar-wrap" style={{ flexShrink:0, marginLeft:'20px', position:'relative', width:'146px', height:'146px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <div className="cv-avatar-ring" style={{ position:'absolute', inset:0, borderRadius:'50%', background:'rgba(255,255,255,0.15)' }} />
-              <div style={{ position:'relative', width:'130px', height:'130px', borderRadius:'50%', border:'4px solid rgba(255,255,255,0.6)', background:`linear-gradient(135deg, ${LIGHT_GREEN}, ${LIGHT_PINK})`, display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
-                {foto ? (
-                  <img src={foto} alt={nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                ) : (
-                  <span style={{ fontSize:'48px', fontWeight:700, color:GREEN }}>{nama[0]?.toUpperCase()}</span>
-                )}
-              </div>
-            </div>
+        {/* tekstur bintik halus spt template */}
+        <div style={{ position:'absolute', inset:0, backgroundImage:`url("${NOISE}")`, opacity:0.1, pointerEvents:'none' }} />
+        {/* kolom ungu kiri (sudut kanan atas membulat) */}
+        <div style={{ position:'absolute', left:0, top:'291px', bottom:0, width:'409px', background:UNGU, borderTopRightRadius:'62px' }} />
+        {/* blok teal kanan atas + foto bulat */}
+        <div style={{ position:'absolute', right:0, top:0, width:'298px', height:'312px', background:TEAL, borderBottomLeftRadius:'150px' }} />
+        <div className="cv-foto" style={{ position:'absolute', left:'518px', top:'53px', width:'253px', height:'253px', borderRadius:'50%', background:'white', padding:'6px', boxSizing:'border-box' }}>
+          <div style={{ width:'100%', height:'100%', borderRadius:'50%', overflow:'hidden', background:'#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            {foto ? <img src={foto} alt={nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              : <span style={{ fontSize:'80px', fontWeight:700, color:UNGU }}>{nama[0]?.toUpperCase()}</span>}
           </div>
-
-          {/* Header bottom wave */}
-          <svg viewBox="0 0 794 30" style={{ display:'block', width:'100%', height:'30px' }} preserveAspectRatio="none">
-            <path d="M0,0 Q200,30 400,15 Q600,0 794,20 L794,30 L0,30 Z" fill="white" />
-          </svg>
         </div>
 
-        {/* ═══ BODY - 2 COLUMNS ═══ -- pakai display:table/table-cell (bukan CSS grid) karena
-            grid sering gak kepotong dgn bener kalau kontennya lebih panjang dari 1 halaman A4
-            pas di-print/export PDF (kolom kanan yg panjang jadi ke-crop). table-cell alami
-            mendukung tinggi kolom yg fleksibel & page-break yg lebih predictable di Chrome. */}
-        <div style={{ position:'relative', zIndex:1, display:'table', width:'100%', tableLayout:'fixed' }}>
+        {/* HEADER: logo, nama, jabatan */}
+        <div style={{ position:'relative', height:'291px', padding:'38px 0 0 74px', boxSizing:'border-box', width:'480px' }}>
+          <img src={LOGO} alt="Mikala Global Medika" style={{ height:'40px', objectFit:'contain', display:'block' }} />
+          <h1 style={{ margin:'62px 0 0', fontSize:`${namaFs}px`, fontWeight:700, color:'white', lineHeight:1.1, letterSpacing:'0.5px', fontFamily:'Arial, Helvetica, sans-serif', wordSpacing:'6px' }}>{nama}</h1>
+          <p style={{ margin:'12px 0 0', fontSize:'26px', fontWeight:700, fontStyle:'italic', color:'white', lineHeight:1.1 }}>{tipeJob}</p>
+        </div>
 
-          {/* ═══ LEFT SIDEBAR ═══ */}
-          <div style={{ display:'table-cell', width:'240px', verticalAlign:'top', background:`linear-gradient(180deg, ${LIGHT_GREEN} 0%, rgba(232,245,240,0.3) 100%)`, borderRight:'2px solid rgba(45,122,94,0.12)', padding:'24px 18px' }}>
-
-            {/* Foto besar (opsional duplicate untuk print) */}
-
-            {/* BIODATA */}
-            <div style={{ marginBottom:'20px' }}>
-              <SectionTitle title="Data Diri" color={GREEN} />
-              <BioRow label="NIK" value={nik} />
-              <BioRow label="Tempat Lahir" value={tempatLahir} />
-              <BioRow label="Tgl Lahir" value={tglLahir} />
-              <BioRow label="Usia" value={usia + ' tahun'} />
-              <BioRow label="Jenis Kelamin" value={mitra?.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} />
-              <BioRow label="Agama" value={agama} />
-              <BioRow label="Status" value={statusNikah} />
-              {mitra?.hijab && <BioRow label="Hijab" value={mitra.hijab} />}
-              <BioRow label="Suku" value={suku} />
+        {/* BODY 2 kolom */}
+        <div style={{ position:'relative', display:'table', width:'100%', tableLayout:'fixed' }}>
+          {/* KIRI (ungu): Profil + materi training */}
+          <div style={{ display:'table-cell', width:'409px', verticalAlign:'top', padding:'40px 20px 30px 79px', color:'white' }}>
+            <Judul teks="Profil" warna="white" />
+            <div style={{ paddingLeft:'30px', marginBottom:'34px' }}>
+              <Baris label="Usia" value={usia !== '-' ? `${usia} tahun` : '-'} />
+              <Baris label="Tempat, Tgl Lahir" value={tglLahirTeks} />
+              {asal && <Baris label="Asal" value={asal} />}
+              <Baris label="Suku" value={suku} />
+              <Baris label="Tinggi Badan" value={tinggi !== '-' ? `${tinggi} Cm` : '-'} />
+              <Baris label="Berat Badan" value={berat !== '-' ? `${berat} Kg` : '-'} />
+              <Baris label="Agama" value={agama} />
+              <Baris label="Status" value={statusNikah} />
+              {mitra?.hijab && <Baris label="Hijab" value={mitra.hijab} />}
+              <Baris label="Vaksin" value={vaksin} />
+              {takutHewan !== '-' && <div style={{ fontSize:'13px', lineHeight:'18px', fontWeight:600 }}>{takutHewan}</div>}
+              {memasak !== '-' && <div style={{ fontSize:'13px', lineHeight:'18px', fontWeight:600 }}>{memasak === 'Bisa' ? 'Bisa Memasak' : 'Tidak Bisa Memasak'}</div>}
             </div>
 
-            {/* FISIK */}
-            <div style={{ marginBottom:'20px' }}>
-              <SectionTitle title="Data Fisik" color={GREEN} />
-              <BioRow label="Tinggi Badan" value={tinggi + ' cm'} />
-              <BioRow label="Berat Badan" value={berat + ' kg'} />
-              <BioRow label="Vaksin" value={vaksin} />
-            </div>
-
-            {/* KEMAMPUAN KHUSUS */}
-            <div style={{ marginBottom:'20px' }}>
-              <SectionTitle title="Kemampuan Khusus" color={PINK} />
-              <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
-                {takutHewan !== '-' && (
-                  <div style={{ background:`linear-gradient(135deg, ${LIGHT_GREEN}, white)`, borderRadius:'8px', padding:'6px 10px', fontSize:'10px', color:GREEN, fontWeight:600, border:`1px solid ${GREEN}22` }}>
-                    🐾 {takutHewan}
-                  </div>
-                )}
-                {memasak !== '-' && (
-                  <div style={{ background:`linear-gradient(135deg, ${LIGHT_PINK}, white)`, borderRadius:'8px', padding:'6px 10px', fontSize:'10px', color:PINK, fontWeight:600, border:`1px solid ${PINK}22` }}>
-                    🍳 Memasak: {memasak}
-                  </div>
-                )}
-                {/* Kemampuan bebas -- diisi mitra sendiri saat daftar (field baru "kemampuan") */}
-                {kemampuanList.map((k, i) => (
-                  <div key={i} style={{ background:`linear-gradient(135deg, ${LIGHT_GREEN}, white)`, borderRadius:'8px', padding:'6px 10px', fontSize:'10px', color:GREEN, fontWeight:600, border:`1px solid ${GREEN}22` }}>
-                    ✦ {k}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* ═══ RIGHT CONTENT ═══ */}
-          <div style={{ display:'table-cell', verticalAlign:'top', padding:'24px 24px 24px 20px' }}>
-
-            {/* PENDIDIKAN FORMAL */}
-            <div style={{ marginBottom:'22px' }}>
-              <SectionTitle title="Pendidikan Formal" color={GREEN} />
-              <div style={{ background:`linear-gradient(135deg, ${LIGHT_GREEN}, white)`, borderRadius:'12px', padding:'12px 16px', border:`1px solid ${GREEN}22` }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                  <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`linear-gradient(135deg, ${GREEN}, ${GREEN2})`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <span style={{ color:'white', fontSize:'18px' }}>🎓</span>
-                  </div>
-                  <div>
-                    <p style={{ fontWeight:700, fontSize:'12px', color:DARK, margin:0 }}>{mitra?.pendidikan_terakhir || '-'}</p>
-                    <p style={{ fontSize:'10px', color:GRAY, margin:'2px 0 0' }}>Pendidikan Terakhir{mitra?.tahun_lulus ? ` · Lulus ${mitra.tahun_lulus}` : ''}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* PENDIDIKAN NON FORMAL / PELATIHAN */}
-            {pelatihan && pelatihan !== 'Tidak ada' && (
-              <div style={{ marginBottom:'22px' }}>
-                <SectionTitle title="Pelatihan & Sertifikasi" color={GREEN} />
-                <div style={{ display:'flex', flexDirection:'column', gap:'2px' }}>
-                  {pelatihan.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
-                    <ListItem key={i} text={line} color={GREEN} />
-                  ))}
-                </div>
-                {mitra?.tahun_pelatihan && <p style={{ fontSize:'10px', color:GRAY, margin:'4px 0 0' }}>Tahun: {mitra.tahun_pelatihan}</p>}
-              </div>
+            {/* materi training yg SUDAH DICEKLIS Training Center (cv_materi) */}
+            <Judul teks="Pengalaman yang didapat" warna="white" />
+            {materiDidapat.length > 0 ? (
+              <ul style={{ listStyle:'none', margin:0, padding:'0 0 0 30px' }}>
+                {materiDidapat.map((t, i) => <Poin key={i} teks={t} warna="white" />)}
+              </ul>
+            ) : (
+              <p style={{ fontSize:'12px', fontStyle:'italic', margin:'0 0 0 30px', opacity:0.85 }}>Belum ada materi training yang diceklis.</p>
             )}
+          </div>
 
-            {/* PENGALAMAN KERJA */}
-            <div style={{ marginBottom:'22px' }}>
-              <SectionTitle title="Pengalaman Kerja" color={PINK} />
-              {pengalamanKerja && pengalamanKerja !== 'Tidak ada' ? (
-                <div style={{ display:'flex', flexDirection:'column', gap:'2px' }}>
-                  {pengalamanKerja.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
-                    <ListItem key={i} text={line} color={PINK} />
-                  ))}
-                </div>
-              ) : (
-                <div style={{ background:`linear-gradient(135deg, ${LIGHT_PINK}, white)`, borderRadius:'10px', padding:'12px 16px', border:`1px solid ${PINK}22` }}>
-                  <p style={{ fontSize:'11px', color:GRAY, margin:0, fontStyle:'italic' }}>Fresh Graduate / Belum ada pengalaman kerja</p>
-                </div>
-              )}
-            </div>
+          {/* KANAN: pendidikan, kemampuan, pengalaman */}
+          <div style={{ display:'table-cell', verticalAlign:'top', padding:'40px 40px 30px 54px', color:TEKS }}>
+            <Judul teks="Pendidikan Formal" warna={TEKS} />
+            <p style={{ fontSize:'13px', fontWeight:600, margin:'0 0 16px 30px' }}>
+              {mitra?.pendidikan_terakhir || '-'}{mitra?.tahun_lulus ? ` (Lulus ${mitra.tahun_lulus})` : ''}
+            </p>
 
-            {/* BIDANG KEAHLIAN -- diisi dari materi training yg sudah DICEKLIS oleh Training
-                Center (cv_materi), bukan tag statis lagi. Dikelompokkan per kategori (mis.
-                "Dasar" & "PHC") kalau ceklisnya kebetulan kena 2 kategori sekaligus, masing2
-                ditampilkan sebagai list rapi 2 kolom (bukan pill/badge lagi biar muat banyak
-                item tanpa berantakan). break-inside:avoid di tiap baris biar gak kepotong di
-                tengah kalau pas jatuh di batas halaman. */}
-            <div style={{ marginBottom:'22px' }}>
-              <SectionTitle title="Bidang Keahlian" color={PINK} />
-              {(() => {
-                const KATEGORI_LABEL: Record<string, string> = {
-                  'Dasar': 'Materi Dasar',
-                  'BS': 'Baby Sitter (BS)',
-                  'PHC': 'Perawat Homecare (PHC)',
-                };
-                const grup = cvMateri.reduce((acc: Record<string, string[]>, m: any) => {
-                  const kat = m.kategori || 'Lainnya';
-                  if (!acc[kat]) acc[kat] = [];
-                  if (m.nama) acc[kat].push(m.nama);
-                  return acc;
-                }, {} as Record<string, string[]>);
-                const kategoriKeys = Object.keys(grup);
-                return (
-                  <div style={{ background:`linear-gradient(135deg, rgba(214,58,122,0.06), white)`, borderRadius:'12px', padding:'14px 16px', border:`1px solid ${PINK}22` }}>
-                    <div style={{ marginBottom: kategoriKeys.length ? '10px' : 0 }}>
-                      <span style={{ background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, color:'white', borderRadius:'20px', padding:'4px 12px', fontSize:'10px', fontWeight:600 }}>{tipeJob}</span>
-                    </div>
-                    {kategoriKeys.length > 0 ? (
-                      kategoriKeys.map(kat => (
-                        <div key={kat} style={{ marginBottom:'12px', breakInside:'avoid-column' as const }}>
-                          {kategoriKeys.length > 1 && (
-                            <p style={{ fontSize:'10.5px', fontWeight:700, color:PINK, textTransform:'uppercase', letterSpacing:'0.3px', margin:'0 0 6px' }}>{KATEGORI_LABEL[kat] || kat}</p>
-                          )}
-                          <div style={{ columnCount:2, columnGap:'18px' }}>
-                            {grup[kat].map((nm: string, i: number) => (
-                              <div key={i} style={{ display:'flex', gap:'6px', fontSize:'10.5px', color:DARK, lineHeight:'1.5', marginBottom:'3px', breakInside:'avoid-column' as const }}>
-                                <span style={{ color:GREEN, flexShrink:0 }}>✓</span>
-                                <span>{nm}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p style={{ fontSize:'11px', color:GRAY, margin:0, fontStyle:'italic' }}>Belum ada materi training yang diceklis oleh Training Center.</p>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
+            {linesPelatihan.length > 0 && (<>
+              <Judul teks="Pendidikan Non Formal" warna={TEKS} />
+              <div style={{ margin:'0 0 16px 30px', fontSize:'13px', lineHeight:'18.5px' }}>
+                {linesPelatihan.map((l: string, i: number) => <div key={i}>{i === 0 && mitra?.tahun_pelatihan ? `${mitra.tahun_pelatihan} : ${l}` : l}</div>)}
+              </div>
+            </>)}
 
+            {kemampuanList.length > 0 && (<>
+              <Judul teks="Kemampuan" warna={TEKS} />
+              <ul style={{ listStyle:'none', margin:'0 0 16px', padding:'0 0 0 30px' }}>
+                {kemampuanList.map((k, i) => <Poin key={i} teks={k} warna={TEKS} />)}
+              </ul>
+            </>)}
+
+            <Judul teks="Pengalaman" warna={TEKS} />
+            {linesPengalaman.length > 0 ? (
+              <ul style={{ listStyle:'none', margin:0, padding:'0 0 0 30px' }}>
+                {linesPengalaman.map((l: string, i: number) => <Poin key={i} teks={l} warna={TEKS} />)}
+              </ul>
+            ) : (
+              <p style={{ fontSize:'13px', fontStyle:'italic', margin:'0 0 0 30px' }}>Fresh Graduate / Belum ada pengalaman kerja</p>
+            )}
           </div>
         </div>
 
-        {/* ═══ FOOTER ═══ */}
-        <div style={{ position:'relative', zIndex:1, background:`linear-gradient(135deg, ${GREEN}, ${PINK})`, padding:'12px 30px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <img src={FAVICON} alt="MGM" style={{ height:'28px', objectFit:'contain', filter:'brightness(0) invert(1)' }} />
-          <span style={{ color:'rgba(255,255,255,0.9)', fontStyle:'italic', fontWeight:700, fontSize:'14px', letterSpacing:'1px' }}>With Love We Serve</span>
-          <span style={{ color:'rgba(255,255,255,0.7)', fontSize:'10px' }}>Mikala Global Medika © 2026</span>
+        {/* badge "With Love We Serve" -- melintang di batas 2 kolom, di bawah isi */}
+        <div style={{ height:'110px' }} />
+        <div style={{ position:'absolute', left:'286px', bottom:'42px', zIndex:1, width:'240px', height:'42px', backgroundImage:'linear-gradient(90deg, #a3d4ef 0%, #b07ccb 55%, #c3449c 100%)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <span style={{ fontFamily:'"Kaushan Script", cursive', fontSize:'22px', color:'white', letterSpacing:'0.5px' }}>With Love We Serve</span>
         </div>
-
       </div>
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Kaushan+Script&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }
         @media print {
-          /* .no-print (Control Bar di sini + Sidebar/Header dashboard, lihat globals.css)
-             disembunyikan total via display:none (bukan cuma visibility:hidden) supaya beneran
-             gak makan tempat/nambah margin kosong di atas hasil print. Shell dashboard yg
-             dipatok height:100vh+overflow:hidden juga di-reset ke height:auto/overflow:visible
-             di globals.css -- itu akar masalah kenapa CV yg lebih panjang dari 1 halaman dulu
-             ke-crop, gak pernah lanjut ke halaman 2. Kartu #cv-content sekarang tinggal ngikut
-             flow dokumen biasa & center via margin:auto, gak perlu position:absolute lagi. */
+          /* .no-print (Control Bar + Sidebar/Header dashboard, lihat globals.css) disembunyikan
+             total; shell dashboard di-reset ke height:auto di globals.css spy CV panjang bisa
+             lanjut ke halaman 2. */
+          html, body { background: white !important; }
           .cv-page-wrapper { padding: 0 !important; min-height: 0 !important; background: white !important; }
-          #cv-content {
-            box-shadow: none !important;
-            margin: 0 auto !important; border-radius: 0 !important;
-          }
-          /* FIX: dulu box-shadow blur di lingkaran foto (efek "ring" transparan) kerender jadi
-             kotak hitam solid pas print -- diganti div bulat solid biasa (.cv-avatar-ring), jadi
-             gak perlu shadow lagi di sini. print-color-adjust:exact dipasang di seluruh kartu
-             biar semua warna/gradient background ikut ke-print persis kayak di layar (browser
-             default suka nge-skip background color/gradient pas print kalau opsi ini gak diset). */
+          #cv-content { box-shadow: none !important; margin: 0 auto !important; }
+          /* semua warna/gradasi latar ikut tercetak persis spt di layar */
           #cv-content, #cv-content * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          /* FIX: "margin bottom dan margin top halaman kedua dikasih spasi ya bro, biar gak
-             kepotong gantung" -- halaman pertama tetap margin:0 (biar header gradient full-bleed
-             sampai tepi kertas kayak desain aslinya), tapi halaman ke-2 dst dikasih margin
-             atas+bawah supaya konten yg lanjut ke halaman baru gak nempel/ke-crop mepet di tepi. */
-          @page { size: A4; margin: 14mm 0; }
-          @page :first { margin: 0; }
+          /* full-bleed (tanpa margin kertas) spy gradasi & kolom ungu sampai tepi */
+          @page { size: A4; margin: 0; }
         }
       `}</style>
     </div>
