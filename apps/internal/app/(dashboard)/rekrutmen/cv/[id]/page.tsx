@@ -188,7 +188,6 @@ export default function CVPage() {
     ? new Date(mitra.tanggal_lahir).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })
     : '-';
   const foto = mitra?.foto_url || mitra?.ktp_file || null;
-  const nik = mitra?.nik || '-';
 
 
   // Layout mengikuti template CV desain (contoh: "CV Nita Agnes R.pdf"): latar gradasi pink ->
@@ -262,6 +261,7 @@ export default function CVPage() {
           <img src={LOGO} alt="Mikala Global Medika" style={{ height:'40px', objectFit:'contain', display:'block' }} />
           <h1 style={{ margin:'62px 0 0', fontSize:`${namaFs}px`, fontWeight:700, color:'white', lineHeight:1.1, letterSpacing:'0.5px', fontFamily:'Arial, Helvetica, sans-serif', wordSpacing:'6px' }}>{nama}</h1>
           <p style={{ margin:'12px 0 0', fontSize:'26px', fontWeight:700, fontStyle:'italic', color:'white', lineHeight:1.1 }}>{tipeJob}</p>
+          {mitra?.nomor_induk && <p style={{ margin:'8px 0 0', fontSize:'15px', fontWeight:600, color:'white', letterSpacing:'0.5px' }}>NIM : {mitra.nomor_induk}</p>}
         </div>
 
         {/* BODY 2 kolom */}
@@ -285,7 +285,7 @@ export default function CVPage() {
             </div>
 
             {/* materi training yg SUDAH DICEKLIS Training Center (cv_materi) */}
-            <Judul teks="Pengalaman yang didapat" warna="white" />
+            <Judul teks="Pelatihan yang didapat" warna="white" />
             {materiDidapat.length > 0 ? (
               <ul style={{ listStyle:'none', margin:0, padding:'0 0 0 30px' }}>
                 {materiDidapat.map((t, i) => <Poin key={i} teks={t} warna="white" />)}
@@ -316,7 +316,7 @@ export default function CVPage() {
               </ul>
             </>)}
 
-            <Judul teks="Pengalaman" warna={TEKS} />
+            <Judul teks="Pengalaman Kerja" warna={TEKS} />
             {linesPengalaman.length > 0 ? (
               <ul style={{ listStyle:'none', margin:0, padding:'0 0 0 30px' }}>
                 {linesPengalaman.map((l: string, i: number) => <Poin key={i} teks={l} warna={TEKS} />)}
