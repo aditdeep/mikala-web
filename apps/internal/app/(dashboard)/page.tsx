@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import { StatsCard } from '@/components/StatsCard';
+import MitraPerTipeCards from '@/components/MitraPerTipeCards';
 import { Users, Briefcase, DollarSign, Clock, TrendingUp, ChevronRight } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -54,6 +55,9 @@ export default function DashboardPage() {
           </div>
         </>
       )}
+
+      {/* Jumlah mitra PHC / CG / BS, masing2 bisa difilter status */}
+      {!loading && <MitraPerTipeCards data={stats?.mitra_per_tipe} />}
 
       {/* Tables */}
       <div style={{ display:'flex', flexDirection:'column', gap:'16px' }} className="tables-wrapper">

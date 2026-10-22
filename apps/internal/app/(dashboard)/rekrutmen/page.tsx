@@ -34,6 +34,7 @@ const EXPORT_FIELDS: { header: string; key: string }[] = [
   { header: 'Berat Badan (kg)', key: 'berat_badan' },
   { header: 'Agama', key: 'agama' },
   { header: 'Status Pernikahan', key: 'status_nikah' },
+  { header: 'Hijab (Hijab/Tidak Hijab/Flexible)', key: 'hijab' },
   { header: 'Status (available/on_job/inactive)', key: 'status' },
   { header: 'Status Rekrutmen (pending/verified/rejected)', key: 'status_rekrutmen' },
 ];
@@ -64,7 +65,7 @@ const emptyForm = {
   agama:'Islam', takut_hewan:'Tidak takut semua hewan',
   bisa_memasak:'Bisa', tipe_pekerjaan:'Perawat Homecare',
   pengalaman_pelatihan:'', pengalaman:'',
-  tahun_lulus:'', tahun_pelatihan:'',
+  tahun_lulus:'', tahun_pelatihan:'', hijab:'',
   // Kemampuan (list bebas, diisi mitra sendiri saat daftar) -- ditampilkan di CV mitra
   kemampuan: [] as string[],
   payment_type: 'cash' as 'cash' | 'kredit',
@@ -505,6 +506,7 @@ export default function RekrutmenPage() {
         vaksin: form.vaksin,
         agama: form.agama,
         status_nikah: form.status_nikah,
+        hijab: form.hijab,
         takut_hewan: form.takut_hewan,
         bisa_memasak: form.bisa_memasak,
         tipe_pekerjaan: form.tipe_pekerjaan,
@@ -567,6 +569,7 @@ export default function RekrutmenPage() {
       vaksin: item.vaksin || parsedPengalaman.vaksin,
       agama: item.agama || parsedPengalaman.agama,
       status_nikah: item.status_nikah || parsedPengalaman.status_nikah,
+      hijab: item.hijab || '',
       takut_hewan: item.takut_hewan || parsedPengalaman.takut_hewan,
       bisa_memasak: normalizeMemasak(item.bisa_memasak || parsedPengalaman.bisa_memasak),
       tipe_pekerjaan: item.tipe_pekerjaan || parsedPengalaman.tipe_pekerjaan,
@@ -1289,7 +1292,14 @@ export default function RekrutmenPage() {
                   <div>
                     <label style={labelStyle}>Status Pernikahan</label>
                     <select value={form.status_nikah} onChange={e => set('status_nikah', e.target.value)} style={inputStyle}>
-                      <option>Menikah</option><option>Belum Menikah</option>
+                      <option>Menikah</option><option>Belum Menikah</option><option>Cerai</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Hijab</label>
+                    <select value={form.hijab} onChange={e => set('hijab', e.target.value)} style={inputStyle}>
+                      <option value="">-- Pilih --</option>
+                      <option>Hijab</option><option>Tidak Hijab</option><option>Flexible</option>
                     </select>
                   </div>
                   <div style={{ gridColumn:'1/-1' }}><label style={labelStyle}>Alamat *</label><input required value={form.alamat} onChange={e => set('alamat', e.target.value)} style={inputStyle} /></div>

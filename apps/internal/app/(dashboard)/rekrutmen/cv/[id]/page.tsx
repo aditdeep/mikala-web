@@ -291,6 +291,7 @@ export default function CVPage() {
               <BioRow label="Jenis Kelamin" value={mitra?.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} />
               <BioRow label="Agama" value={agama} />
               <BioRow label="Status" value={statusNikah} />
+              {mitra?.hijab && <BioRow label="Hijab" value={mitra.hijab} />}
               <BioRow label="Suku" value={suku} />
             </div>
 
