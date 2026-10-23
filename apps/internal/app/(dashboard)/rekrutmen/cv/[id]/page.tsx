@@ -56,6 +56,19 @@ export default function CVPage() {
     const atur = () => {
       const kartu = document.getElementById('cv-content');
       if (!kartu) return;
+      // Nama: ukuran standar 46px utk semua mitra (spy seragam); hanya diperkecil kalau ada kata
+      // yg terlalu panjang / tidak muat 2 baris di lebar 250px (diukur dari font asli, spy tidak
+      // menabrak pola & logo)
+      const h1 = document.getElementById('cv-nama');
+      if (h1) {
+        let fs = 46;
+        const span = h1.firstElementChild as HTMLElement;
+        // jumlah baris = jumlah kotak baris span (bukan dari tinggi: huruf Jost lebih tinggi dari line-height)
+        const pas = () => { h1.style.fontSize = `${fs}px`; return h1.scrollWidth <= h1.clientWidth + 1 && span.getClientRects().length <= 2; };
+        while (!pas() && fs > 24) fs -= 2;
+        const tinggi = span.getClientRects().length * fs * 0.95;
+        h1.style.top = `${Math.max(16, Math.round((134 - tinggi) / 2))}px`;
+      }
       const blok = Array.from(kartu.querySelectorAll<HTMLElement>('[data-blok]'));
       kartu.style.minHeight = '';
       blok.forEach(b => { b.style.paddingTop = ''; });
@@ -69,7 +82,7 @@ export default function CVPage() {
       kartu.style.minHeight = `${Math.max(1, Math.ceil((kartu.scrollHeight - 2) / HAL)) * HAL - 1}px`;
     };
     const t = setTimeout(atur, 300);
-    document.fonts?.ready.then(atur); // font Hind mengubah tinggi baris -> hitung ulang
+    document.fonts?.ready.then(atur); // font web mengubah lebar/tinggi teks -> hitung ulang
     window.addEventListener('beforeprint', atur);
     return () => { clearTimeout(t); window.removeEventListener('beforeprint', atur); };
   }, [mitra, cvMateri]);
@@ -205,20 +218,14 @@ export default function CVPage() {
   const linesPengalaman = pengalamanKerja && pengalamanKerja !== 'Tidak ada' ? pengalamanKerja.split('\n').map(bersih).filter(Boolean) : [];
   const materiDidapat: string[] = cvMateri.map((m: any) => m.nama).filter(Boolean);
 
-  // Nama: maks 2 baris di area ~270px; ukuran font diperkecil sampai muat
-  const namaBaris = (() => {
-    const kata = nama.split(/\s+/).filter(Boolean);
-    for (let fs = 64; fs >= 26; fs -= 2) {
-      const maxCh = Math.floor(270 / (fs * 0.46));
-      const baris: string[] = [];
-      for (const k of kata) {
-        const akhir = baris[baris.length - 1];
-        if (akhir && (akhir + ' ' + k).length <= maxCh) baris[baris.length - 1] = akhir + ' ' + k; else baris.push(k);
-      }
-      if (baris.length <= 2 && baris.every(b => b.length <= maxCh)) return { fs, baris };
-    }
-    return { fs: 26, baris: [nama] };
-  })();
+  // Nama file PDF ikut judul dokumen saat dicetak -> cv_muhammad_said.pdf
+  const unduhPdf = () => {
+    const judulLama = document.title;
+    document.title = `cv_${nama.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'mitra'}`;
+    const balik = () => { document.title = judulLama; window.removeEventListener('afterprint', balik); };
+    window.addEventListener('afterprint', balik);
+    window.print();
+  };
 
   // "Bagian tebal, sisanya biasa" (spt contoh: "Merawat pasien stroke, selama 6 tahun")
   const TebalAwal = ({ teks }: { teks: string }) => {
@@ -266,7 +273,7 @@ export default function CVPage() {
               <AlertCircle size={14} />Data kurang: {missing.join(', ')}
             </div>
           )}
-          <button onClick={() => window.print()} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 18px', background:`linear-gradient(135deg, ${UNGU}, ${TEAL})`, border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
+          <button onClick={unduhPdf} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 18px', background:`linear-gradient(135deg, ${UNGU}, ${TEAL})`, border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
             <Download size={15} />Download PDF
           </button>
         </div>
@@ -296,9 +303,7 @@ export default function CVPage() {
           <div style={{ position:'absolute', right:0, top:'15px', width:'157px', height:'47px', borderRadius:'24px 0 0 24px', background:'rgba(255,255,255,0.75)', display:'flex', alignItems:'center', paddingLeft:'10px' }}>
             <img src={LOGO} alt="Mikala Global Medika" style={{ height:'32px', objectFit:'contain' }} />
           </div>
-          <h1 style={{ position:'absolute', left:'35px', top:`${namaBaris.baris.length === 1 ? 60 : 18}px`, width:'260px', margin:0, color:'white', fontSize:`${namaBaris.fs}px`, fontWeight:600, lineHeight:0.95, letterSpacing:'-0.5px' }}>
-            {namaBaris.baris.map((b, i) => <div key={i}>{b}</div>)}
-          </h1>
+          <h1 id="cv-nama" style={{ position:'absolute', left:'35px', top:'14px', width:'250px', margin:0, color:'white', fontSize:'46px', fontWeight:600, lineHeight:0.95, letterSpacing:'-0.5px', overflowWrap:'normal' }}><span>{nama}</span></h1>
           {/* ikon clipboard */}
           <svg style={{ position:'absolute', left:'24px', top:'138px' }} width="36" height="42" viewBox="0 0 36 42">
             <g transform="rotate(-8 16 22)">
