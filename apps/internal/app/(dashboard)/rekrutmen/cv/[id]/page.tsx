@@ -7,12 +7,10 @@ import { ArrowLeft, Download, AlertCircle } from 'lucide-react';
 const LOGO = "https://res.cloudinary.com/djgtchmsx/image/upload/v1779019648/logo_MGM_remake_-_w_font_xtgtt0.png";
 
 // Warna template CV
-const UNGU = '#a35597';
-const TEAL = '#3f88a2';
-const TEKS = '#1c1c1c';
+const UNGU = '#8f4d88';
+const TEAL = '#387a8b';
+const NAVY = '#1f3550';
 const HAL = 1122.5; // tinggi 1 halaman A4 dlm px (794px lebar)
-// tekstur bintik (noise) di atas gradasi, spt template desain
-const NOISE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>";
 
 export default function CVPage() {
   const params = useParams();
@@ -190,28 +188,68 @@ export default function CVPage() {
   const foto = mitra?.foto_url || mitra?.ktp_file || null;
 
 
-  // Layout mengikuti template CV desain (contoh: "CV Nita Agnes R.pdf"): latar gradasi pink ->
-  // krem -> cyan bertekstur, blok teal + foto bulat di kanan atas, kolom ungu di kiri (Profil &
-  // materi training) dan kolom kanan di atas gradasi (pendidikan, kemampuan, pengalaman).
-  // Ukuran = template asli (A4 1131px) x 0.702 -> lebar 794px.
-  const namaFs = Math.max(30, Math.min(48, Math.floor(400 / (nama.length * 0.6))));
-  const tglLahirTeks = [mitra?.tempat_lahir || getExtra(p, 'Tempat Lahir'), tglLahir !== '-' ? tglLahir : ''].filter(Boolean).join(', ') || '-';
-  const asal = mitra?.kota || '';
-  const linesPelatihan = pelatihan && pelatihan !== 'Tidak ada' ? pelatihan.split('\n').map((l: string) => l.replace(/^[-•◆]\s*/, '').trim()).filter(Boolean) : [];
-  const linesPengalaman = pengalamanKerja && pengalamanKerja !== 'Tidak ada' ? pengalamanKerja.split('\n').map((l: string) => l.replace(/^[-•◆]\s*/, '').trim()).filter(Boolean) : [];
+  // Layout mengikuti template desain "Opsi 4" (Okt 2026): foto besar kiri atas, header ungu
+  // berpola + logo, pita teal NIM, kolom kiri ungu (data diri, pendidikan, pelatihan) dan kolom
+  // kanan (Kemampuan, Pengalaman Kerja). Ukuran = desain asli (A4 595pt) x 1.333 -> 794px.
+  // Font: Futura -> Jost, Object Sans -> Plus Jakarta Sans, Cerebri Sans -> Figtree (Google Fonts).
+  const tglAngka = (() => {
+    const m = String(mitra?.tanggal_lahir || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+  })();
+  const asal = mitra?.kota || (tempatLahir !== '-' ? tempatLahir : '-');
+  const hewan = /tidak takut/i.test(takutHewan) ? 'Tidak Ada' : takutHewan;
+  const bersih = (l: string) => l.replace(/^[-•◆✓]\s*/, '').trim();
+  const linesPelatihan = pelatihan && pelatihan !== 'Tidak ada' ? pelatihan.split('\n').map(bersih).filter(Boolean) : [];
+  if (linesPelatihan.length && mitra?.tahun_pelatihan && !linesPelatihan[0].includes(String(mitra.tahun_pelatihan)))
+    linesPelatihan[0] = `${linesPelatihan[0]} (${mitra.tahun_pelatihan})`;
+  const linesPengalaman = pengalamanKerja && pengalamanKerja !== 'Tidak ada' ? pengalamanKerja.split('\n').map(bersih).filter(Boolean) : [];
   const materiDidapat: string[] = cvMateri.map((m: any) => m.nama).filter(Boolean);
 
-  const Judul = ({ teks, warna }: { teks: string; warna: string }) => (
-    <h2 data-blok style={{ display:'flex', alignItems:'baseline', gap:'12px', fontSize:'21px', fontWeight:700, color:warna, margin:'0 0 8px', lineHeight:1.2, breakAfter:'avoid' as const }}>
-      <span style={{ fontSize:'20px' }}>+</span>{teks}
-    </h2>
+  // Nama: maks 2 baris di area ~270px; ukuran font diperkecil sampai muat
+  const namaBaris = (() => {
+    const kata = nama.split(/\s+/).filter(Boolean);
+    for (let fs = 64; fs >= 26; fs -= 2) {
+      const maxCh = Math.floor(270 / (fs * 0.46));
+      const baris: string[] = [];
+      for (const k of kata) {
+        const akhir = baris[baris.length - 1];
+        if (akhir && (akhir + ' ' + k).length <= maxCh) baris[baris.length - 1] = akhir + ' ' + k; else baris.push(k);
+      }
+      if (baris.length <= 2 && baris.every(b => b.length <= maxCh)) return { fs, baris };
+    }
+    return { fs: 26, baris: [nama] };
+  })();
+
+  // "Bagian tebal, sisanya biasa" (spt contoh: "Merawat pasien stroke, selama 6 tahun")
+  const TebalAwal = ({ teks }: { teks: string }) => {
+    const i = teks.indexOf(',');
+    return i > 0 ? <><b style={{ fontWeight:700 }}>{teks.slice(0, i + 1)}</b>{teks.slice(i + 1)}</> : <>{teks}</>;
+  };
+  const Bio = ({ label, value }: { label: string; value: string }) => (
+    <div data-blok style={{ display:'flex', fontSize:'14px', lineHeight:'17px' }}>
+      <span style={{ width:'87px', flexShrink:0 }}>{label}</span>
+      <span style={{ fontWeight:600 }}>: {value}</span>
+    </div>
   );
-  const Baris = ({ label, value }: { label: string; value: string }) => (
-    <div data-blok style={{ fontSize:'13px', lineHeight:'18px' }}><b style={{ fontWeight:600 }}>{label} :</b> {value}</div>
+  const Garis = () => <div style={{ width:'200px', height:'2px', background:NAVY, margin:'6px 0 4px' }} />;
+  const JudulKiri = ({ teks }: { teks: string }) => (
+    <h2 data-blok style={{ fontSize:'19px', fontWeight:700, margin:'0 0 2px', lineHeight:1.1 }}>{teks}</h2>
   );
-  const Poin = ({ teks, warna }: { teks: string; warna: string }) => (
-    <li data-blok style={{ display:'flex', gap:'12px', fontSize:'13px', lineHeight:'18.5px', marginBottom:'1px', color:warna, breakInside:'avoid' as const }}>
-      <span style={{ flexShrink:0 }}>•</span><span>{teks}</span>
+  const JudulKanan = ({ teks }: { teks: string }) => (
+    <div data-blok style={{ position:'relative', height:'51px', marginBottom:'12px' }}>
+      <h2 style={{ position:'absolute', left:0, bottom:'12px', margin:0, fontFamily:'"Plus Jakarta Sans", sans-serif', fontSize:'20px', fontWeight:800, color:'#000' }}>{teks}</h2>
+      <div style={{ position:'absolute', left:0, bottom:0, width:'226px', height:'3px', background:UNGU }} />
+      <div style={{ position:'absolute', left:'226px', top:0, right:0, height:'51px', background:UNGU, overflow:'hidden' }}>
+        <Pola t={12.75} style={{ position:'absolute', right:0, top:0, width:'51px', height:'51px' }} />
+      </div>
+    </div>
+  );
+  const Cek = ({ children }: { children: React.ReactNode }) => (
+    <li data-blok style={{ display:'flex', gap:'8px', fontFamily:'"Figtree", sans-serif', fontSize:'14px', lineHeight:'18px', marginBottom:'4.5px', color:'#111' }}>
+      <svg width="15" height="15" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:'2px' }} fill="none" stroke="#111" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 12v8H4V4h11" /><path d="M8 11l4 4 9-10" />
+      </svg>
+      <span>{children}</span>
     </li>
   );
 
@@ -234,108 +272,137 @@ export default function CVPage() {
         </div>
       </div>
 
-      {/* CV A4 -- tinggi minimal 1 halaman (1123px), boleh memanjang ke halaman 2 kalau materi
-          training banyak. Kolom ungu digambar sbg lapisan absolut setinggi kartu, jadi selalu
-          sampai bawah berapa pun panjang isinya. */}
+      {/* CV A4 -- tinggi minimal 1 halaman, boleh memanjang ke halaman 2 kalau materi training
+          banyak (lihat useEffect pengatur halaman). Latar & kolom kiri digambar sbg lapisan
+          absolut yg gradasinya diulang per halaman. */}
       <div id="cv-content" style={{
         width:'794px', minHeight:'1123px', margin:'0 auto', position:'relative', overflow:'hidden',
-        backgroundImage:`radial-gradient(ellipse 60% 40% at 0% 0%, #e27cb8 0%, rgba(226,124,184,0) 100%), linear-gradient(155deg, #dc8fc0 0%, #e9c3c2 22%, #f0e6b2 38%, #c8edd2 58%, #92e4ea 80%, #7fe0f3 100%)`,
-        backgroundSize:`100% ${HAL}px`, backgroundRepeat:'repeat-y', backgroundColor:'#7fe0f3',
-        fontFamily:'"Hind", "Segoe UI", Arial, sans-serif', boxShadow:'0 8px 40px rgba(0,0,0,0.18)',
+        backgroundImage:'linear-gradient(180deg, #ffffff 0%, #ffffff 40%, #dfeaee 64%, #9cc5d1 84%, #4c93a9 100%)',
+        backgroundSize:`100% ${HAL}px`, backgroundRepeat:'repeat-y', backgroundColor:'#ffffff',
+        fontFamily:'"Jost", "Futura", "Segoe UI", sans-serif', boxShadow:'0 8px 40px rgba(0,0,0,0.18)',
       }}>
-        {/* tekstur bintik halus spt template */}
-        <div style={{ position:'absolute', inset:0, backgroundImage:`url("${NOISE}")`, opacity:0.1, pointerEvents:'none' }} />
-        {/* kolom ungu kiri (sudut kanan atas membulat) */}
-        <div style={{ position:'absolute', left:0, top:'291px', bottom:0, width:'409px', background:UNGU, borderTopRightRadius:'62px' }} />
-        {/* blok teal kanan atas + foto bulat */}
-        <div style={{ position:'absolute', right:0, top:0, width:'298px', height:'312px', background:TEAL, borderBottomLeftRadius:'150px' }} />
-        <div className="cv-foto" style={{ position:'absolute', left:'518px', top:'53px', width:'253px', height:'253px', borderRadius:'50%', background:'white', padding:'6px', boxSizing:'border-box' }}>
-          <div style={{ width:'100%', height:'100%', borderRadius:'50%', overflow:'hidden', background:'#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            {foto ? <img src={foto} alt={nama} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-              : <span style={{ fontSize:'80px', fontWeight:700, color:UNGU }}>{nama[0]?.toUpperCase()}</span>}
+        {/* kolom kiri */}
+        <div style={{ position:'absolute', left:0, top:'416px', bottom:0, width:'314px',
+          backgroundImage:'linear-gradient(180deg, #8e4b89 0%, #7f5791 45%, #636e9e 75%, #4f8ba7 100%)',
+          backgroundSize:`100% ${HAL}px`, backgroundPosition:'0 -416px', backgroundRepeat:'repeat-y' }} />
+        {/* foto */}
+        <div style={{ position:'absolute', left:0, top:0, width:'314px', height:'352px', background:'#f4f4f4', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {foto ? <img src={foto} alt={nama} style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center top' }} />
+            : <span style={{ fontSize:'110px', fontWeight:600, color:UNGU }}>{nama[0]?.toUpperCase()}</span>}
+        </div>
+        {/* header ungu + pola + logo */}
+        <div style={{ position:'absolute', left:'314px', top:0, width:'480px', height:'188px', background:UNGU, overflow:'hidden' }}>
+          <Pola t={47} style={{ position:'absolute', right:0, top:0, width:'188px', height:'188px' }} />
+          <div style={{ position:'absolute', right:0, top:'15px', width:'157px', height:'47px', borderRadius:'24px 0 0 24px', background:'rgba(255,255,255,0.75)', display:'flex', alignItems:'center', paddingLeft:'10px' }}>
+            <img src={LOGO} alt="Mikala Global Medika" style={{ height:'32px', objectFit:'contain' }} />
           </div>
+          <h1 style={{ position:'absolute', left:'35px', top:`${namaBaris.baris.length === 1 ? 60 : 18}px`, width:'260px', margin:0, color:'white', fontSize:`${namaBaris.fs}px`, fontWeight:600, lineHeight:0.95, letterSpacing:'-0.5px' }}>
+            {namaBaris.baris.map((b, i) => <div key={i}>{b}</div>)}
+          </h1>
+          {/* ikon clipboard */}
+          <svg style={{ position:'absolute', left:'24px', top:'138px' }} width="36" height="42" viewBox="0 0 36 42">
+            <g transform="rotate(-8 16 22)">
+              <rect x="3" y="5" width="26" height="34" rx="2" fill="#b07a5a" />
+              <rect x="6" y="9" width="20" height="27" fill="#fff" />
+              <rect x="11" y="3" width="10" height="5" rx="2" fill="#5f9aa8" />
+              <rect x="8" y="13" width="7" height="7" fill="#6aa9b5" />
+              <path d="M10 16.5h3M11.5 15v3" stroke="#fff" strokeWidth="1.3" />
+              <path d="M17 15h7M9 24h14M9 28h12M9 32h14" stroke="#9fb6c6" strokeWidth="1.2" />
+            </g>
+            <path d="M21 27l9-11" stroke="#8b8fc7" strokeWidth="4" strokeLinecap="round" />
+            <path d="M30 16l4-5" stroke="#999" strokeWidth="1" />
+          </svg>
+          <p style={{ position:'absolute', left:'69px', top:'138px', margin:0, color:'white', fontSize:'23px', fontWeight:400 }}>{tipeJob}</p>
+          <div style={{ position:'absolute', left:'35px', top:'176px', width:'408px', height:'2px', background:'white' }} />
         </div>
-
-        {/* HEADER: logo, nama, jabatan */}
-        <div style={{ position:'relative', height:'291px', padding:'38px 0 0 74px', boxSizing:'border-box', width:'480px' }}>
-          <img src={LOGO} alt="Mikala Global Medika" style={{ height:'40px', objectFit:'contain', display:'block' }} />
-          <h1 style={{ margin:'62px 0 0', fontSize:`${namaFs}px`, fontWeight:700, color:'white', lineHeight:1.1, letterSpacing:'0.5px', fontFamily:'Arial, Helvetica, sans-serif', wordSpacing:'6px' }}>{nama}</h1>
-          <p style={{ margin:'12px 0 0', fontSize:'26px', fontWeight:700, fontStyle:'italic', color:'white', lineHeight:1.1 }}>{tipeJob}</p>
-          {mitra?.nomor_induk && <p style={{ margin:'8px 0 0', fontSize:'15px', fontWeight:600, color:'white', letterSpacing:'0.5px' }}>NIM : {mitra.nomor_induk}</p>}
+        {/* pita teal NIM + lipatan */}
+        <div style={{ position:'absolute', left:0, top:'352px', width:'338px', height:'64px', background:TEAL, color:'white', padding:'9px 0 0 39px', boxSizing:'border-box', fontSize:'18px', lineHeight:'22px' }}>
+          <div>NIM <b style={{ fontWeight:600 }}>{mitra?.nomor_induk || '-'}</b></div>
+          <div>{tempatLahir !== '-' ? `${tempatLahir}, ` : ''}<b style={{ fontWeight:600 }}>{tglAngka || '-'}</b></div>
         </div>
+        <svg style={{ position:'absolute', left:'314px', top:'416px' }} width="24" height="25"><polygon points="0,0 24,0 0,25" fill="#56294f" /></svg>
 
         {/* BODY 2 kolom */}
         <div style={{ position:'relative', display:'table', width:'100%', tableLayout:'fixed' }}>
-          {/* KIRI (ungu): Profil + materi training */}
-          <div style={{ display:'table-cell', width:'409px', verticalAlign:'top', padding:'40px 20px 30px 79px', color:'white' }}>
-            <Judul teks="Profil" warna="white" />
-            <div style={{ paddingLeft:'30px', marginBottom:'34px' }}>
-              <Baris label="Usia" value={usia !== '-' ? `${usia} tahun` : '-'} />
-              <Baris label="Tempat, Tgl Lahir" value={tglLahirTeks} />
-              {asal && <Baris label="Asal" value={asal} />}
-              <Baris label="Suku" value={suku} />
-              <Baris label="Tinggi Badan" value={tinggi !== '-' ? `${tinggi} Cm` : '-'} />
-              <Baris label="Berat Badan" value={berat !== '-' ? `${berat} Kg` : '-'} />
-              <Baris label="Agama" value={agama} />
-              <Baris label="Status" value={statusNikah} />
-              {mitra?.hijab && <Baris label="Hijab" value={mitra.hijab} />}
-              <Baris label="Vaksin" value={vaksin} />
-              {takutHewan !== '-' && <div style={{ fontSize:'13px', lineHeight:'18px', fontWeight:600 }}>{takutHewan}</div>}
-              {memasak !== '-' && <div style={{ fontSize:'13px', lineHeight:'18px', fontWeight:600 }}>{memasak === 'Bisa' ? 'Bisa Memasak' : 'Tidak Bisa Memasak'}</div>}
-            </div>
+          {/* KIRI */}
+          <div style={{ display:'table-cell', width:'314px', verticalAlign:'top', padding:'422px 16px 8px 39px', color:'white' }}>
+            <Bio label="Kelamin" value={mitra?.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} />
+            <Bio label="Asal" value={asal} />
+            <Bio label="Takut Hewan" value={hewan} />
+            <Bio label="Tinggi" value={tinggi !== '-' ? `${tinggi} Cm.` : '-'} />
+            <Bio label="Berat" value={berat !== '-' ? `${berat} Kg.` : '-'} />
+            <Bio label="Suku" value={suku} />
+            <Bio label="Agama" value={agama} />
+            {memasak !== '-' && <Bio label="Masak" value={memasak} />}
+            <Bio label="Status" value={statusNikah} />
+            {mitra?.hijab && <Bio label="Hijab" value={mitra.hijab} />}
+            {vaksin !== '-' && <Bio label="Vaksin" value={vaksin} />}
 
-            {/* materi training yg SUDAH DICEKLIS Training Center (cv_materi) */}
-            <Judul teks="Pelatihan yang didapat" warna="white" />
-            {materiDidapat.length > 0 ? (
-              <ul style={{ listStyle:'none', margin:0, padding:'0 0 0 30px' }}>
-                {materiDidapat.map((t, i) => <Poin key={i} teks={t} warna="white" />)}
-              </ul>
-            ) : (
-              <p style={{ fontSize:'12px', fontStyle:'italic', margin:'0 0 0 30px', opacity:0.85 }}>Belum ada materi training yang diceklis.</p>
-            )}
-          </div>
-
-          {/* KANAN: pendidikan, kemampuan, pengalaman */}
-          <div style={{ display:'table-cell', verticalAlign:'top', padding:'40px 40px 30px 54px', color:TEKS }}>
-            <Judul teks="Pendidikan Formal" warna={TEKS} />
-            <p style={{ fontSize:'13px', fontWeight:600, margin:'0 0 16px 30px' }}>
-              {mitra?.pendidikan_terakhir || '-'}{mitra?.tahun_lulus ? ` (Lulus ${mitra.tahun_lulus})` : ''}
+            <Garis />
+            <JudulKiri teks="Pendidikan Formal" />
+            <p data-blok style={{ fontSize:'14.5px', lineHeight:'18px', margin:0 }}>
+              {mitra?.pendidikan_terakhir || '-'}{mitra?.tahun_lulus ? ` (${mitra.tahun_lulus})` : ''}
             </p>
 
             {linesPelatihan.length > 0 && (<>
-              <Judul teks="Pendidikan Non Formal" warna={TEKS} />
-              <div style={{ margin:'0 0 16px 30px', fontSize:'13px', lineHeight:'18.5px' }}>
-                {linesPelatihan.map((l: string, i: number) => <div key={i}>{i === 0 && mitra?.tahun_pelatihan ? `${mitra.tahun_pelatihan} : ${l}` : l}</div>)}
-              </div>
-            </>)}
-
-            {kemampuanList.length > 0 && (<>
-              <Judul teks="Kemampuan" warna={TEKS} />
-              <ul style={{ listStyle:'none', margin:'0 0 16px', padding:'0 0 0 30px' }}>
-                {kemampuanList.map((k, i) => <Poin key={i} teks={k} warna={TEKS} />)}
+              <Garis />
+              <JudulKiri teks="Pendidikan Non-Formal" />
+              <ul style={{ listStyle:'none', margin:0, padding:0 }}>
+                {linesPelatihan.map((l: string, i: number) => (
+                  <li key={i} data-blok style={{ display:'flex', gap:'8px', fontSize:'13.5px', lineHeight:'17px', paddingLeft:'10px' }}>
+                    <span style={{ flexShrink:0 }}>•</span><span><TebalAwal teks={l} /></span>
+                  </li>
+                ))}
               </ul>
             </>)}
 
-            <Judul teks="Pengalaman Kerja" warna={TEKS} />
-            {linesPengalaman.length > 0 ? (
-              <ul style={{ listStyle:'none', margin:0, padding:'0 0 0 30px' }}>
-                {linesPengalaman.map((l: string, i: number) => <Poin key={i} teks={l} warna={TEKS} />)}
+            {/* materi training yg SUDAH DICEKLIS Training Center (cv_materi), font kecil spt contoh */}
+            <Garis />
+            <JudulKiri teks="Pelatihan Didapat" />
+            {materiDidapat.length > 0 ? (
+              <ul style={{ listStyle:'none', margin:0, padding:0 }}>
+                {materiDidapat.map((t, i) => (
+                  <li key={i} data-blok style={{ display:'flex', gap:'2px', fontSize:'11px', lineHeight:'13px' }}>
+                    <span style={{ flexShrink:0 }}>✓</span><span>{t}</span>
+                  </li>
+                ))}
               </ul>
             ) : (
-              <p style={{ fontSize:'13px', fontStyle:'italic', margin:'0 0 0 30px' }}>Fresh Graduate / Belum ada pengalaman kerja</p>
+              <p style={{ fontSize:'12px', fontStyle:'italic', margin:0, opacity:0.85 }}>Belum ada materi training yang diceklis.</p>
+            )}
+            <div style={{ width:'200px', height:'2px', background:NAVY, marginTop:'8px' }} />
+          </div>
+
+          {/* KANAN */}
+          <div style={{ display:'table-cell', verticalAlign:'top', padding:'202px 28px 90px 35px' }}>
+            {kemampuanList.length > 0 && (<>
+              <JudulKanan teks="Kemampuan" />
+              <ul style={{ listStyle:'none', margin:'0 0 50px', padding:0 }}>
+                {kemampuanList.map((k, i) => <Cek key={i}>{k}</Cek>)}
+              </ul>
+            </>)}
+
+            <JudulKanan teks="Pengalaman Kerja" />
+            {linesPengalaman.length > 0 ? (
+              <ul style={{ listStyle:'none', margin:0, padding:0 }}>
+                {linesPengalaman.map((l: string, i: number) => <Cek key={i}><TebalAwal teks={l} /></Cek>)}
+              </ul>
+            ) : (
+              <p style={{ fontFamily:'"Figtree", sans-serif', fontSize:'14px', fontStyle:'italic', margin:0 }}>Fresh Graduate / Belum ada pengalaman kerja</p>
             )}
           </div>
         </div>
 
-        {/* badge "With Love We Serve" -- melintang di batas 2 kolom, di bawah isi */}
-        <div style={{ height:'110px' }} />
-        <div style={{ position:'absolute', left:'286px', bottom:'42px', zIndex:1, width:'240px', height:'42px', backgroundImage:'linear-gradient(90deg, #a3d4ef 0%, #b07ccb 55%, #c3449c 100%)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <span style={{ fontFamily:'"Kaushan Script", cursive', fontSize:'22px', color:'white', letterSpacing:'0.5px' }}>With Love We Serve</span>
+        {/* "With Love We Serve" -- selalu di bawah halaman terakhir, kolom kanan (ruangnya = padding bawah kolom kanan) */}
+        <div style={{ position:'absolute', left:'418px', bottom:'38px', display:'flex', alignItems:'center', gap:'8px', color:'#dcdcdc' }}>
+          <svg width="44" height="8" viewBox="0 0 44 8"><path d="M0 4h44M0 4l4-3M0 4l4 3M3 4l4-3M3 4l4 3" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
+          <span style={{ fontFamily:'"Yellowtail", cursive', fontSize:'22px', whiteSpace:'nowrap' }}>With Love We Serve</span>
+          <svg width="44" height="8" viewBox="0 0 44 8"><path d="M0 4h44M44 4l-4-3M44 4l-4 3M41 4l-4-3M41 4l-4 3" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
         </div>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Kaushan+Script&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@800&family=Figtree:wght@400;700&family=Yellowtail&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }
         @media print {
           /* .no-print (Control Bar + Sidebar/Header dashboard, lihat globals.css) disembunyikan
@@ -349,10 +416,40 @@ export default function CVPage() {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          /* full-bleed (tanpa margin kertas) spy gradasi & kolom ungu sampai tepi */
+          /* full-bleed (tanpa margin kertas) spy latar & kolom kiri sampai tepi */
           @page { size: A4; margin: 0; }
         }
       `}</style>
     </div>
+  );
+}
+
+/** Pola dekoratif (setengah lingkaran solid + busur garis) spt di template; t = ukuran 1 petak. */
+function Pola({ t, style }: { t: number; style: React.CSSProperties }) {
+  const id = `pola-${String(t).replace('.', '-')}`;
+  const busur = [0.5, 0.43, 0.36, 0.29, 0.22].map(r => r * t);
+  const solid = (x: number, y: number) => (<>
+    <path d={`M${x} ${y} h${t} a${t / 2} ${t / 2} 0 0 1 ${-t} 0z`} fill={TEAL} />
+    <path d={`M${x} ${y + t} a${t / 2} ${t / 2} 0 0 1 ${t} 0z`} fill={TEAL} />
+  </>);
+  const garis = (x: number, y: number) => (
+    <g fill="none" stroke={TEAL} strokeWidth={Math.max(0.6, t / 40)}>
+      {busur.map((r, i) => (
+        <g key={i}>
+          <path d={`M${x} ${y + t / 2 - r} a${r} ${r} 0 0 1 0 ${2 * r}`} />
+          <path d={`M${x + t} ${y + t / 2 - r} a${r} ${r} 0 0 0 0 ${2 * r}`} />
+        </g>
+      ))}
+    </g>
+  );
+  return (
+    <svg style={style}>
+      <defs>
+        <pattern id={id} width={2 * t} height={2 * t} patternUnits="userSpaceOnUse">
+          {solid(0, 0)}{garis(t, 0)}{garis(0, t)}{solid(t, t)}
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill={`url(#${id})`} />
+    </svg>
   );
 }
