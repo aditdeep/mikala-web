@@ -251,6 +251,12 @@ export default function CVPage() {
       </div>
     </div>
   );
+  // isi default kalau bagian belum diisi -- judul tetap tampil
+  const Kosong = ({ kanan, bawah }: { kanan?: boolean; bawah?: boolean }) => (
+    <p data-blok style={kanan
+      ? { fontFamily:'"Figtree", sans-serif', fontSize:'14px', margin: bawah ? '0 0 50px' : 0, color:'#111' }
+      : { fontSize:'14px', lineHeight:'18px', margin:0 }}>-</p>
+  );
   const Cek = ({ children }: { children: React.ReactNode }) => (
     <li data-blok style={{ display:'flex', gap:'8px', fontFamily:'"Figtree", sans-serif', fontSize:'14px', lineHeight:'18px', marginBottom:'4.5px', color:'#111' }}>
       <svg width="15" height="15" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:'2px' }} fill="none" stroke="#111" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -338,10 +344,10 @@ export default function CVPage() {
             <Bio label="Berat" value={berat !== '-' ? `${berat} Kg.` : '-'} />
             <Bio label="Suku" value={suku} />
             <Bio label="Agama" value={agama} />
-            {memasak !== '-' && <Bio label="Masak" value={memasak} />}
+            <Bio label="Masak" value={memasak} />
             <Bio label="Status" value={statusNikah} />
-            {mitra?.hijab && <Bio label="Hijab" value={mitra.hijab} />}
-            {vaksin !== '-' && <Bio label="Vaksin" value={vaksin} />}
+            <Bio label="Hijab" value={mitra?.hijab || '-'} />
+            <Bio label="Vaksin" value={vaksin} />
 
             <Garis />
             <JudulKiri teks="Pendidikan Formal" />
@@ -349,9 +355,9 @@ export default function CVPage() {
               {mitra?.pendidikan_terakhir || '-'}{mitra?.tahun_lulus ? ` (${mitra.tahun_lulus})` : ''}
             </p>
 
-            {linesPelatihan.length > 0 && (<>
-              <Garis />
-              <JudulKiri teks="Pendidikan Non-Formal" />
+            <Garis />
+            <JudulKiri teks="Pendidikan Non-Formal" />
+            {linesPelatihan.length > 0 ? (
               <ul style={{ listStyle:'none', margin:0, padding:0 }}>
                 {linesPelatihan.map((l: string, i: number) => (
                   <li key={i} data-blok style={{ display:'flex', gap:'8px', fontSize:'13.5px', lineHeight:'17px', paddingLeft:'10px' }}>
@@ -359,7 +365,7 @@ export default function CVPage() {
                   </li>
                 ))}
               </ul>
-            </>)}
+            ) : <Kosong />}
 
             {/* materi training yg SUDAH DICEKLIS Training Center (cv_materi), font kecil spt contoh */}
             <Garis />
@@ -373,19 +379,19 @@ export default function CVPage() {
                 ))}
               </ul>
             ) : (
-              <p style={{ fontSize:'12px', fontStyle:'italic', margin:0, opacity:0.85 }}>Belum ada materi training yang diceklis.</p>
+              <Kosong />
             )}
             <div style={{ width:'200px', height:'2px', background:NAVY, marginTop:'8px' }} />
           </div>
 
           {/* KANAN */}
           <div style={{ display:'table-cell', verticalAlign:'top', padding:'202px 28px 90px 35px' }}>
-            {kemampuanList.length > 0 && (<>
-              <JudulKanan teks="Kemampuan" />
+            <JudulKanan teks="Kemampuan" />
+            {kemampuanList.length > 0 ? (
               <ul style={{ listStyle:'none', margin:'0 0 50px', padding:0 }}>
                 {kemampuanList.map((k, i) => <Cek key={i}>{k}</Cek>)}
               </ul>
-            </>)}
+            ) : <Kosong kanan bawah />}
 
             <JudulKanan teks="Pengalaman Kerja" />
             {linesPengalaman.length > 0 ? (
@@ -393,7 +399,7 @@ export default function CVPage() {
                 {linesPengalaman.map((l: string, i: number) => <Cek key={i}><TebalAwal teks={l} /></Cek>)}
               </ul>
             ) : (
-              <p style={{ fontFamily:'"Figtree", sans-serif', fontSize:'14px', fontStyle:'italic', margin:0 }}>Fresh Graduate / Belum ada pengalaman kerja</p>
+              <Kosong kanan />
             )}
           </div>
         </div>
