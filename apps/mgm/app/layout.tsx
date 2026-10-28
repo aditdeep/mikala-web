@@ -9,16 +9,17 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.c
 // itu produk yg beda total dari Google Ads Conversion (AW-xxxxxxxxx) yg udah ada. Dulu gak ada
 // tempat sama sekali buat GTM asli, makanya "GTM yang AW-xxx" user pasang gak pernah kedeteksi
 // sbg container GTM -- karena memang cuma AW- yang diproses, bukan GTM-.
-async function getAnalyticsSettings(): Promise<{ googleAdsId: string; gtmId: string }> {
+async function getAnalyticsSettings(): Promise<{ googleAdsId: string; gtmId: string; metaPixelId: string }> {
   try {
     const res = await fetch(`${API}/cms/settings`, { next: { revalidate: 60 } });
     const json = await res.json();
     return {
       googleAdsId: json?.data?.google_ads_id || '',
       gtmId: json?.data?.gtm_id || '',
+      metaPixelId: String(json?.data?.meta_pixel_id || '').replace(/\D/g, ''),
     };
   } catch {
-    return { googleAdsId: '', gtmId: '' };
+    return { googleAdsId: '', gtmId: '', metaPixelId: '' };
   }
 }
 
@@ -44,7 +45,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { googleAdsId, gtmId } = await getAnalyticsSettings();
+  const { googleAdsId, gtmId, metaPixelId } = await getAnalyticsSettings();
 
   return (
     <html lang="id">
@@ -75,6 +76,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               gtag('js', new Date());
               gtag('config', '${googleAdsId}');
             ` }} />
+          </>
+        )}
+        {/* Meta Pixel -- ID dari CMS Web MGM > Settings (hanya angka, dibersihkan spy aman disisipkan ke script) */}
+        {metaPixelId && (
+          <>
+            <Script id="meta-pixel" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+              n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+              document,'script','https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '${metaPixelId}');
+              fbq('track', 'PageView');
+            ` }} />
+            <noscript><img height="1" width="1" style={{ display:'none' }} alt="" src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`} /></noscript>
           </>
         )}
       </head>

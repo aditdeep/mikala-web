@@ -18,9 +18,10 @@ async function getSiteSettings() {
       siteDescription: d.site_description || '',
       googleAdsId: d.google_ads_id || '',
       gtmId: d.gtm_id || '',
+      metaPixelId: String(d.meta_pixel_id || '').replace(/\D/g, ''),
     };
   } catch {
-    return { siteTitle: '', siteDescription: '', googleAdsId: '', gtmId: '' };
+    return { siteTitle: '', siteDescription: '', googleAdsId: '', gtmId: '', metaPixelId: '' };
   }
 }
 
@@ -52,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { googleAdsId, gtmId } = await getSiteSettings();
+  const { googleAdsId, gtmId, metaPixelId } = await getSiteSettings();
 
   return (
     <html lang="id">
@@ -78,6 +79,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               gtag('js', new Date());
               gtag('config', '${googleAdsId}');
             ` }} />
+          </>
+        )}
+        {/* Meta Pixel -- ID dari CMS Web MGA > Settings (hanya angka, dibersihkan spy aman disisipkan ke script) */}
+        {metaPixelId && (
+          <>
+            <Script id="meta-pixel" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+              n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+              document,'script','https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '${metaPixelId}');
+              fbq('track', 'PageView');
+            ` }} />
+            <noscript><img height="1" width="1" style={{ display:'none' }} alt="" src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`} /></noscript>
           </>
         )}
       </head>

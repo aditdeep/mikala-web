@@ -636,6 +636,7 @@ export default function WebsitePage() {
               // sekaligus (GA4, Meta Pixel, dll) tanpa edit kode tiap kali. Ditambah field baru
               // yg terpisah biar gak ketuker lagi kayak sebelumnya.
               { key:'gtm_id', label:'Google Tag Manager Container ID (GTM-XXXXXXX)', type:'text' },
+              { key:'meta_pixel_id', label:'Meta Pixel ID (angka, dari Events Manager)', type:'text' },
             ].map(f => (
               <div key={f.key}>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>{f.label}</label>

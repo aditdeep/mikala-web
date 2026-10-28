@@ -149,6 +149,7 @@ export default function WebsiteMgaPage() {
                 { key: 'youtube',          label: 'URL YouTube' },
                 { key: 'google_ads_id',    label: 'Google Ads Conversion ID (AW-XXXXXXXXX)' },
                 { key: 'gtm_id',           label: 'Google Tag Manager Container ID (GTM-XXXXXXX)' },
+                { key: 'meta_pixel_id',    label: 'Meta Pixel ID (angka, dari Events Manager)' },
               ].map(f => (
                 <div key={f.key}>
                   <label style={lbl}>{f.label}</label>
