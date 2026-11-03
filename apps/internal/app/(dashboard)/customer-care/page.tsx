@@ -119,7 +119,7 @@ function buildLeadDetailRows(item: any) {
     { label:'Catatan', value: item.catatan || '-' },
     { label:'Mitra', value: item.mitra?.user?.name || '-' },
     ...(item.status === 1 ? [
-      { label:'Tanggal Deal', value: item.deal_at ? new Date(item.deal_at).toLocaleString('id-ID') : '-' },
+      { label:'Tanggal Mulai Kerja', value: item.deal_at ? new Date(item.deal_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' }) : '-' },
       { label:'Kesadaran', value: item.kesadaran || '-' },
       { label:'Komunikasi', value: item.komunikasi || '-' },
       { label:'Kelemahan', value: item.kelemahan || '-' },
@@ -368,7 +368,7 @@ export default function CustomerCarePage() {
   const [dealForm, setDealForm] = useState({
     mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', rekom_fee:'', uang_cuti_mitra:'500000',
     kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
-    jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'',
+    jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'', tanggal_mulai:'',
   });
   const [savingDeal, setSavingDeal] = useState(false);
 
@@ -460,6 +460,7 @@ export default function CustomerCarePage() {
         ...f,
         cms_layanan_id: dealTarget.cms_layanan_id ? String(dealTarget.cms_layanan_id) : (f.cms_layanan_id || ''),
         tier_nama: dealTarget.tier_nama || f.tier_nama || '',
+        tanggal_mulai: new Date(dealTarget.deal_at || Date.now()).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }),
       }));
     }
   }, [dealTarget]);
@@ -577,7 +578,7 @@ export default function CustomerCarePage() {
       await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined, ...dealForm });
       setDealTarget(null);
       setDealMitraId('');
-      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', rekom_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'' });
+      setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', rekom_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'', tanggal_mulai:'' });
       fetchLeadsList();
       fetchLeadsSummary();
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal menandai Deal'); }
@@ -1861,6 +1862,12 @@ export default function CustomerCarePage() {
                     <option key={m.id} value={m.id}>{m.user?.name} ({m.status})</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Tanggal Mulai Kerja *</label>
+                <input type="date" required value={dealForm.tanggal_mulai} onChange={e => setDealForm(f => ({ ...f, tanggal_mulai: e.target.value }))} style={inp} />
+                <p style={{ color:'var(--text3)', fontSize:'11px', marginTop:'4px' }}>Hari pertama mitra bekerja di klien (dasar hitungan gaji). Ubah kalau mitra sudah jalan sebelum Deal diinput.</p>
               </div>
 
               <p style={{ color:'var(--text3)', fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.5px', marginTop:'4px' }}>Negosiasi Jasa</p>
