@@ -419,6 +419,7 @@ export default function CustomerCarePage() {
   const [koreksiLayananId, setKoreksiLayananId] = useState('');
   const [koreksiTierNama, setKoreksiTierNama] = useState('');
   const [savingKoreksiLayanan, setSavingKoreksiLayanan] = useState(false);
+  const [koreksiTglMulai, setKoreksiTglMulai] = useState('');
 
   // Modal Detail Leads/Deal/Exchange
   const [leadDetail, setLeadDetail] = useState<{ type: 'lead'|'exchange'; item: any }|null>(null);
@@ -470,6 +471,7 @@ export default function CustomerCarePage() {
       setKontrakBiayaTransport(leadDetail.item.biaya_transport ? String(leadDetail.item.biaya_transport) : '');
       setKontrakCatatan(leadDetail.item.catatan_revisi_kontrak || '');
       setKoreksiLayananId(leadDetail.item.cms_layanan_id ? String(leadDetail.item.cms_layanan_id) : '');
+      setKoreksiTglMulai(leadDetail.item.deal_at ? new Date(leadDetail.item.deal_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }) : '');
       setKoreksiTierNama(leadDetail.item.tier_nama || '');
     }
     if (leadDetail?.type === 'lead' && (leadDetail.item?.status === 0 || leadDetail.item?.status === 3)) {
@@ -756,6 +758,18 @@ export default function CustomerCarePage() {
       fetchLeadsSummary();
       alert('Jenis Layanan/Tier berhasil diperbarui');
     } catch (err: any) { alert(err.response?.data?.message || 'Gagal memperbarui Jenis Layanan/Tier'); }
+    finally { setSavingKoreksiLayanan(false); }
+  };
+
+  const handleSaveTglMulai = async (item: any) => {
+    setSavingKoreksiLayanan(true);
+    try {
+      const r: any = await apiClient.patch('/internal/cc/leads/'+item.id+'/layanan', { tanggal_mulai: koreksiTglMulai });
+      const updated = r.data?.data;
+      if (updated) setLeadDetail({ type:'lead', item: updated });
+      fetchDealLeads();
+      alert('Tanggal mulai kerja berhasil diperbarui');
+    } catch (err: any) { alert(err.response?.data?.message || 'Gagal memperbarui tanggal mulai kerja'); }
     finally { setSavingKoreksiLayanan(false); }
   };
 
@@ -2134,6 +2148,16 @@ export default function CustomerCarePage() {
                         </button>
                         <button onClick={() => handleStopLead(item)} disabled={stoppingId === item.id} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', padding:'8px 12px', background:'rgba(100,116,139,0.1)', border:'1px solid rgba(100,116,139,0.2)', borderRadius:'10px', color:'#64748b', fontSize:'12px', fontWeight:600, cursor: stoppingId === item.id ? 'not-allowed' : 'pointer', opacity: stoppingId === item.id ? 0.6 : 1 }}>
                           <XCircle size={13}/>{stoppingId === item.id ? '...' : 'STOP'}
+                        </button>
+                      </div>
+
+                      <div style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                        <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text)' }}>Tanggal Mulai Kerja</p>
+                        <p style={{ fontSize:'11px', color:'var(--text3)' }}>Hari pertama mitra bekerja di klien (dasar hitungan gaji). Ubah kalau mitra sudah jalan sebelum Deal diinput.</p>
+                        <input type="date" value={koreksiTglMulai} onChange={e => setKoreksiTglMulai(e.target.value)} style={{ ...inp, fontSize:'12px' }} />
+                        <button onClick={() => handleSaveTglMulai(item)} disabled={savingKoreksiLayanan || !koreksiTglMulai}
+                          style={{ width:'100%', padding:'8px 12px', background:'rgba(236,72,153,0.1)', border:'1px solid rgba(236,72,153,0.2)', borderRadius:'10px', color:'#ec4899', fontSize:'12px', fontWeight:600, cursor: (savingKoreksiLayanan || !koreksiTglMulai) ? 'not-allowed' : 'pointer', opacity: (savingKoreksiLayanan || !koreksiTglMulai) ? 0.6 : 1 }}>
+                          {savingKoreksiLayanan ? 'Menyimpan...' : 'Simpan Tanggal Mulai'}
                         </button>
                       </div>
 
