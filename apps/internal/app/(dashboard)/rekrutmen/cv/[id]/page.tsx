@@ -384,7 +384,7 @@ export default function CVPage() {
             ) : (
               <Kosong />
             )}
-            <div style={{ width:'200px', height:'2px', background:NAVY, marginTop:'8px' }} />
+            <div style={{ width:'200px', height:'1px', background:'white', marginTop:'8px' }} />
           </div>
 
           {/* KANAN */}
