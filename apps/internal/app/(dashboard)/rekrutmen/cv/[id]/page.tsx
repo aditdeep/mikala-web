@@ -193,8 +193,11 @@ export default function CVPage() {
     }
     return [];
   })();
-  const pelatihan = getPelatihan(p);
-  const pengalamanKerja = getPengalamanKerja(p);
+  // Data baru: kolom asli `pengalaman` (pengalaman kerja per baris) & `pengalaman_pelatihan`.
+  // Data lama: satu blob "PELATIHAN: ... PENGALAMAN KERJA: ... DATA TAMBAHAN: ..." di `pengalaman`.
+  const blobLama = /PENGALAMAN KERJA:|DATA TAMBAHAN:/i.test(p);
+  const pelatihan = mitra?.pengalaman_pelatihan || (blobLama ? getPelatihan(p) : '');
+  const pengalamanKerja = blobLama ? getPengalamanKerja(p) : p;
   const tglLahir = mitra?.tanggal_lahir
     ? new Date(mitra.tanggal_lahir).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })
     : '-';
