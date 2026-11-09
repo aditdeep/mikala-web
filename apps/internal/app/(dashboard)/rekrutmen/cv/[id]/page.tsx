@@ -241,7 +241,7 @@ export default function CVPage() {
       <span style={{ fontWeight:600 }}>: {value}</span>
     </div>
   );
-  const Garis = () => <div style={{ width:'200px', height:'2px', background:NAVY, margin:'6px 0 4px' }} />;
+  const Garis = () => <div style={{ width:'200px', height:'1px', background:'white', margin:'6px 0 4px' }} />;
   const JudulKiri = ({ teks }: { teks: string }) => (
     <h2 data-blok style={{ fontSize:'19px', fontWeight:700, margin:'0 0 2px', lineHeight:1.1 }}>{teks}</h2>
   );
@@ -299,7 +299,7 @@ export default function CVPage() {
       }}>
         {/* kolom kiri */}
         <div style={{ position:'absolute', left:0, top:'416px', bottom:0, width:'314px',
-          backgroundImage:'linear-gradient(180deg, #8e4b89 0%, #7f5791 45%, #636e9e 75%, #4f8ba7 100%)',
+          backgroundImage:'linear-gradient(180deg, #8e4b89 0%, #84508c 60%, #774f88 100%)', // ungu penuh, tdk ikut gradasi tosca latar
           backgroundSize:`100% ${HAL}px`, backgroundPosition:'0 -416px', backgroundRepeat:'repeat-y' }} />
         {/* foto */}
         <div style={{ position:'absolute', left:0, top:0, width:'314px', height:'352px', background:'#f4f4f4', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
