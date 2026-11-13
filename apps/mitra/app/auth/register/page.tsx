@@ -2,7 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@mikala/lib';
-import { ChevronLeft, ChevronRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Eye, EyeOff, Star } from 'lucide-react';
+
+// Ajakan ulasan Google SENGAJA opsional: mewajibkan/menyaring ulasan (apalagi dari calon mitra) melanggar kebijakan ulasan Google.
+const GOOGLE_REVIEW_URL = 'https://g.page/r/CTUzDS_dvRmAEBM/review';
 import SearchableSelect from '../../../components/SearchableSelect';
 
 const PENDIDIKAN = ['SMA Negeri / Swasta','SMK / Sekolah Kejuruan Kesehatan','SMK / Sekolah Kejuruan Lainnya','Diploma D1/D2/D3 Kesehatan','Diploma D1/D2/D3 Lainnya','Sarjana S1 Kesehatan','Sarjana S1 Keperawatan','Profesi Nurse','Sarjana S1 Lainnya'];
@@ -495,6 +498,16 @@ export default function RegisterPage() {
               </span>
             </label>
             {form.contract_agreed && <p style={{ fontSize:'11px', color:'#86efac', marginTop:'8px' }}>✓ Tercatat: {new Date().toLocaleString('id-ID')}</p>}
+            <div style={{ background:'rgba(251,191,36,0.08)', border:'1px solid rgba(251,191,36,0.25)', borderRadius:'12px', padding:'14px', marginTop:'14px', textAlign:'center' }}>
+              <div style={{ display:'flex', justifyContent:'center', gap:'2px', marginBottom:'6px' }}>
+                {[0,1,2,3,4].map(i=><Star key={i} size={15} style={{ color:'#fbbf24' }}/>)}
+              </div>
+              <p style={{ fontSize:'12.5px', color:'rgba(255,255,255,0.8)', lineHeight:'1.6', marginBottom:'10px' }}>Sebelum mendaftar, bantu Mikala berkembang dengan memberi ulasan jujur Anda di Google. Opsional, tidak memengaruhi pendaftaran.</p>
+              <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noopener noreferrer"
+                style={{ display:'block', padding:'10px', background:'rgba(251,191,36,0.15)', border:'1px solid rgba(251,191,36,0.4)', borderRadius:'10px', color:'#fbbf24', fontWeight:700, fontSize:'13px', textDecoration:'none' }}>
+                Tulis Ulasan di Google
+              </a>
+            </div>
           </div>
         )}
 
