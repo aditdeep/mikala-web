@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import { KeyRound, Search, X, Copy, Check, AlertTriangle } from 'lucide-react';
 
-type Akun = { id: number; name: string; email: string; phone?: string; role: string; status?: string; mitra?: any; klien?: any };
+type Akun = { id: number | string; lead_id?: number; tanpa_akun?: boolean; pasien?: string; nomor_deal?: string; status_deal?: string; name: string; email: string; phone?: string; role: string; status?: string; mitra?: any; klien?: any };
 
 export default function ResetPasswordAkunModal({ role, target, onClose }: {
   role: 'mitra' | 'klien';
@@ -42,7 +42,9 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
     if (mode === 'manual' && manualPw.length < 8) { setError('Password minimal 8 karakter'); return; }
     setSaving(true); setError('');
     try {
-      const r: any = await apiClient.post(`/internal/akun/${akun.id}/reset-password`, mode === 'manual' ? { password: manualPw } : {});
+      const body = mode === 'manual' ? { password: manualPw } : {};
+      // Deal yg PJ-nya belum punya akun -> dibuatkan akun (login No HP + PIN)
+      const r: any = await apiClient.post(akun.tanpa_akun ? `/internal/akun/klien-dari-lead/${akun.lead_id}` : `/internal/akun/${akun.id}/reset-password`, body);
       setResult(r.data);
     } catch (e: any) {
       setError(e.response?.data?.message || 'Gagal reset password');
@@ -63,7 +65,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
       <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'20px', width:'100%', maxWidth:'440px', padding:'22px', maxHeight:'90vh', overflowY:'auto' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
           <h2 style={{ fontSize:'16px', fontWeight:700, color:'var(--text)', display:'flex', alignItems:'center', gap:'8px' }}>
-            <KeyRound size={18} style={{ color:'#f59e0b' }} />Reset Password {label}
+            <KeyRound size={18} style={{ color:'#f59e0b' }} />{role === 'klien' ? 'Akun & PIN Klien' : `Reset Password ${label}`}
           </h2>
           <button onClick={onClose} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'6px', cursor:'pointer', color:'var(--text2)', display:'flex' }}>
             <X size={16} />
@@ -75,7 +77,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
           <>
             <div style={{ position:'relative', marginBottom:'10px' }}>
               <Search size={15} style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', color:'var(--text3)' }} />
-              <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder={`Cari nama / email / no HP${role === 'mitra' ? ' / NIM' : ''}...`}
+              <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder={`Cari nama / email / no HP${role === 'mitra' ? ' / NIM' : ' / pasien / no Deal'}...`}
                 style={{ ...inp, paddingLeft:'34px' }} />
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:'6px', maxHeight:'320px', overflowY:'auto' }}>
@@ -86,7 +88,9 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
                   style={{ textAlign:'left', padding:'10px 12px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', cursor:'pointer' }}>
                   <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)' }}>
                     {nama(a)}{a.mitra?.nomor_induk ? <span style={{ color:'var(--text3)', fontWeight:400 }}> · {a.mitra.nomor_induk}</span> : null}
+                    {a.tanpa_akun && <span style={{ marginLeft:'6px', fontSize:'10px', fontWeight:700, color:'#d97706', background:'rgba(245,158,11,0.12)', borderRadius:'6px', padding:'2px 6px' }}>Belum punya akun</span>}
                   </p>
+                  {a.tanpa_akun && <p style={{ fontSize:'11px', color:'var(--text3)' }}>Deal {a.nomor_deal || '-'} ({a.status_deal}) · pasien {a.pasien || '-'}</p>}
                   <p style={{ fontSize:'11px', color:'var(--text3)' }}>{a.email || 'tanpa email'} · {a.phone || '-'}</p>
                 </button>
               ))}
@@ -122,12 +126,14 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
               <input value={manualPw} onChange={e => setManualPw(e.target.value)} placeholder="Password baru (min. 6 karakter, klien boleh PIN 6 angka)" style={{ ...inp, marginBottom:'12px' }} />
             )}
             <p style={{ fontSize:'11px', color:'var(--text3)', marginBottom:'12px', lineHeight:1.5 }}>
-              Password lama langsung tidak berlaku dan {label.toLowerCase()} otomatis ter-logout dari semua perangkat.
+              {akun.tanpa_akun
+                ? 'Akun apps Klien dibuat dengan login No HP Cust/PJ di Deal ini + PIN 6 angka. Deal lain dengan No HP yang sama ikut ditautkan.'
+                : `Password lama langsung tidak berlaku dan ${label.toLowerCase()} otomatis ter-logout dari semua perangkat.`}
             </p>
             {error && <p style={{ fontSize:'12px', color:'#ef4444', marginBottom:'10px' }}>{error}</p>}
             <button onClick={submit} disabled={saving}
               style={{ width:'100%', padding:'11px', background:'linear-gradient(135deg,#f59e0b,#d97706)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1 }}>
-              {saving ? 'Memproses...' : 'Reset Password'}
+              {saving ? 'Memproses...' : akun.tanpa_akun ? 'Buat Akun & PIN' : 'Reset Password'}
             </button>
           </>
         )}
@@ -136,7 +142,7 @@ export default function ResetPasswordAkunModal({ role, target, onClose }: {
         {result && (
           <>
             <div style={{ background:'rgba(16,185,129,0.08)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'12px', padding:'14px', marginBottom:'12px' }}>
-              <p style={{ fontSize:'13px', fontWeight:700, color:'#10b981', marginBottom:'8px' }}>✓ Password berhasil direset</p>
+              <p style={{ fontSize:'13px', fontWeight:700, color:'#10b981', marginBottom:'8px' }}>✓ {result.message || 'Password berhasil direset'}</p>
               <p style={{ fontSize:'12px', color:'var(--text2)' }}>{result.email ? <>Email: <b style={{ color:'var(--text)' }}>{result.email}</b></> : <>No HP (login): <b style={{ color:'var(--text)' }}>{result.phone || '-'}</b></>}</p>
               <p style={{ fontSize:'12px', color:'var(--text2)' }}>Password baru: <b style={{ color:'var(--text)', fontFamily:'monospace', fontSize:'14px' }}>{result.new_password}</b></p>
             </div>

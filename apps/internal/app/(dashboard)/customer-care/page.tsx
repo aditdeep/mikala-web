@@ -365,6 +365,7 @@ export default function CustomerCarePage() {
   const [dealTarget, setDealTarget] = useState<any>(null);
   const [dealMitraId, setDealMitraId] = useState('');
   const [dealMitraTipeFilter, setDealMitraTipeFilter] = useState('');
+  const [dealMitraSearch, setDealMitraSearch] = useState('');
   const [dealForm, setDealForm] = useState({
     mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', rekom_fee:'', uang_cuti_mitra:'500000',
     kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'',
@@ -580,6 +581,7 @@ export default function CustomerCarePage() {
       await apiClient.patch('/internal/cc/leads/'+dealTarget.id+'/deal', { mitra_id: dealMitraId || undefined, ...dealForm });
       setDealTarget(null);
       setDealMitraId('');
+      setDealMitraSearch('');
       setDealForm({ mitra_nim:'', biaya_admin:'', honor_mitra:'', management_fee:'', rekom_fee:'', uang_cuti_mitra:'500000', kesadaran:'', komunikasi:'', kelemahan:'', mobilisasi:'', jasa_diminta:'', jasa_disarankan:'', jasa_disetujui:'', cms_layanan_id:'', tier_nama:'', pembantu:'', cara_mencuci_baju:'', tanggal_mulai:'' });
       fetchLeadsList();
       fetchLeadsSummary();
@@ -1087,8 +1089,8 @@ export default function CustomerCarePage() {
           <button onClick={() => router.push('/customer-care/laporan')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 16px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
             <FileText size={15}/>Laporan
           </button>
-          <button onClick={() => setShowResetPw(true)} title="Reset password akun klien (mis. klien lupa password & minta via WA)" style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)', borderRadius:'12px', color:'#d97706', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
-            <KeyRound size={15}/>Reset Password
+          <button onClick={() => setShowResetPw(true)} title="Buat akun apps Klien + PIN untuk Deal, atau reset PIN klien yang lupa" style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.3)', borderRadius:'12px', color:'#d97706', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <KeyRound size={15}/>Akun & PIN Klien
           </button>
         </div>
         {showResetPw && <ResetPasswordAkunModal role="klien" onClose={() => setShowResetPw(false)} />}
@@ -1858,7 +1860,7 @@ export default function CustomerCarePage() {
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'520px', padding:'24px', margin:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
               <h2 style={{ fontSize:'17px', fontWeight:700, color:'var(--text)' }}>Tandai Deal — {dealTarget.nama_leads}</h2>
-              <button onClick={() => { setDealTarget(null); setDealMitraId(''); setDealMitraTipeFilter(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
+              <button onClick={() => { setDealTarget(null); setDealMitraId(''); setDealMitraTipeFilter(''); setDealMitraSearch(''); }} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={16}/></button>
             </div>
             <form onSubmit={handleMarkDeal} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
               <div>
@@ -1870,10 +1872,23 @@ export default function CustomerCarePage() {
               </div>
               <div>
                 <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Assign Mitra (opsional)</label>
-                <select value={dealMitraId} onChange={e => setDealMitraId(e.target.value)} style={inp}>
+                <div style={{ position:'relative', marginBottom:'6px' }}>
+                  <Search size={14} style={{ position:'absolute', left:'11px', top:'50%', transform:'translateY(-50%)', color:'var(--text3)' }} />
+                  <input value={dealMitraSearch} onChange={e => setDealMitraSearch(e.target.value)} placeholder="Cari nama / NIM / no HP mitra..." style={{ ...inp, paddingLeft:'32px' }} />
+                </div>
+                <select value={dealMitraId} onChange={e => {
+                  const m = mitraList.find((x: any) => String(x.id) === e.target.value);
+                  setDealMitraId(e.target.value);
+                  setDealForm(f => ({ ...f, mitra_nim: m?.nomor_induk || '' }));
+                }} style={inp}>
                   <option value="">-- Belum Assign --</option>
-                  {mitraList.filter((m: any) => !dealMitraTipeFilter || m.tipe_pekerjaan === dealMitraTipeFilter).map((m: any) => (
-                    <option key={m.id} value={m.id}>{m.user?.name} ({m.status})</option>
+                  {mitraList.filter((m: any) => {
+                    if (String(m.id) === String(dealMitraId)) return true;
+                    if (dealMitraTipeFilter && m.tipe_pekerjaan !== dealMitraTipeFilter) return false;
+                    const q = dealMitraSearch.trim().toLowerCase();
+                    return !q || [m.user?.name, m.nama_lengkap, m.nomor_induk, m.user?.phone].some((v: any) => String(v || '').toLowerCase().includes(q));
+                  }).map((m: any) => (
+                    <option key={m.id} value={m.id}>{m.user?.name || m.nama_lengkap}{m.nomor_induk ? ` · ${m.nomor_induk}` : ''} ({m.status})</option>
                   ))}
                 </select>
               </div>
@@ -1940,7 +1955,10 @@ export default function CustomerCarePage() {
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>NIM Mitra</label>
-                  <input value={dealForm.mitra_nim} onChange={e => setDealForm(f => ({ ...f, mitra_nim: e.target.value }))} style={inp} placeholder="Opsional" />
+                  {(() => { const auto = !!(dealMitraId && mitraList.find((x: any) => String(x.id) === String(dealMitraId))?.nomor_induk); return (
+                    <input value={dealForm.mitra_nim} readOnly={auto} onChange={e => setDealForm(f => ({ ...f, mitra_nim: e.target.value }))}
+                      style={{ ...inp, ...(auto ? { opacity:0.75, cursor:'not-allowed' } : {}) }}
+                      placeholder={dealMitraId ? 'Mitra belum punya NIM, isi manual' : 'Otomatis setelah pilih mitra'} />); })()}
                 </div>
                 <div>
                   <label style={{ color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' }}>Biaya Admin</label>
@@ -1989,7 +2007,7 @@ export default function CustomerCarePage() {
               </div>
 
               <div style={{ display:'flex', gap:'10px' }}>
-                <button type="button" onClick={() => { setDealTarget(null); setDealMitraId(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
+                <button type="button" onClick={() => { setDealTarget(null); setDealMitraId(''); setDealMitraSearch(''); }} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
                 <button type="submit" disabled={savingDeal} style={{ flex:2, padding:'10px', background:'linear-gradient(135deg, #10b981, #059669)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>
                   {savingDeal ? 'Menyimpan...' : 'Tandai Deal'}
                 </button>
