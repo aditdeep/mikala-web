@@ -102,7 +102,7 @@ export default function HomePage() {
                   <div className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{s.patient_name}</div>
                 </div>
               </div>
-              <span style={{ background:'rgba(16,185,129,0.15)', color:'var(--green)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{s.status}</span>
+              <span style={{ background:'rgba(16,185,129,0.15)', color:'var(--green)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', padding:'3px 10px', fontSize:'11px', fontWeight:600 }}>{({ pending:'Menunggu', confirmed:'Dikonfirmasi', active:'Berjalan', completed:'Selesai', cancelled:'Dibatalkan' } as Record<string,string>)[s.status] || s.status}</span>
             </div>
           )) : (
             <div className="text-center py-8" style={{ color:'var(--text-muted)' }}>

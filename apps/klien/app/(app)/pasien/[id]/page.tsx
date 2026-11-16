@@ -59,7 +59,7 @@ export default function DetailPasienPage() {
 
   return (
     <div style={{ padding:'16px', paddingBottom:'80px' }}>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px', paddingTop:'8px' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px', paddingTop:'8px', paddingRight:'92px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
           <button onClick={() => router.back()} style={{ width:'36px', height:'36px', borderRadius:'12px', background:'var(--glass)', border:'1px solid var(--border)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text2)' }}>
             <ArrowLeft size={18} />
@@ -95,7 +95,7 @@ export default function DetailPasienPage() {
         </div>
         <h2 style={{ color:'white', fontWeight:700, fontSize:'18px' }}>{pasien.nama_lengkap}</h2>
         <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'13px', marginTop:'4px' }}>
-          {pasien.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} {usia ? `• \${usia} tahun` : ''}
+          {pasien.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} {usia ? `• ${usia} tahun` : ''}
         </p>
         {pasien.golongan_darah && (
           <div style={{ display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'10px', background:'rgba(255,255,255,0.2)', borderRadius:'10px', padding:'4px 12px' }}>

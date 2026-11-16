@@ -18,6 +18,14 @@
     --shadow-card: 0 4px 24px rgba(0,0,0,0.06);
     --glass: rgba(255,255,255,0.65);
     --glass-border: rgba(255,255,255,0.8);
+    --bg2: #ffffff;
+    /* alias nama lama yg dipakai halaman Tagihan/Layanan/Pasien (dulu tidak terdefinisi -> sheet bayar transparan) */
+    --card: var(--bg2);
+    --bg: var(--bg-primary);
+    --text: var(--text-primary);
+    --text2: var(--text-secondary);
+    --text3: var(--text-muted);
+    --purple-light: var(--green-light);
   }
   .dark {
     color-scheme: dark;
@@ -29,6 +37,7 @@
     --shadow-card: 0 4px 24px rgba(0,0,0,0.3);
     --glass: rgba(255,255,255,0.04);
     --glass-border: rgba(255,255,255,0.08);
+    --bg2: #12261c;
   }
   * { box-sizing: border-box; }
   body {

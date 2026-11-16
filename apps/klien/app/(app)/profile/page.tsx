@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
   return (
     <div style={{ padding:'16px', paddingBottom:'80px' }} className="space-y-4">
-      <div style={{ paddingTop:'8px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div style={{ paddingTop:'8px', display:'flex', alignItems:'center', justifyContent:'space-between', paddingRight:'92px' }}>
         <h1 style={{ fontSize:'22px', fontWeight:700, color:'var(--text)' }}>Profil</h1>
         {!editing ? (
           <button onClick={() => setEditing(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'12px', color:'#10b981', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>
