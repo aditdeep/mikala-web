@@ -68,8 +68,9 @@ export default function CutiPage() {
           <h1 style={{ fontSize:'20px', fontWeight:800, color:'var(--text)' }}>📅 Cuti</h1>
           <p style={{ fontSize:'12px', color:'var(--text3)' }}>Ajukan & lihat history cuti</p>
         </div>
+        {/* marginRight: jangan tertutup ikon lonceng & tema yg fixed di pojok kanan atas */}
         <button onClick={() => setShowForm(true)}
-          style={{ display:'flex', alignItems:'center', gap:'4px', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'12px', padding:'8px 14px', color:'white', fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
+          style={{ marginRight:'92px', display:'flex', alignItems:'center', gap:'4px', background:'linear-gradient(135deg,#7c3aed,#4f46e5)', border:'none', borderRadius:'12px', padding:'8px 14px', color:'white', fontWeight:700, fontSize:'12px', cursor:'pointer' }}>
           <Plus size={14}/> Ajukan
         </button>
       </div>

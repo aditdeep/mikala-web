@@ -17,6 +17,12 @@
     --shadow-card: 0 4px 24px rgba(0,0,0,0.06);
     --glass: rgba(255,255,255,0.65);
     --glass-border: rgba(255,255,255,0.8);
+    --bg2: #ffffff;
+    /* alias nama lama yg dipakai halaman Pelatihan/Cuti/Gaji/Jobs (dulu tidak terdefinisi) */
+    --bg: var(--bg-primary);
+    --text: var(--text-primary);
+    --text2: var(--text-secondary);
+    --text3: var(--text-muted);
   }
   .dark {
     color-scheme: dark;
@@ -28,6 +34,7 @@
     --shadow-card: 0 4px 24px rgba(0,0,0,0.3);
     --glass: rgba(255,255,255,0.04);
     --glass-border: rgba(255,255,255,0.08);
+    --bg2: #1a1a2e;
   }
   * { box-sizing: border-box; }
   body {
