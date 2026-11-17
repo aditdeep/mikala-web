@@ -586,9 +586,9 @@ export default function RekrutmenPage() {
     setErrorMsg('');
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, permanen = false) => {
     try {
-      await apiClient.delete(`/internal/rekrutmen/mitra/${id}`);
+      await apiClient.delete(`/internal/rekrutmen/mitra/${id}${permanen ? '/permanen' : ''}`);
       setShowDeleteConfirm(null);
       // Hapus dari local state langsung (tidak perlu tunggu fetch)
       setData(prev => prev.filter((d: any) => d.id !== id));
@@ -1183,11 +1183,16 @@ export default function RekrutmenPage() {
             </div>
             <h3 style={{ fontSize:'16px', fontWeight:700, color:'var(--text)', marginBottom:'8px' }}>Hapus Data Mitra?</h3>
             <p style={{ fontSize:'13px', color:'var(--text3)', marginBottom:'20px' }}>
-              Data <strong>{showDeleteConfirm.nama_lengkap || showDeleteConfirm.user?.name}</strong> akan dinonaktifkan.
+              <strong>Nonaktifkan</strong>: data <strong>{showDeleteConfirm.nama_lengkap || showDeleteConfirm.user?.name}</strong> tetap tersimpan, akun tidak bisa login.<br/>
+              <strong style={{ color:'#ef4444' }}>Hapus Permanen</strong>: data &amp; akun dihapus total, tidak bisa dikembalikan (hanya untuk data salah input / dobel).
             </p>
-            <div style={{ display:'flex', gap:'10px' }}>
+            <div style={{ display:'flex', gap:'8px' }}>
               <button onClick={() => setShowDeleteConfirm(null)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>
-              <button onClick={() => handleDelete(showDeleteConfirm.id)} style={{ flex:1, padding:'10px', background:'linear-gradient(135deg, #ef4444, #dc2626)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>Hapus</button>
+              <button onClick={() => handleDelete(showDeleteConfirm.id)} style={{ flex:1, padding:'10px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.35)', borderRadius:'12px', color:'#ef4444', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>Nonaktifkan</button>
+              <button onClick={() => {
+                const nama = showDeleteConfirm.nama_lengkap || showDeleteConfirm.user?.name || '';
+                if (prompt(`Hapus PERMANEN "${nama}"? Tidak bisa dikembalikan.\nKetik HAPUS untuk lanjut:`)?.trim().toUpperCase() === 'HAPUS') handleDelete(showDeleteConfirm.id, true);
+              }} style={{ flex:1, padding:'10px', background:'linear-gradient(135deg, #ef4444, #dc2626)', border:'none', borderRadius:'12px', color:'white', fontWeight:700, fontSize:'13px', cursor:'pointer' }}>Hapus Permanen</button>
             </div>
           </div>
         </div>
