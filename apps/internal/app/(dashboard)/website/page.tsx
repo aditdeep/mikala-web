@@ -1,9 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { FileText, Image, Star, Settings, Plus, X, Edit2, Trash2, Eye, Upload, BarChart2, Globe, Building2 } from 'lucide-react';
+import { FileText, Image, Star, Settings, Plus, X, Edit2, Trash2, Eye, Upload, BarChart2, Globe, Building2, Link2 } from 'lucide-react';
 import { toWibInput } from '@/lib/jadwalWib';
 import RichEditor from '../../../components/RichEditor';
+import LinktreeEditor from '../../../components/LinktreeEditor';
 
 const TABS = [
   { key:'artikel',   label:'Artikel',   icon: FileText },
@@ -12,6 +13,7 @@ const TABS = [
   { key:'galeri',    label:'Galeri',    icon: Image },
   { key:'testimoni', label:'Testimoni', icon: Star },
   { key:'perusahaan', label:'Perusahaan', icon: Building2 },
+  { key:'linktree',  label:'Linktree',  icon: Link2 },
   { key:'settings',  label:'Settings',  icon: Settings },
 ];
 
@@ -609,6 +611,8 @@ export default function WebsitePage() {
       )}
 
       {/* TAB SETTINGS */}
+      {activeTab === 'linktree' && <LinktreeEditor onUpload={handleUpload} />}
+
       {activeTab === 'settings' && (
         <form onSubmit={handleSaveSettings} style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
