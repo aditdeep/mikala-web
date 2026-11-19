@@ -121,7 +121,7 @@ export default function PelatihanPage() {
                           <p style={{ fontSize:'12px', color: m.checked?'var(--text)':'var(--text3)', lineHeight:'1.4' }}>
                             <span style={{ color:'var(--text3)', fontSize:'10px', marginRight:'4px' }}>{m.kode}</span>{m.nama}
                           </p>
-                          {m.checked && (
+                          {m.checked && !m.is_induk && (
                             <p style={{ fontSize:'10px', color:'#10b981', marginTop:'2px' }}>
                               ✓ {m.tanggal_dapat ? new Date(m.tanggal_dapat).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-'}
                               {m.pengajar && <span style={{ color:'var(--text3)' }}> · {m.pengajar}</span>}

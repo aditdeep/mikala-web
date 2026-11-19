@@ -108,7 +108,7 @@ const [tempRating, setTempRating] = useState(5);
   // rating muncul, biar gak ujung2nya gagal semua pas disubmit.
   const handleCeklisAllKategori = (kat: string) => {
     const katData = checklistMitra?.by_kategori?.find((k: any) => k.kategori === kat);
-    const items = (katData?.materi || []).filter((m: any) => !m.checked);
+    const items = (katData?.materi || []).filter((m: any) => !m.checked && !m.is_induk);
     if (items.length === 0) return;
     const missingPengajar = items.some((m: any) => !(checkInputs[m.id]?.pengajar || defaultPengajar));
     if (missingPengajar) { alert('Isi nama pengajar terlebih dahulu (kolom "Pengajar Default" di atas, atau per-materi)'); return; }
@@ -429,7 +429,8 @@ const [tempRating, setTempRating] = useState(5);
                 const katData = checklistMitra.by_kategori?.find((k: any) => k.kategori === kat);
                 const items = katData?.materi || [];
                 const isOpen = openKat.includes(kat);
-                const selesai = items.filter((m: any) => m.checked).length;
+                const daun = items.filter((m: any) => !m.is_induk); // materi induk tercentang otomatis, tidak dihitung
+                const selesai = daun.filter((m: any) => m.checked).length;
                 const katColor = KAT_WARNA[kat] || '#7c3aed';
                 return (
                   <div key={kat} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', overflow:'hidden' }}>
@@ -438,13 +439,13 @@ const [tempRating, setTempRating] = useState(5);
                         style={{ flex:1, display:'flex', justifyContent:'space-between', alignItems:'center', background:'transparent', border:'none', cursor:'pointer', padding:0, textAlign:'left' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                           <span style={{ fontSize:'13px', fontWeight:700, color:katColor }}>Materi {KAT_LABEL[kat] || kat}</span>
-                          <span style={{ fontSize:'11px', color:'var(--text3)', background:'var(--bg)', padding:'2px 8px', borderRadius:'99px' }}>{selesai}/{items.length}</span>
+                          <span style={{ fontSize:'11px', color:'var(--text3)', background:'var(--bg)', padding:'2px 8px', borderRadius:'99px' }}>{selesai}/{daun.length}</span>
                         </div>
                         {isOpen ? <ChevronDown size={16} style={{ color:'var(--text3)' }}/> : <ChevronRight size={16} style={{ color:'var(--text3)' }}/>}
                       </button>
                       {/* "Ceklis Semua" -- HANYA materi kategori ini (Dasar atau PHC), gak
                           pernah gabung dua kategori sekaligus. Sembunyi kalau kategori sudah 100%. */}
-                      {selesai < items.length && (
+                      {selesai < daun.length && (
                         <button onClick={() => handleCeklisAllKategori(kat)}
                           style={{ marginLeft:'12px', flexShrink:0, padding:'5px 12px', background:`${katColor}18`, border:`1px solid ${katColor}44`, borderRadius:'8px', color:katColor, fontWeight:600, fontSize:'11px', cursor:'pointer', whiteSpace:'nowrap' }}>
                           ✓ Ceklis Semua
@@ -458,8 +459,9 @@ const [tempRating, setTempRating] = useState(5);
                           const isSaving = savingCheck === m.id;
                           return (
                             <div key={m.id} style={{ display:'flex', alignItems:'flex-start', gap:'10px', padding:`10px 16px`, paddingLeft:`${16+indent}px`, borderBottom:'1px solid rgba(255,255,255,0.04)', background: m.checked?'rgba(16,185,129,0.04)':'transparent' }}>
-                              <button onClick={() => handleCheckClick(m.id, m.nama, m.checked)} disabled={isSaving}
-                                style={{ background:'none', border:'none', cursor:'pointer', padding:'2px', flexShrink:0, marginTop:'1px' }}>
+                              <button onClick={() => !m.is_induk && handleCheckClick(m.id, m.nama, m.checked)} disabled={isSaving || m.is_induk}
+                                title={m.is_induk ? 'Tercentang otomatis kalau semua sub materi sudah diceklis' : undefined}
+                                style={{ background:'none', border:'none', cursor: m.is_induk ? 'default' : 'pointer', padding:'2px', flexShrink:0, marginTop:'1px', opacity: m.is_induk && !m.checked ? .45 : 1 }}>
                                 {isSaving
                                   ? <div style={{ width:'18px', height:'18px', borderRadius:'50%', border:'2px solid rgba(124,58,237,0.3)', borderTopColor:'#7c3aed' }}/>
                                   : m.checked
@@ -470,13 +472,16 @@ const [tempRating, setTempRating] = useState(5);
                                 <p style={{ fontSize:'13px', color: m.checked?'var(--text3)':'var(--text)', textDecoration: m.checked?'line-through':'none', lineHeight:'1.4' }}>
                                   <span style={{ color:'var(--text3)', fontSize:'11px', marginRight:'6px' }}>{m.kode}</span>{m.nama}
                                 </p>
-                                {m.checked && (
+                                {m.is_induk && !m.checked && (
+                                  <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>Otomatis tercentang kalau semua sub materi selesai</p>
+                                )}
+                                {m.checked && !m.is_induk && (
                                   <p style={{ fontSize:'11px', color:'#10b981', marginTop:'2px' }}>
                                     ✓ {m.tanggal_dapat} · {m.pengajar}
                                     {m.checked_by && <span style={{ color:'var(--text3)' }}> · oleh {m.checked_by}</span>}
                                   </p>
                                 )}
-                                {!m.checked && !m.parent_kode && (
+                                {!m.checked && !m.is_induk && (
                                   <div style={{ display:'flex', gap:'6px', marginTop:'6px' }}>
                                     <input type="date" defaultValue={defaultTgl}
                                       onChange={e => setCheckInputs(prev=>({...prev,[m.id]:{...prev[m.id],tanggal:e.target.value}}))}
