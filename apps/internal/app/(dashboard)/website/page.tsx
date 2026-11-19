@@ -841,7 +841,7 @@ export default function WebsitePage() {
       {/* TAB PERUSAHAAN */}
       {activeTab === 'perusahaan' && (
         <form onSubmit={handleSaveSettings} style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
-          <p style={{ color:'var(--text3)', fontSize:'12px', margin:0 }}>Kelola konten halaman /perusahaan (Tentang Kami). Galeri "Fasilitas dan Kegiatan" ambil otomatis dari tab Galeri dengan kategori "Fasilitas".</p>
+          <p style={{ color:'var(--text3)', fontSize:'12px', margin:0 }}>Kelola konten halaman /perusahaan (Tentang Kami). Galeri "Fasilitas dan Kegiatan" ambil otomatis dari semua foto di tab Galeri.</p>
 
           {/* Hero */}
           <div style={{ ...cardStyle, padding:'16px' }}>
@@ -1328,7 +1328,7 @@ export default function WebsitePage() {
                   <option value="">-- Pilih --</option>
                   {['Tim','Layanan','Event','Fasilitas','Peralatan'].map(k => <option key={k} value={k}>{k}</option>)}
                 </select>
-                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'5px 0 0' }}>Pilih <strong>Fasilitas</strong> agar foto ini muncul di section "Galeri Fasilitas dan Kegiatan" pada halaman /perusahaan.</p>
+                <p style={{ color:'var(--text3)', fontSize:'11px', margin:'5px 0 0' }}>Semua foto galeri tampil di section "Galeri Fasilitas dan Kegiatan" pada halaman /perusahaan.</p>
               </div>
               <div style={{ display:'flex', gap:'10px' }}>
                 <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, padding:'10px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>Batal</button>

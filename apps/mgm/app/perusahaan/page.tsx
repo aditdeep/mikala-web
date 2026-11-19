@@ -60,8 +60,8 @@ export default async function PerusahaanPage() {
   const legalitasIzin = s.prsh_legalitas_izin || '2008240799680001';
 
   const galeriAll = galeri || [];
-  const galeriFasilitas = galeriAll.filter((g: any) => String(g.kategori||'').trim().toLowerCase() === 'fasilitas');
-  const galeriDisplay = galeriFasilitas.length > 0 ? galeriFasilitas : galeriAll;
+  // semua foto galeri ikut tampil (dulu cuma kategori Fasilitas -> foto Event dll tidak pernah muncul)
+  const galeriDisplay = galeriAll.filter((g: any) => g.url || g.thumbnail);
 
   const checklist: string[] = parseJson(s.prsh_checklist_list, [
     'Gratis konsultasi untuk mendapatkan layanan tepat',
@@ -179,7 +179,7 @@ export default async function PerusahaanPage() {
             </div>
           </ScrollFade>
           <div className="galeri-marquee-track">
-            <div className="galeri-marquee-content">
+            <div className="galeri-marquee-content" style={{ animationDuration: `${Math.max(30, galeriDisplay.length * 5)}s` }}>
               {[...galeriDisplay, ...galeriDisplay].map((g: any, i: number) => (
                 <div key={i} style={{ flex:'0 0 auto', width:'240px', height:'170px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 16px rgba(0,0,0,0.08)' }}>
                   <img src={g.url||g.thumbnail} alt={g.judul||'Fasilitas'} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
