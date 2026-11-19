@@ -35,10 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     keywords: 'LPK perawat jepang, kaigo, lembaga pelatihan kerja, perawat lansia jepang, mikala akademi',
     metadataBase: new URL('https://mikalaglobalakademi.co.id'),
-    icons: {
-      icon:  'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153869/logo-mga-web_digdlz.png',
-      apple: 'https://res.cloudinary.com/djgtchmsx/image/upload/v1780153869/logo-mga-web_digdlz.png',
-    },
+    // favicon: app/icon.png, app/apple-icon.png, app/favicon.ico (konvensi file Next)
     openGraph: {
       title,
       description,

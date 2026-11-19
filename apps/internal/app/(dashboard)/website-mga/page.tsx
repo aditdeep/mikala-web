@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import {
   Plus, Search, X, Edit2, Trash2, Eye, Globe,
-  Image, BookOpen, Users, Star, Settings,
+  Image, BookOpen, Users, Star, Settings, Info,
 } from 'lucide-react';
 import RichEditor from '../../../components/RichEditor';
 import { toWibInput } from '@/lib/jadwalWib';
@@ -13,6 +13,7 @@ const TABS = [
   { key: 'program',   label: 'Program',   icon: Users },
   { key: 'galeri',    label: 'Galeri',    icon: Image },
   { key: 'testimoni', label: 'Testimoni', icon: Star },
+  { key: 'tentang',   label: 'Tentang Kami', icon: Info },
   { key: 'settings',  label: 'Settings',  icon: Settings },
 ];
 
@@ -44,7 +45,7 @@ export default function WebsiteMgaPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (tab === 'settings') {
+      if (tab === 'settings' || tab === 'tentang') {
         const r: any = await apiClient.get('/internal/mga/settings');
         setSettings(r.data?.data || {});
       } else {
@@ -58,8 +59,9 @@ export default function WebsiteMgaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
     try {
-      if (tab === 'settings') {
+      if (tab === 'settings' || tab === 'tentang') {
         await apiClient.post('/internal/mga/settings', settings);
+        if (tab === 'tentang') alert('Tersimpan. Halaman /tentang terupdate dalam ±1 menit.');
       } else if (editItem) {
         await apiClient.put(`/internal/mga/${tab}/${editItem.id}`, form);
       } else {
@@ -104,7 +106,7 @@ export default function WebsiteMgaPage() {
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: 'var(--glass)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text2)', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
             <Globe size={14}/> Preview Website
           </a>
-          {tab !== 'settings' && (
+          {tab !== 'settings' && tab !== 'tentang' && (
             <button onClick={() => { setShowModal(true); setEditItem(null); setForm({ status: 'published' }); }}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>
               <Plus size={14}/> Tambah {TABS.find(t => t.key === tab)?.label}
@@ -165,8 +167,40 @@ export default function WebsiteMgaPage() {
         </div>
       )}
 
+      {/* Tentang Kami -- disimpan di mga_settings (key tentang_*), dibaca halaman /tentang */}
+      {tab === 'tentang' && (
+        <div style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Halaman Tentang Kami</h2>
+          <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '20px' }}>Kolom yang dikosongkan memakai isi bawaan website. Untuk daftar: 1 baris = 1 item, kolom dipisah tanda <b>|</b>.</p>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {[
+              { key: 'tentang_hero_judul1', label: 'Judul Banner (baris 1)', ph: 'Membangun Tenaga Perawat' },
+              { key: 'tentang_hero_judul2', label: 'Judul Banner (baris 2, warna hijau)', ph: 'Berstandar Internasional' },
+              { key: 'tentang_hero_sub',    label: 'Subjudul Banner', ph: 'Sejak 2014, Mikala Global Akademi ...', rows: 2 },
+              { key: 'tentang_gambar',      label: 'URL Gambar "Siapa Kami"', ph: 'https://...' },
+              { key: 'tentang_judul',       label: 'Judul "Siapa Kami"', ph: 'LPK Terpercaya untuk Tenaga Kesehatan Indonesia' },
+              { key: 'tentang_isi',         label: 'Isi "Siapa Kami" (pisahkan paragraf dengan baris kosong)', ph: 'Mikala Global Akademi (MGA) adalah ...', rows: 7 },
+              { key: 'tentang_statistik',   label: 'Angka (Angka | Keterangan)', ph: '2014 | Tahun Berdiri\n500+ | Alumni di Jepang', rows: 4 },
+              { key: 'tentang_nilai',       label: 'Nilai Kami (Ikon | Judul | Deskripsi)', ph: '🎯 | Profesional | Standar kurikulum internasional ...', rows: 4 },
+              { key: 'tentang_tim',         label: 'Tim Kami (Nama | Jabatan | URL foto atau emoji)', ph: 'Nama Lengkap | Direktur Utama | https://...jpg', rows: 4 },
+            ].map(f => (
+              <div key={f.key}>
+                <label style={lbl}>{f.label}</label>
+                {f.rows
+                  ? <textarea rows={f.rows} value={settings[f.key] || ''} onChange={e => setSettings((x: any) => ({ ...x, [f.key]: e.target.value }))} style={{ ...inp, resize: 'vertical', fontFamily: 'inherit' }} placeholder={f.ph}/>
+                  : <input value={settings[f.key] || ''} onChange={e => setSettings((x: any) => ({ ...x, [f.key]: e.target.value }))} style={inp} placeholder={f.ph}/>}
+              </div>
+            ))}
+            <button type="submit" disabled={saving}
+              style={{ alignSelf: 'flex-start', padding: '10px 24px', background: 'linear-gradient(135deg,#1a7a5e,#22a07a)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+              {saving ? 'Menyimpan...' : 'Simpan Tentang Kami'}
+            </button>
+          </form>
+        </div>
+      )}
+
       {/* List Tab */}
-      {tab !== 'settings' && (
+      {tab !== 'settings' && tab !== 'tentang' && (
         <>
           <div style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px' }}>
             <Search size={15} style={{ color: 'var(--text3)' }}/>
