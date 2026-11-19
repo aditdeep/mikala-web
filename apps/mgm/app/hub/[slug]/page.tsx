@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import './linktree.css';
+import QRCode from 'qrcode';
+import Bagikan from './Bagikan';
+import './hub.css';
 
-// Pengganti linktree.mikalaglobalmedika.com (SaaS 66biolinks yg berat): halaman statis ringan,
-// isinya diatur dari CMS Web MGM > Linktree (setting `linktree`, JSON per slug).
+// mikalaglobalmedika.com/hub/{slug} -- pengganti linktree.mikalaglobalmedika.com (SaaS 66biolinks yg berat).
+// Isinya diatur dari CMS Web MGM > Linktree (setting `linktree`, JSON per slug).
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.mikalaglobalmedika.com/api';
+const SITE = 'https://mikalaglobalmedika.com';
 
 type Link = { label: string; url: string; ikon?: string };
 type Profil = { nama: string; bio?: string; foto?: string; links: Link[] };
@@ -73,35 +76,63 @@ function jenis(l: Link): string {
   return 'web';
 }
 
-export default async function LinktreePage({ params }: { params: { slug: string } }) {
+/** Teks kecil di bawah judul: @handle, nomor WA, atau nama domain. */
+function keterangan(l: Link, k: string): string {
+  try {
+    if (k === 'whatsapp') {
+      const d = (l.url.match(/(\d{9,15})/) || [])[1] || '';
+      return d ? '+' + d.replace(/^(\d{2})(\d{3})(\d{4})(\d+)$/, '$1 $2-$3-$4') : 'WhatsApp';
+    }
+    if (k === 'email') return l.url.replace(/^mailto:/, '').split('?')[0];
+    if (k === 'telepon') return l.url.replace(/^tel:/, '');
+    const u = new URL(l.url);
+    const seg = u.pathname.split('/').filter(Boolean)[0] || '';
+    if (['instagram', 'tiktok', 'youtube'].includes(k) && seg) return seg.startsWith('@') ? seg : '@' + seg;
+    if (k === 'facebook' && seg) return 'fb.com/' + seg;
+    return u.hostname.replace(/^www\./, '');
+  } catch { return ''; }
+}
+
+export default async function HubPage({ params }: { params: { slug: string } }) {
   const p = await getProfil(params.slug);
   if (!p) notFound();
+  const url = `${SITE}/hub/${params.slug.toLowerCase()}`;
+  const qr = await QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: '#1a2e25', light: '#ffffff' } });
+  const n = p.links.length;
   return (
-    <main className="lt">
-      <div className="lt-blob lt-blob-a" /><div className="lt-blob lt-blob-b" />
-      <section className="lt-card">
-        {p.foto && <img className="lt-foto" src={p.foto} alt={p.nama} width={96} height={96} />}
-        <h1 className="lt-nama">
-          {p.nama}
-          <svg className="lt-centang" viewBox="0 0 24 24" aria-label="Akun resmi"><path d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3-2.6 1.9-1 3.1-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3.1-2.6-1.9 1-3-1-3.1L5.2 6.3l1-3 3.2.1L12 1.5Z"/><path d="m8 12.3 2.6 2.6L16.2 9" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </h1>
-        {p.bio && <p className="lt-bio">{p.bio}</p>}
-        <nav className="lt-links">
+    <main className="hub">
+      <div className="hub-glow hub-glow-a" /><div className="hub-glow hub-glow-b" />
+      <div className="hub-isi">
+        <header className="hub-atas">
+          <Bagikan url={url} qr={qr} nama={p.nama} slug={params.slug.toLowerCase()} />
+          {p.foto && <img className="hub-logo" src={p.foto} alt={p.nama} width={112} height={112} />}
+          <h1 className="hub-nama">
+            {p.nama}
+            <svg className="hub-centang" viewBox="0 0 24 24" aria-label="Akun resmi"><path d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3-2.6 1.9-1 3.1-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3.1-2.6-1.9 1-3-1-3.1L5.2 6.3l1-3 3.2.1L12 1.5Z"/><path d="m8 12.3 2.6 2.6L16.2 9" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </h1>
+          {p.bio && <p className="hub-bio">{p.bio}</p>}
+          <div className="hub-garis" />
+        </header>
+        <nav className="hub-links">
           {p.links.map((l, i) => {
             const k = jenis(l);
+            // warna kartu bergeser teal (192) -> ungu -> magenta-merah (345) dari atas ke bawah
+            const h = Math.round(192 + (n > 1 ? i / (n - 1) : 0) * 153);
             return (
-              <a key={i} className="lt-link" href={l.url} target="_blank" rel="noopener noreferrer" style={{ animationDelay: `${0.05 * i}s` }}>
-                <span className="lt-ikon" style={{ background: WARNA[k] || 'linear-gradient(135deg,#0e92b3,#9c488b)' }}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={IKON[k]} /></svg>
+              <a key={i} className="hub-link" href={l.url} target="_blank" rel="noopener noreferrer"
+                style={{ ['--h' as any]: h, animationDelay: `${0.06 * i}s` }}>
+                <span className="hub-ikon"><svg viewBox="0 0 24 24" aria-hidden="true" style={{ fill: WARNA[k] || `hsl(${h} 70% 42%)` }}><path d={IKON[k]} /></svg></span>
+                <span className="hub-teks">
+                  <span className="hub-label">{l.label}</span>
+                  {keterangan(l, k) && <span className="hub-ket">{keterangan(l, k)}</span>}
                 </span>
-                <span className="lt-label">{l.label}</span>
-                <svg className="lt-panah" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                <svg className="hub-panah" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
               </a>
             );
           })}
         </nav>
-        <a className="lt-footer" href="https://mikalaglobalmedika.com">© {new Date().getFullYear()} PT Mikala Global Medika</a>
-      </section>
+        <a className="hub-footer" href={SITE}>© {new Date().getFullYear()} PT Mikala Global Medika</a>
+      </div>
     </main>
   );
 }

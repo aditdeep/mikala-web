@@ -13,12 +13,14 @@
     "@mikala/ui": "*",
     "lucide-react": "^0.400.0",
     "next": "14.2.18",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.19",

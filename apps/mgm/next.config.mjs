@@ -3,6 +3,8 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   reactStrictMode: true,
+  // alamat lama halaman link bio
+  async redirects() { return [{ source: '/linktree/:slug', destination: '/hub/:slug', permanent: true }]; },
   transpilePackages: ['@mikala/ui', '@mikala/lib', '@mikala/hooks', '@mikala/store', '@mikala/types'],
   webpack: (config) => {
     config.resolve.alias['@mikala/ui'] = path.resolve(__dirname, '../../packages/ui/src/index.ts');

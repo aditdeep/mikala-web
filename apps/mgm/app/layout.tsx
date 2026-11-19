@@ -118,8 +118,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
         {/* Qontak Webchat Widget */}
         <Script id="qontak-chat" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
-          // halaman /linktree sengaja ringan & bersih: tanpa widget chat
-          if (!window.__qontakChatLoaded && !location.pathname.startsWith('/linktree')) {
+          // halaman /hub (link bio) sengaja ringan & bersih: tanpa widget chat
+          if (!window.__qontakChatLoaded && !location.pathname.startsWith('/hub')) {
             window.__qontakChatLoaded = true;
             var qchatInit = document.createElement('script');
             qchatInit.src = "https://webchat.qontak.com/qchatInitialize.js";

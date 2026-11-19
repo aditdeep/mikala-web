@@ -1,5 +1,5 @@
 'use client';
-// Editor halaman mikalaglobalmedika.com/linktree/{slug} (pengganti linktree.mikalaglobalmedika.com).
+// Editor halaman mikalaglobalmedika.com/hub/{slug} (pengganti linktree.mikalaglobalmedika.com).
 // Disimpan ke CMS setting `linktree` = JSON { slug: { nama, bio, foto, links:[{label,url,ikon}] } }.
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
@@ -77,7 +77,7 @@ export default function LinktreeEditor({ onUpload }: { onUpload: (file: File, se
     setSlug(s); setSlugBaru('');
   };
   const hapusHalaman = () => {
-    if (!confirm(`Hapus halaman /linktree/${slug}?`)) return;
+    if (!confirm(`Hapus halaman /hub/${slug}?`)) return;
     const { [slug]: _, ...sisa } = semua;
     setSemua(sisa); setSlug(Object.keys(sisa)[0] || '');
   };
@@ -102,7 +102,7 @@ export default function LinktreeEditor({ onUpload }: { onUpload: (file: File, se
     <div style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div>
         <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>Linktree</h2>
-        <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Halaman link bio untuk Instagram/TikTok, alamat: <b>{SITE.replace('https://', '')}/linktree/&lt;nama&gt;</b></p>
+        <p style={{ fontSize: '12px', color: 'var(--text3)' }}>Halaman link bio untuk Instagram/TikTok, alamat: <b>{SITE.replace('https://', '')}/hub/&lt;nama&gt;</b></p>
       </div>
 
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -160,8 +160,8 @@ export default function LinktreeEditor({ onUpload }: { onUpload: (file: File, se
           style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#0e92b3,#9c488b)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 700, fontSize: '13px', cursor: 'pointer', opacity: saving ? .6 : 1 }}>
           {saving ? 'Menyimpan...' : 'Simpan Linktree'}
         </button>
-        {slug && <a href={`${SITE}/linktree/${slug}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#0e92b3', textDecoration: 'none' }}>
-          <ExternalLink size={14} />Lihat /linktree/{slug}
+        {slug && <a href={`${SITE}/hub/${slug}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#0e92b3', textDecoration: 'none' }}>
+          <ExternalLink size={14} />Lihat /hub/{slug}
         </a>}
         {slug && Object.keys(semua).length > 1 && <button onClick={hapusHalaman} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer' }}>Hapus halaman ini</button>}
       </div>
