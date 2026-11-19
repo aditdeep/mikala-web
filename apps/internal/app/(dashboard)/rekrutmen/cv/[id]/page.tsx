@@ -220,6 +220,8 @@ export default function CVPage() {
     linesPelatihan[0] = `${linesPelatihan[0]} (${mitra.tahun_pelatihan})`;
   const linesPengalaman = pengalamanKerja && pengalamanKerja !== 'Tidak ada' ? pengalamanKerja.split('\n').map(bersih).filter(Boolean) : [];
   const materiDidapat: string[] = cvMateri.map((m: any) => m.nama).filter(Boolean);
+  // sedikit materi -> font sebesar Pendidikan Non-Formal biar kolom gak kosong; banyak -> mengecil
+  const fontPelatihan = materiDidapat.length <= 12 ? [13.5, 17] : materiDidapat.length <= 18 ? [12, 15] : [11, 13];
 
   // Nama file PDF ikut judul dokumen saat dicetak -> cv_muhammad_said.pdf
   const unduhPdf = () => {
@@ -341,6 +343,7 @@ export default function CVPage() {
           {/* KIRI */}
           <div style={{ display:'table-cell', width:'314px', verticalAlign:'top', padding:'422px 16px 8px 39px', color:'white' }}>
             <Bio label="Kelamin" value={mitra?.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} />
+            <Bio label="Usia" value={usia !== '-' ? `${usia} Tahun` : '-'} />
             <Bio label="Asal" value={asal} />
             <Bio label="Takut Hewan" value={hewan} />
             <Bio label="Tinggi" value={tinggi !== '-' ? `${tinggi} Cm.` : '-'} />
@@ -376,7 +379,7 @@ export default function CVPage() {
             {materiDidapat.length > 0 ? (
               <ul style={{ listStyle:'none', margin:0, padding:0 }}>
                 {materiDidapat.map((t, i) => (
-                  <li key={i} data-blok style={{ display:'flex', gap:'2px', fontSize:'11px', lineHeight:'13px' }}>
+                  <li key={i} data-blok style={{ display:'flex', gap: fontPelatihan[0] > 11 ? '6px' : '2px', fontSize:`${fontPelatihan[0]}px`, lineHeight:`${fontPelatihan[1]}px` }}>
                     <span style={{ flexShrink:0 }}>✓</span><span>{t}</span>
                   </li>
                 ))}
