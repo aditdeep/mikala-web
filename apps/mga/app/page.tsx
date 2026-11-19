@@ -15,7 +15,7 @@ async function getArtikel() {
 
 async function getSettings() {
   try {
-    const res = await fetch(`${API}/mga/settings`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API}/mga/settings`, { next: { revalidate: 60 } });
     return (await res.json()).data || {};
   } catch { return {}; }
 }
@@ -47,13 +47,6 @@ async function getTestimoni() {
   } catch { return []; }
 }
 
-const STATS = [
-  { num: '500+',  label: 'Alumni Ditempatkan',   icon: '👥' },
-  { num: '98%',   label: 'Tingkat Kelulusan',     icon: '🎓' },
-  { num: '50+',   label: 'Mitra Fasilitas Jepang',icon: '🏥' },
-  { num: '10+',   label: 'Tahun Pengalaman',      icon: '⭐' },
-];
-
 // Fallback (dipakai hanya kalau CMS belum punya data program sama sekali)
 const FALLBACK_PROGRAMS = [
   {
@@ -79,12 +72,26 @@ const FALLBACK_PROGRAMS = [
   },
 ];
 
-const STEPS = [
-  { num: '01', title: 'Daftar Online',      desc: 'Isi formulir pendaftaran dan lengkapi persyaratan dokumen dasar.' },
-  { num: '02', title: 'Seleksi & Interview', desc: 'Ikuti proses seleksi berkas, tes kesehatan, dan wawancara motivasi.' },
-  { num: '03', title: 'Pelatihan Intensif',  desc: 'Mengikuti program pelatihan bahasa, keperawatan, dan budaya Jepang.' },
-  { num: '04', title: 'Penempatan Kerja',    desc: 'Ditempatkan di fasilitas kesehatan Jepang mitra MGA yang terverifikasi.' },
-];
+// Isi bawaan beranda -- dipakai selama kolom terkait di CMS Web MGA > Beranda masih kosong.
+const DEFAULT: Record<string, string> = {
+  hero_tag: '🎌 Program Kaigo Jepang 2026',
+  hero_subtitle: 'Mikala Global Akademi membuka jalan karir Anda sebagai tenaga perawat (Kaigo) di Jepang. Pelatihan komprehensif, bersertifikat, dan penempatan langsung.',
+  hero_badges: '✅ Resmi BNSP\n🏛️ Terdaftar Kemendikbud\n🤝 Mitra EPA & SSW',
+  beranda_statistik: '👥 | 500+ | Alumni Ditempatkan\n🎓 | 98% | Tingkat Kelulusan\n🏥 | 50+ | Mitra Fasilitas Jepang\n⭐ | 10+ | Tahun Pengalaman',
+  program_badge: 'Program Unggulan',
+  program_judul: 'Pilih Program yang Tepat',
+  program_sub: 'Program terstruktur dengan kurikulum standar internasional untuk mempersiapkan Anda bekerja di Jepang',
+  langkah_badge: 'Cara Bergabung',
+  langkah_judul: '4 Langkah Menuju Jepang',
+  langkah_list: 'Daftar Online | Isi formulir pendaftaran dan lengkapi persyaratan dokumen dasar.\nSeleksi & Interview | Ikuti proses seleksi berkas, tes kesehatan, dan wawancara motivasi.\nPelatihan Intensif | Mengikuti program pelatihan bahasa, keperawatan, dan budaya Jepang.\nPenempatan Kerja | Ditempatkan di fasilitas kesehatan Jepang mitra MGA yang terverifikasi.',
+  langkah_tombol: 'Mulai Perjalanan Anda →',
+  testi_badge: 'Testimoni Alumni',
+  testi_judul: 'Cerita Sukses Alumni MGA',
+  artikel_badge: 'Blog & Artikel',
+  artikel_judul: 'Informasi Terbaru',
+  cta_judul: 'Siap Memulai Perjalanan ke Jepang?',
+  cta_sub: 'Bergabunglah dengan ratusan alumni yang kini berkarir sukses di Jepang. Daftar sekarang dan mulai perjalanan Anda!',
+};
 
 // Fallback (dipakai hanya kalau CMS belum punya testimoni sama sekali)
 const FALLBACK_TESTIMONIALS = [
@@ -97,6 +104,11 @@ export default async function HomePage() {
   const [artikel, settings, cmsPrograms, cmsTestimoni] = await Promise.all([getArtikel(), getSettings(), getPrograms(), getTestimoni()]);
   const PROGRAMS = cmsPrograms.length > 0 ? cmsPrograms : FALLBACK_PROGRAMS;
   const TESTIMONIALS = cmsTestimoni.length > 0 ? cmsTestimoni : FALLBACK_TESTIMONIALS;
+  const v = (k: string) => (String(settings[k] ?? '').trim() || DEFAULT[k] || '');
+  // 1 baris = 1 item, kolom dipisah "|"
+  const baris = (k: string) => v(k).split('\n').map(l => l.split('|').map(x => x.trim())).filter(c => c[0]);
+  const STATS = baris('beranda_statistik').map(([icon, num, label]) => ({ icon, num, label: label || '' }));
+  const STEPS = baris('langkah_list').map(([title, desc], i) => ({ num: String(i + 1).padStart(2, '0'), title, desc: desc || '' }));
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -119,15 +131,15 @@ export default async function HomePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 440px), 1fr))', gap: '48px', alignItems: 'center' }}>
             {/* Left: text */}
             <div className="animate-fadeup">
-              <div className="tag tag-green" style={{ marginBottom: '20px' }}>🎌 Program Kaigo Jepang 2026</div>
+              <div className="tag tag-green" style={{ marginBottom: '20px' }}>{v('hero_tag')}</div>
               <h1 style={{
                 fontSize: 'clamp(36px, 6vw, 64px)', fontWeight: 800, color: 'white',
                 lineHeight: 1.15, marginBottom: '20px', fontFamily: "'DM Serif Display', serif",
               }}>
-                {settings.hero_title || <>Wujudkan Karir<br/><span style={{ color: 'var(--green2)' }}>Perawat Profesional</span><br/>di Jepang</>}
+                {settings.hero_title?.trim() ? settings.hero_title.split('\n').map((l: string, i: number) => <span key={i}>{i > 0 && <br/>}{l}</span>) : <>Wujudkan Karir<br/><span style={{ color: 'var(--green2)' }}>Perawat Profesional</span><br/>di Jepang</>}
               </h1>
               <p style={{ fontSize: 'clamp(15px,2vw,18px)', color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, marginBottom: '32px', maxWidth: '480px' }}>
-                Mikala Global Akademi membuka jalan karir Anda sebagai tenaga perawat (Kaigo) di Jepang. Pelatihan komprehensif, bersertifikat, dan penempatan langsung.
+                {v('hero_subtitle')}
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <a href={MITRA_DAFTAR} className="btn-primary" target="_blank" rel="noreferrer" style={{ fontSize: '16px', padding: '15px 32px' }}>
@@ -139,7 +151,7 @@ export default async function HomePage() {
               </div>
               {/* Badges */}
               <div style={{ display: 'flex', gap: '16px', marginTop: '32px', flexWrap: 'wrap' }}>
-                {['✅ Resmi BNSP', '🏛️ Terdaftar Kemendikbud', '🤝 Mitra EPA & SSW'].map(b => (
+                {v('hero_badges').split('\n').map(b => b.trim()).filter(Boolean).map(b => (
                   <span key={b} style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '4px' }}>{b}</span>
                 ))}
               </div>
@@ -157,8 +169,8 @@ export default async function HomePage() {
                   style={{ width: '100%', height: '260px', objectFit: 'cover', borderRadius: '18px', marginBottom: '20px' }}
                 />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {STATS.slice(0,4).map(s => (
-                    <div key={s.num} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+                  {STATS.slice(0,4).map((s, i) => (
+                    <div key={i} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
                       <div style={{ fontSize: '20px', marginBottom: '4px' }}>{s.icon}</div>
                       <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--green2)' }}>{s.num}</div>
                       <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>{s.label}</div>
@@ -171,18 +183,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <StatsBar/>
+      <StatsBar stats={STATS}/>
 
       {/* ── PROGRAM ────────────────────────────────────────────────────────── */}
       <section className="section" style={{ background: 'white' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-            <div className="tag tag-green" style={{ marginBottom: '12px' }}>Program Unggulan</div>
+            <div className="tag tag-green" style={{ marginBottom: '12px' }}>{v('program_badge')}</div>
             <h2 style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 800, color: 'var(--text)', fontFamily: "'DM Serif Display', serif" }}>
-              Pilih Program yang Tepat
+              {v('program_judul')}
             </h2>
             <p style={{ color: 'var(--text2)', marginTop: '12px', fontSize: '16px', maxWidth: '560px', margin: '12px auto 0' }}>
-              Program terstruktur dengan kurikulum standar internasional untuk mempersiapkan Anda bekerja di Jepang
+              {v('program_sub')}
             </p>
           </div>
           <div className="grid-3">
@@ -214,9 +226,9 @@ export default async function HomePage() {
       <section className="section" style={{ background: 'var(--bg)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-            <div className="tag tag-blue" style={{ marginBottom: '12px' }}>Cara Bergabung</div>
+            <div className="tag tag-blue" style={{ marginBottom: '12px' }}>{v('langkah_badge')}</div>
             <h2 style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 800, color: 'var(--text)', fontFamily: "'DM Serif Display', serif" }}>
-              4 Langkah Menuju Jepang
+              {v('langkah_judul')}
             </h2>
           </div>
           <div className="grid-4">
@@ -235,7 +247,7 @@ export default async function HomePage() {
           </div>
           <div style={{ textAlign: 'center', marginTop: '40px' }}>
             <a href={MITRA_DAFTAR} className="btn-primary" target="_blank" rel="noreferrer" style={{ fontSize: '16px', padding: '15px 36px' }}>
-              Mulai Perjalanan Anda →
+              {v('langkah_tombol')}
             </a>
           </div>
         </div>
@@ -245,9 +257,9 @@ export default async function HomePage() {
       <section className="section" style={{ background: 'var(--dark)', color: 'white' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-            <div className="tag" style={{ background: 'rgba(212,87,185,0.3)', color: 'var(--green2)', marginBottom: '12px' }}>Testimoni Alumni</div>
+            <div className="tag" style={{ background: 'rgba(212,87,185,0.3)', color: 'var(--green2)', marginBottom: '12px' }}>{v('testi_badge')}</div>
             <h2 style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 800, fontFamily: "'DM Serif Display', serif" }}>
-              Cerita Sukses Alumni MGA
+              {v('testi_judul')}
             </h2>
           </div>
           {/* Desktop: grid 3, Mobile: scroll horizontal */}
@@ -276,8 +288,8 @@ export default async function HomePage() {
           <div className="container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <div className="tag tag-green" style={{ marginBottom: '8px' }}>Blog & Artikel</div>
-                <h2 style={{ fontSize: 'clamp(24px,3vw,32px)', fontWeight: 800, color: 'var(--text)', fontFamily: "'DM Serif Display', serif" }}>Informasi Terbaru</h2>
+                <div className="tag tag-green" style={{ marginBottom: '8px' }}>{v('artikel_badge')}</div>
+                <h2 style={{ fontSize: 'clamp(24px,3vw,32px)', fontWeight: 800, color: 'var(--text)', fontFamily: "'DM Serif Display', serif" }}>{v('artikel_judul')}</h2>
               </div>
               <Link href="/artikel" style={{ color: 'var(--green)', fontWeight: 700, fontSize: '14px' }}>Lihat Semua →</Link>
             </div>
@@ -301,10 +313,10 @@ export default async function HomePage() {
       <section style={{ background: 'linear-gradient(135deg, var(--green) 0%, var(--blue) 100%)', padding: 'clamp(60px,10vw,100px) 0' }}>
         <div className="container" style={{ textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(28px,5vw,48px)', fontWeight: 800, color: 'white', marginBottom: '16px', fontFamily: "'DM Serif Display', serif" }}>
-            Siap Memulai Perjalanan ke Jepang?
+            {v('cta_judul')}
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 'clamp(14px,2vw,18px)', marginBottom: '36px', maxWidth: '560px', margin: '0 auto 36px' }}>
-            Bergabunglah dengan ratusan alumni yang kini berkarir sukses di Jepang. Daftar sekarang dan mulai perjalanan Anda!
+            {v('cta_sub')}
           </p>
           <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href={MITRA_DAFTAR} className="btn-white" target="_blank" rel="noreferrer" style={{ fontSize: '16px', padding: '15px 36px' }}>

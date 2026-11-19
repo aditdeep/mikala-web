@@ -52,16 +52,18 @@ const STATS = [
   { num: '10+',  label_id: 'Tahun Pengalaman',      label_en: 'Years Experience',       icon: '⭐' },
 ];
 
-export function StatsBar() {
+export function StatsBar({ stats }: { stats?: { num: string; label: string }[] } = {}) {
   const { lang } = useLang();
+  // dari CMS (Beranda > Angka); tanpa prop pakai bawaan dwibahasa di bawah
+  const daftar = stats?.length ? stats : STATS.map(s => ({ num: s.num, label: lang === 'id' ? s.label_id : s.label_en }));
   return (
     <section style={{ background: 'var(--green)', padding: 'clamp(20px,4vw,28px) 0' }}>
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '20px' }}>
-          {STATS.map(s => (
-            <div key={s.num} style={{ textAlign: 'center', color: 'white' }}>
+          {daftar.map((s, i) => (
+            <div key={i} style={{ textAlign: 'center', color: 'white' }}>
               <div style={{ fontSize: 'clamp(24px,4vw,36px)', fontWeight: 800 }}>{s.num}</div>
-              <div style={{ fontSize: '13px', opacity: 0.85 }}>{lang === 'id' ? s.label_id : s.label_en}</div>
+              <div style={{ fontSize: '13px', opacity: 0.85 }}>{s.label}</div>
             </div>
           ))}
         </div>

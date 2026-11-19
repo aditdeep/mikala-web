@@ -3,18 +3,57 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
 import {
   Plus, Search, X, Edit2, Trash2, Eye, Globe,
-  Image, BookOpen, Users, Star, Settings, Info,
+  Image, BookOpen, Users, Star, Settings, Info, Home,
 } from 'lucide-react';
 import RichEditor from '../../../components/RichEditor';
 import { toWibInput } from '@/lib/jadwalWib';
 
 const TABS = [
+  { key: 'beranda',   label: 'Beranda',   icon: Home },
   { key: 'artikel',   label: 'Artikel',   icon: BookOpen },
   { key: 'program',   label: 'Program',   icon: Users },
   { key: 'galeri',    label: 'Galeri',    icon: Image },
   { key: 'testimoni', label: 'Testimoni', icon: Star },
   { key: 'tentang',   label: 'Tentang Kami', icon: Info },
   { key: 'settings',  label: 'Settings',  icon: Settings },
+];
+
+// tab yg isinya key-value mga_settings (bukan tabel list)
+const SETTINGS_TABS = ['settings', 'tentang', 'beranda'];
+
+// Beranda (halaman utama MGA) -- key dibaca apps/mga/app/page.tsx, kosong = isi bawaan website
+const BERANDA_GRUP: { judul: string; field: { key: string; label: string; ph: string; rows?: number }[] }[] = [
+  { judul: 'Hero (bagian paling atas)', field: [
+    { key: 'hero_tag',      label: 'Label kecil di atas judul', ph: '🎌 Program Kaigo Jepang 2026' },
+    { key: 'hero_title',    label: 'Judul (Enter = ganti baris)', ph: 'Wujudkan Karir\nPerawat Profesional\ndi Jepang', rows: 3 },
+    { key: 'hero_subtitle', label: 'Subjudul', ph: 'Mikala Global Akademi membuka jalan karir ...', rows: 2 },
+    { key: 'hero_image',    label: 'URL Gambar', ph: 'https://...' },
+    { key: 'hero_badges',   label: 'Badge di bawah tombol (1 baris = 1 badge)', ph: '✅ Resmi BNSP\n🏛️ Terdaftar Kemendikbud', rows: 3 },
+  ]},
+  { judul: 'Angka (kartu hero & bar hijau)', field: [
+    { key: 'beranda_statistik', label: 'Ikon | Angka | Keterangan (kartu hero menampilkan 4 pertama)', ph: '👥 | 500+ | Alumni Ditempatkan\n🎓 | 98% | Tingkat Kelulusan', rows: 4 },
+  ]},
+  { judul: 'Program Unggulan (isi kartu diatur di tab Program)', field: [
+    { key: 'program_badge', label: 'Label', ph: 'Program Unggulan' },
+    { key: 'program_judul', label: 'Judul', ph: 'Pilih Program yang Tepat' },
+    { key: 'program_sub',   label: 'Deskripsi', ph: 'Program terstruktur dengan ...', rows: 2 },
+  ]},
+  { judul: 'Cara Bergabung', field: [
+    { key: 'langkah_badge',  label: 'Label', ph: 'Cara Bergabung' },
+    { key: 'langkah_judul',  label: 'Judul', ph: '4 Langkah Menuju Jepang' },
+    { key: 'langkah_list',   label: 'Langkah (Judul | Deskripsi), nomor otomatis', ph: 'Daftar Online | Isi formulir pendaftaran ...\nSeleksi & Interview | Ikuti proses seleksi ...', rows: 4 },
+    { key: 'langkah_tombol', label: 'Teks tombol', ph: 'Mulai Perjalanan Anda →' },
+  ]},
+  { judul: 'Testimoni & Artikel (isinya diatur di tab masing-masing)', field: [
+    { key: 'testi_badge',   label: 'Label Testimoni', ph: 'Testimoni Alumni' },
+    { key: 'testi_judul',   label: 'Judul Testimoni', ph: 'Cerita Sukses Alumni MGA' },
+    { key: 'artikel_badge', label: 'Label Artikel', ph: 'Blog & Artikel' },
+    { key: 'artikel_judul', label: 'Judul Artikel', ph: 'Informasi Terbaru' },
+  ]},
+  { judul: 'Ajakan Daftar (bagian bawah)', field: [
+    { key: 'cta_judul', label: 'Judul', ph: 'Siap Memulai Perjalanan ke Jepang?' },
+    { key: 'cta_sub',   label: 'Deskripsi', ph: 'Bergabunglah dengan ratusan alumni ...', rows: 2 },
+  ]},
 ];
 
 const inp: React.CSSProperties = {
@@ -45,7 +84,7 @@ export default function WebsiteMgaPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (tab === 'settings' || tab === 'tentang') {
+      if (SETTINGS_TABS.includes(tab)) {
         const r: any = await apiClient.get('/internal/mga/settings');
         setSettings(r.data?.data || {});
       } else {
@@ -59,9 +98,10 @@ export default function WebsiteMgaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
     try {
-      if (tab === 'settings' || tab === 'tentang') {
+      if (SETTINGS_TABS.includes(tab)) {
         await apiClient.post('/internal/mga/settings', settings);
         if (tab === 'tentang') alert('Tersimpan. Halaman /tentang terupdate dalam ±1 menit.');
+        if (tab === 'beranda') alert('Tersimpan. Beranda website MGA terupdate dalam ±1 menit.');
       } else if (editItem) {
         await apiClient.put(`/internal/mga/${tab}/${editItem.id}`, form);
       } else {
@@ -106,7 +146,7 @@ export default function WebsiteMgaPage() {
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: 'var(--glass)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text2)', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
             <Globe size={14}/> Preview Website
           </a>
-          {tab !== 'settings' && tab !== 'tentang' && (
+          {!SETTINGS_TABS.includes(tab) && (
             <button onClick={() => { setShowModal(true); setEditItem(null); setForm({ status: 'published' }); }}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>
               <Plus size={14}/> Tambah {TABS.find(t => t.key === tab)?.label}
@@ -137,9 +177,6 @@ export default function WebsiteMgaPage() {
               {[
                 { key: 'site_title',       label: 'Judul Website (SEO)' },
                 { key: 'site_description', label: 'Deskripsi Website (SEO)' },
-                { key: 'hero_title',       label: 'Judul Hero' },
-                { key: 'hero_subtitle',    label: 'Subjudul Hero' },
-                { key: 'hero_image',       label: 'URL Gambar Hero' },
                 { key: 'wa_number',        label: 'Nomor WhatsApp' },
                 { key: 'phone',            label: 'No. Telepon' },
                 { key: 'email',            label: 'Email' },
@@ -162,6 +199,33 @@ export default function WebsiteMgaPage() {
             <button type="submit" disabled={saving}
               style={{ marginTop: '20px', padding: '10px 24px', background: 'linear-gradient(135deg,#1a7a5e,#22a07a)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
               {saving ? 'Menyimpan...' : 'Simpan Settings'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Beranda -- disimpan di mga_settings, dibaca halaman utama MGA */}
+      {tab === 'beranda' && (
+        <div style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Halaman Beranda</h2>
+          <p style={{ fontSize: '12px', color: 'var(--text3)', marginBottom: '20px' }}>Kolom yang dikosongkan memakai isi bawaan website. Untuk daftar: 1 baris = 1 item, kolom dipisah tanda <b>|</b>.</p>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+            {BERANDA_GRUP.map(g => (
+              <fieldset key={g.judul} style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px', margin: 0 }}>
+                <legend style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', padding: '0 6px' }}>{g.judul}</legend>
+                {g.field.map(f => (
+                  <div key={f.key}>
+                    <label style={lbl}>{f.label}</label>
+                    {f.rows
+                      ? <textarea rows={f.rows} value={settings[f.key] || ''} onChange={e => setSettings((x: any) => ({ ...x, [f.key]: e.target.value }))} style={{ ...inp, resize: 'vertical', fontFamily: 'inherit' }} placeholder={f.ph}/>
+                      : <input value={settings[f.key] || ''} onChange={e => setSettings((x: any) => ({ ...x, [f.key]: e.target.value }))} style={inp} placeholder={f.ph}/>}
+                  </div>
+                ))}
+              </fieldset>
+            ))}
+            <button type="submit" disabled={saving}
+              style={{ alignSelf: 'flex-start', padding: '10px 24px', background: 'linear-gradient(135deg,#1a7a5e,#22a07a)', border: 'none', borderRadius: '10px', color: 'white', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+              {saving ? 'Menyimpan...' : 'Simpan Beranda'}
             </button>
           </form>
         </div>
@@ -200,7 +264,7 @@ export default function WebsiteMgaPage() {
       )}
 
       {/* List Tab */}
-      {tab !== 'settings' && tab !== 'tentang' && (
+      {!SETTINGS_TABS.includes(tab) && (
         <>
           <div style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px' }}>
             <Search size={15} style={{ color: 'var(--text3)' }}/>
