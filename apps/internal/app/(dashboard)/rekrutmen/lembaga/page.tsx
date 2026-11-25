@@ -1,7 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@mikala/lib';
-import { Plus, Search, X, Building2, Phone, Mail, MapPin, Edit2, Trash2, DollarSign } from 'lucide-react';
+import { Plus, Search, X, Building2, Edit2, Trash2, DollarSign, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { usePagination } from '@/lib/usePagination';
+import Pagination from '@/components/Pagination';
 
 const TIPE_OPTIONS = [
   { v:'lpk',        l:'LPK / Lembaga Pelatihan' },
@@ -12,7 +15,7 @@ const TIPE_OPTIONS = [
   { v:'lainnya',    l:'Lainnya' },
 ];
 
-const emptyForm = { nama:'', tipe:'lpk', kontak_nama:'', kontak_hp:'', kontak_email:'', alamat:'', kota:'', provinsi:'', fee_per_mitra:'', catatan:'' };
+const emptyForm = { nama:'', tipe:'lpk', kontak_nama:'', kontak_hp:'', kontak_email:'', alamat:'', kota:'', provinsi:'', fee_per_mitra:'', catatan:'', rekening_bank:'', rekening_nomor:'', rekening_atas_nama:'' };
 
 export default function LembagaPage() {
   const [data, setData]           = useState<any[]>([]);
@@ -30,7 +33,7 @@ export default function LembagaPage() {
 
   const fetchData = () => {
     setLoading(true);
-    apiClient.get('/internal/lembaga')
+    apiClient.get('/internal/lembaga', { params: { per_page: 1000 } })
       .then((r: any) => setData(r.data?.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -60,7 +63,7 @@ export default function LembagaPage() {
 
   const handleEdit = (item: any) => {
     setEditItem(item);
-    setForm({ nama: item.nama, tipe: item.tipe, kontak_nama: item.kontak_nama||'', kontak_hp: item.kontak_hp||'', kontak_email: item.kontak_email||'', alamat: item.alamat||'', kota: item.kota||'', provinsi: item.provinsi||'', fee_per_mitra: item.fee_per_mitra||'', catatan: item.catatan||'' });
+    setForm({ nama: item.nama, tipe: item.tipe, kontak_nama: item.kontak_nama||'', kontak_hp: item.kontak_hp||'', kontak_email: item.kontak_email||'', alamat: item.alamat||'', kota: item.kota||'', provinsi: item.provinsi||'', fee_per_mitra: item.fee_per_mitra||'', catatan: item.catatan||'', rekening_bank: item.rekening_bank||'', rekening_nomor: item.rekening_nomor||'', rekening_atas_nama: item.rekening_atas_nama||'' });
     setShowModal(true);
   };
 
@@ -77,6 +80,25 @@ export default function LembagaPage() {
   };
 
   const filtered = data.filter(d => JSON.stringify(d).toLowerCase().includes(search.toLowerCase()));
+  const { page, perPage, totalPages, paged, setPage, total } = usePagination(filtered, 20, [search]);
+  const TH: React.CSSProperties = { padding:'10px 12px', textAlign:'left', fontSize:'11px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', whiteSpace:'nowrap' };
+  const TD: React.CSSProperties = { padding:'10px 12px', fontSize:'13px', color:'var(--text)', verticalAlign:'top' };
+  const tipeLabel = (v: string) => TIPE_OPTIONS.find(t => t.v === v)?.l || v;
+
+  // Export daftar lembaga (sesuai pencarian aktif) ke .xlsx
+  const handleExport = () => {
+    const rows = filtered.map((d: any, i: number) => ({
+      'No': i + 1, 'Nama Lembaga': d.nama, 'Tipe': tipeLabel(d.tipe), 'Nama PIC': d.kontak_nama || '',
+      'No. HP / WA': d.kontak_hp || '', 'Email': d.kontak_email || '', 'Alamat': d.alamat || '',
+      'Kota': d.kota || '', 'Provinsi': d.provinsi || '', 'Bank': d.rekening_bank || '',
+      'No. Rekening': d.rekening_nomor || '', 'Atas Nama': d.rekening_atas_nama || '',
+      'Fee per Mitra': Number(d.fee_per_mitra) || 0, 'Jumlah Mitra': d.mitra_count || 0,
+      'Status': d.status, 'Catatan': d.catatan || '',
+    }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Lembaga');
+    XLSX.writeFile(wb, `data-lembaga-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
   const inp: React.CSSProperties = { width:'100%', padding:'9px 12px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text)', fontSize:'13px', outline:'none' };
   const lbl: React.CSSProperties = { color:'var(--text2)', fontSize:'12px', fontWeight:500, display:'block', marginBottom:'5px' };
@@ -89,7 +111,11 @@ export default function LembagaPage() {
           <h1 style={{ fontSize:'20px', fontWeight:700, color:'var(--text)' }}>Manajemen Lembaga</h1>
           <p style={{ color:'var(--text3)', fontSize:'13px' }}>{data.length} lembaga terdaftar — mitra rekrutmen via kerjasama</p>
         </div>
-        <div style={{ display:'flex', gap:'8px' }}>
+        <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+          <button onClick={handleExport} disabled={filtered.length === 0} title="Export daftar lembaga (sesuai pencarian) ke Excel"
+            style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'12px', color:'var(--text2)', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
+            <Download size={15}/>Export Excel
+          </button>
           <button onClick={() => { setShowFee(true); fetchFee(); }} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'12px', color:'#10b981', fontWeight:600, fontSize:'13px', cursor:'pointer' }}>
             <DollarSign size={15}/>Kontrol Fee
           </button>
@@ -106,11 +132,9 @@ export default function LembagaPage() {
           style={{ background:'transparent', border:'none', outline:'none', color:'var(--text)', fontSize:'13px', width:'100%' }}/>
       </div>
 
-      {/* Grid Lembaga */}
+      {/* Tabel Lembaga */}
       {loading ? (
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:'14px' }}>
-          {[1,2,3].map(i => <div key={i} style={{ background:'var(--glass)', borderRadius:'16px', height:'160px' }}/>)}
-        </div>
+        <div style={{ textAlign:'center', padding:'40px', color:'var(--text3)' }}>Memuat...</div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign:'center', padding:'48px', color:'var(--text3)' }}>
           <Building2 size={48} style={{ margin:'0 auto 14px', opacity:0.2 }}/>
@@ -118,46 +142,54 @@ export default function LembagaPage() {
           <p style={{ fontSize:'13px' }}>Tambah lembaga kerjasama untuk mulai merekrut mitra</p>
         </div>
       ) : (
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:'14px' }}>
-          {filtered.map((item: any) => (
-            <div key={item.id} style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', padding:'16px' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'12px' }}>
-                <div>
-                  <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'4px' }}>
-                    <Building2 size={14} style={{ color:'var(--purple-light)' }}/>
-                    <span style={{ fontSize:'11px', color:'var(--purple-light)', fontWeight:600, textTransform:'uppercase' }}>
-                      {TIPE_OPTIONS.find(t => t.v === item.tipe)?.l || item.tipe}
-                    </span>
-                  </div>
-                  <p style={{ fontWeight:700, fontSize:'14px', color:'var(--text)' }}>{item.nama}</p>
-                </div>
-                <span style={{ fontSize:'11px', fontWeight:600, padding:'3px 8px', borderRadius:'8px', background: item.status==='aktif'?'rgba(16,185,129,0.1)':'rgba(239,68,68,0.1)', color: item.status==='aktif'?'#10b981':'#ef4444' }}>
-                  {item.status}
-                </span>
-              </div>
-
-              {item.kota && <p style={{ fontSize:'12px', color:'var(--text3)', display:'flex', alignItems:'center', gap:'4px', marginBottom:'4px' }}><MapPin size={11}/>{item.kota}{item.provinsi ? `, ${item.provinsi}` : ''}</p>}
-              {item.kontak_hp && <p style={{ fontSize:'12px', color:'var(--text3)', display:'flex', alignItems:'center', gap:'4px', marginBottom:'4px' }}><Phone size={11}/>{item.kontak_hp}</p>}
-
-              <div style={{ borderTop:'1px solid var(--border)', paddingTop:'10px', marginTop:'10px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <div>
-                  <p style={{ fontSize:'11px', color:'var(--text3)' }}>Fee per Mitra</p>
-                  <p style={{ fontSize:'14px', fontWeight:700, color:'#10b981' }}>
-                    {item.fee_per_mitra > 0 ? `Rp ${Number(item.fee_per_mitra).toLocaleString('id-ID')}` : 'Tidak ada'}
-                  </p>
-                  <p style={{ fontSize:'11px', color:'var(--text3)' }}>{item.mitra_count || 0} mitra dari lembaga ini</p>
-                </div>
-                <div style={{ display:'flex', gap:'6px' }}>
-                  <button onClick={() => handleEdit(item)} style={{ padding:'6px 10px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', cursor:'pointer', display:'flex', alignItems:'center' }}>
-                    <Edit2 size={13}/>
-                  </button>
-                  <button onClick={() => handleDelete(item.id)} style={{ padding:'6px 10px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', cursor:'pointer', display:'flex', alignItems:'center' }}>
-                    <Trash2 size={13}/>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', overflow:'hidden' }}>
+          <div style={{ overflowX:'auto' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
+              <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
+                {['No','Nama Lembaga','Kontak','Kota','Rekening','Fee / Mitra','Mitra','Status','Aksi'].map(h => <th key={h} style={TH}>{h}</th>)}
+              </tr></thead>
+              <tbody>
+                {paged.map((item: any, i: number) => (
+                  <tr key={item.id} style={{ borderBottom:'1px solid var(--border)' }}>
+                    <td style={{ ...TD, color:'var(--text3)' }}>{(page - 1) * perPage + i + 1}</td>
+                    <td style={TD}>
+                      <p style={{ fontWeight:600 }}>{item.nama}</p>
+                      <p style={{ fontSize:'11px', color:'var(--purple-light)' }}>{tipeLabel(item.tipe)}</p>
+                    </td>
+                    <td style={TD}>
+                      <p>{item.kontak_nama || '-'}</p>
+                      <p style={{ fontSize:'12px', color:'var(--text3)' }}>{item.kontak_hp}</p>
+                    </td>
+                    <td style={TD}>{[item.kota, item.provinsi].filter(Boolean).join(', ') || '-'}</td>
+                    <td style={TD}>
+                      {item.rekening_nomor ? <>
+                        <p>{item.rekening_bank} {item.rekening_nomor}</p>
+                        <p style={{ fontSize:'12px', color:'var(--text3)' }}>a.n. {item.rekening_atas_nama || '-'}</p>
+                      </> : <span style={{ color:'var(--text3)' }}>-</span>}
+                    </td>
+                    <td style={{ ...TD, fontWeight:700, color:'#10b981', whiteSpace:'nowrap' }}>
+                      {item.fee_per_mitra > 0 ? `Rp ${Number(item.fee_per_mitra).toLocaleString('id-ID')}` : '-'}
+                    </td>
+                    <td style={TD}>{item.mitra_count || 0}</td>
+                    <td style={TD}>
+                      <span style={{ fontSize:'11px', fontWeight:600, padding:'3px 8px', borderRadius:'8px', background: item.status==='aktif'?'rgba(16,185,129,0.1)':'rgba(239,68,68,0.1)', color: item.status==='aktif'?'#10b981':'#ef4444' }}>{item.status}</span>
+                    </td>
+                    <td style={TD}>
+                      <div style={{ display:'flex', gap:'6px' }}>
+                        <button onClick={() => handleEdit(item)} title="Edit" style={{ padding:'6px 10px', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:'8px', color:'#3b82f6', cursor:'pointer', display:'flex', alignItems:'center' }}>
+                          <Edit2 size={13}/>
+                        </button>
+                        <button onClick={() => handleDelete(item.id)} title="Nonaktifkan" style={{ padding:'6px 10px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'8px', color:'#ef4444', cursor:'pointer', display:'flex', alignItems:'center' }}>
+                          <Trash2 size={13}/>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination page={page} totalPages={totalPages} total={total} onPageChange={setPage} label="lembaga" />
         </div>
       )}
 
@@ -191,6 +223,9 @@ export default function LembagaPage() {
                 <div style={{ gridColumn:'1/-1' }}><label style={lbl}>Alamat</label><input value={form.alamat} onChange={e => set('alamat',e.target.value)} style={inp}/></div>
                 <div><label style={lbl}>Kota</label><input value={form.kota} onChange={e => set('kota',e.target.value)} style={inp}/></div>
                 <div><label style={lbl}>Provinsi</label><input value={form.provinsi} onChange={e => set('provinsi',e.target.value)} style={inp}/></div>
+                <div><label style={lbl}>Bank</label><input value={form.rekening_bank} onChange={e => set('rekening_bank',e.target.value)} style={inp} placeholder="BCA / BRI / Mandiri ..."/></div>
+                <div><label style={lbl}>No. Rekening</label><input value={form.rekening_nomor} onChange={e => set('rekening_nomor',e.target.value)} style={inp} inputMode="numeric"/></div>
+                <div style={{ gridColumn:'1/-1' }}><label style={lbl}>Atas Nama Rekening</label><input value={form.rekening_atas_nama} onChange={e => set('rekening_atas_nama',e.target.value)} style={inp}/></div>
                 <div style={{ gridColumn:'1/-1' }}><label style={lbl}>Catatan</label><textarea value={form.catatan} onChange={e => set('catatan',e.target.value)} style={{...inp,minHeight:'60px',resize:'vertical'as const}}/></div>
               </div>
               <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end', marginTop:'20px' }}>
