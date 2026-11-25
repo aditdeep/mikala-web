@@ -370,7 +370,7 @@ function SumberInline({ form, setForm }: { form: any; setForm: any }) {
           {loadingL ? <p style={{ fontSize:'12px', color:'var(--text3)' }}>Memuat...</p> : (
             <select value={form.lembaga_id||''} onChange={e => { const l=lembagaList.find((x:any)=>x.id===Number(e.target.value)); setForm((f:any)=>({...f,lembaga_id:Number(e.target.value),sumber_detail:l?.nama||''})); }} style={inp2}>
               <option value="">-- Pilih lembaga --</option>
-              {lembagaList.map((l:any) => <option key={l.id} value={l.id}>{l.nama}{l.kota?` (${l.kota})`:''}</option>)}
+              {lembagaList.map((l:any) => <option key={l.id} value={l.id}>{l.kode?`${l.kode} · `:''}{l.nama}{l.kota?` (${l.kota})`:''}</option>)}
             </select>
           )}
           {lembagaList.length === 0 && !loadingL && <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'4px' }}>Belum ada lembaga. Tambah di menu Lembaga.</p>}

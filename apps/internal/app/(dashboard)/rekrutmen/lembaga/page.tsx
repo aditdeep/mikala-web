@@ -88,7 +88,7 @@ export default function LembagaPage() {
   // Export daftar lembaga (sesuai pencarian aktif) ke .xlsx
   const handleExport = () => {
     const rows = filtered.map((d: any, i: number) => ({
-      'No': i + 1, 'Nama Lembaga': d.nama, 'Tipe': tipeLabel(d.tipe), 'Nama PIC': d.kontak_nama || '',
+      'No': i + 1, 'Kode': d.kode || '', 'Nama Lembaga': d.nama, 'Tipe': tipeLabel(d.tipe), 'Nama PIC': d.kontak_nama || '',
       'No. HP / WA': d.kontak_hp || '', 'Email': d.kontak_email || '', 'Alamat': d.alamat || '',
       'Kota': d.kota || '', 'Provinsi': d.provinsi || '', 'Bank': d.rekening_bank || '',
       'No. Rekening': d.rekening_nomor || '', 'Atas Nama': d.rekening_atas_nama || '',
@@ -144,14 +144,15 @@ export default function LembagaPage() {
       ) : (
         <div style={{ background:'var(--glass)', border:'1px solid var(--glass-border)', borderRadius:'16px', overflow:'hidden' }}>
           <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'900px' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'980px' }}>
               <thead><tr style={{ borderBottom:'1px solid var(--border)' }}>
-                {['No','Nama Lembaga','Kontak','Kota','Rekening','Fee / Mitra','Mitra','Status','Aksi'].map(h => <th key={h} style={TH}>{h}</th>)}
+                {['No','Kode','Nama Lembaga','Kontak','Kota','Rekening','Fee / Mitra','Mitra','Status','Aksi'].map(h => <th key={h} style={TH}>{h}</th>)}
               </tr></thead>
               <tbody>
                 {paged.map((item: any, i: number) => (
                   <tr key={item.id} style={{ borderBottom:'1px solid var(--border)' }}>
                     <td style={{ ...TD, color:'var(--text3)' }}>{(page - 1) * perPage + i + 1}</td>
+                    <td style={{ ...TD, fontFamily:'monospace', whiteSpace:'nowrap', color:'var(--purple-light)' }}>{item.kode || '-'}</td>
                     <td style={TD}>
                       <p style={{ fontWeight:600 }}>{item.nama}</p>
                       <p style={{ fontSize:'11px', color:'var(--purple-light)' }}>{tipeLabel(item.tipe)}</p>
@@ -198,7 +199,7 @@ export default function LembagaPage() {
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:100, overflowY:'auto', padding:'20px', display:'flex', alignItems:'flex-start', justifyContent:'center' }}>
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'24px', width:'100%', maxWidth:'560px', padding:'24px', margin:'auto' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
-              <h2 style={{ fontSize:'18px', fontWeight:700, color:'var(--text)' }}>{editItem ? 'Edit Lembaga' : 'Tambah Lembaga'}</h2>
+              <h2 style={{ fontSize:'18px', fontWeight:700, color:'var(--text)' }}>{editItem ? `Edit Lembaga${editItem.kode ? ` · ${editItem.kode}` : ''}` : 'Tambah Lembaga'}</h2>
               <button onClick={() => setShowModal(false)} style={{ background:'var(--glass)', border:'1px solid var(--border)', borderRadius:'10px', padding:'7px', cursor:'pointer', color:'var(--text2)', display:'flex' }}><X size={18}/></button>
             </div>
             <form onSubmit={handleSubmit}>

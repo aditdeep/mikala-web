@@ -186,7 +186,7 @@ function SumberField({ form, setForm }: { form: any; setForm: any }) {
             </div>
           ) : (
             <SearchableSelect
-              options={lembagaList.map((l: any) => ({ value: l.id, label: `${l.nama}${l.kota ? ` (${l.kota})` : ''}` }))}
+              options={lembagaList.map((l: any) => ({ value: l.id, label: `${l.kode ? `${l.kode} · ` : ''}${l.nama}${l.kota ? ` (${l.kota})` : ''}` }))}
               value={form.lembaga_id}
               onChange={(v) => {
                 const l = lembagaList.find((x: any) => x.id === Number(v));
